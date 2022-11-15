@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/openreserveio/dwn/go/framework"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/model"
+	"net/http"
 )
 
 type APIService struct {
@@ -21,6 +23,7 @@ func CreateAPIService(options *framework.ServiceOptions) (*APIService, error) {
 		Gin:           gin.Default(),
 	}
 
+	apiService.Gin.GET("/", apiService.HandleFeatureRequest)
 	apiService.Gin.POST("/", apiService.HandleDWNRequest)
 
 	return &apiService, nil
@@ -33,4 +36,11 @@ func (apiService APIService) Run() error {
 
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 	log.Info("Indeed")
+}
+
+func (apiService APIService) HandleFeatureRequest(ctx *gin.Context) {
+
+	ctx.JSON(http.StatusOK, model.CurrentFeatureDetection)
+	return
+
 }
