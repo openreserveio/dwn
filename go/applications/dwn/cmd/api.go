@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/spf13/cobra"
 	"os"
@@ -15,7 +14,7 @@ var apiCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Info("Starting DWN APIs")
-		config, err := configuration.Config()
+		// config, err := configuration.Config()
 		if err != nil {
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
