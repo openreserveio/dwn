@@ -1,0 +1,12 @@
+FROM golang:latest
+MAINTAINER mzero@openreserve.io
+
+RUN mkdir -p /opt/dwn && \
+    mkdir -p /etc/dwn/src
+
+COPY .. /opt/dwn/src/
+
+RUN cd /opt/dwn/src && go mod download
+RUN cd /opt/dwn/src/applications/dwn && go build && go install
+RUN rm -Rf /opt/dwn/src
+
