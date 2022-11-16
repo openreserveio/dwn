@@ -35,7 +35,31 @@ func (apiService APIService) Run() error {
 }
 
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
-	log.Info("Indeed")
+
+	ro, err := apiService.GetRequestObject(ctx)
+	if err != nil {
+		log.Error("Error while parsing request object:  %v", err)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	response := model.ResponseObject{
+		Status: model.ResponseStatus{Code: 200, Detail: fmt.Sprintf("TargetDID:  %s", ro.TargetDID)},
+	}
+	ctx.JSON(200, &response)
+
+}
+
+func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestObject, error) {
+
+	var request model.RequestObject
+	err := ctx.BindJSON(&request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &request, nil
+
 }
 
 func (apiService APIService) HandleFeatureRequest(ctx *gin.Context) {
