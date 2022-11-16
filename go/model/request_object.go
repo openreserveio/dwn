@@ -4,18 +4,13 @@ package model
 Specification: https://identity.foundation/decentralized-web-node/spec/#request-objects
 */
 
-const (
-	DATA_FORMAT_JSON   = "application/json"
-	DATA_FORMAT_VC_JWT = "application/vc+jwt"
-	DATA_FORMAT_VC_LDP = "application/vc+ldp"
-)
-
 type RequestObject struct {
 	TargetDID string    `json:"target"`
 	Messages  []Message `json:"messages"`
 }
 
 type Message struct {
+	RecordID      string            `json:"recordId"`
 	Processing    MessageProcessing `json:"processing"`
 	Data          string            `json:"data,omitempty"`
 	Descriptor    Descriptor        `json:"descriptor"`
@@ -31,6 +26,7 @@ type Descriptor struct {
 }
 
 type MessageProcessing struct {
-	TargetDID    string `json:"target"`
+	Nonce        string `json:"nonce"`
+	AuthorDID    string `json:"author"`
 	RecipientDID string `json:"recipient"`
 }
