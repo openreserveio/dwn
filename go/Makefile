@@ -1,4 +1,4 @@
-SEMVER := 0.0.1-alpha
+SEMVER := 0.0.2-alpha
 
 build-docker-base:
 	docker build -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
