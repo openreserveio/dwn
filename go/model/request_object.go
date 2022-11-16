@@ -11,8 +11,8 @@ type RequestObject struct {
 
 type Message struct {
 	RecordID      string            `json:"recordId"`
-	Processing    MessageProcessing `json:"processing"`
 	Data          string            `json:"data,omitempty"`
+	Processing    MessageProcessing `json:"processing"`
 	Descriptor    Descriptor        `json:"descriptor"`
 	Attestation   interface{}       `json:"attestation,omitempty"`
 	Authorization interface{}       `json:"authorization,omitempty"`
