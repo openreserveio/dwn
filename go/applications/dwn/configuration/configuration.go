@@ -16,6 +16,9 @@ type Configuration interface {
 	// API Configuration
 	GetAPIListenAddress() string
 	GetAPIListenPort() int
+
+	// Storage Configuration
+	GetDocumentDBCollectionURI() string
 }
 
 func Config() (Configuration, error) {

@@ -7,6 +7,8 @@ const (
 
 	KEY_API_LISTEN_ADDRESS = "api.listenAddress"
 	KEY_API_LISTEN_PORT    = "api.listenPort"
+
+	KEY_DOCDB_CONNECTION_URI = "docdb.connection_uri"
 )
 
 type FileEnvironmentConfiguration struct {
@@ -34,4 +36,8 @@ func (config FileEnvironmentConfiguration) GetAPIListenAddress() string {
 
 func (config FileEnvironmentConfiguration) GetAPIListenPort() int {
 	return viper.GetInt(KEY_API_LISTEN_PORT)
+}
+
+func (config FileEnvironmentConfiguration) GetDocumentDBCollectionURI() string {
+	return viper.GetString(KEY_DOCDB_CONNECTION_URI)
 }
