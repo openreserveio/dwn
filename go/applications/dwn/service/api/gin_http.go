@@ -28,7 +28,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 		log.Fatal("Secure GRPC not yet supported - use Istio")
 		return nil, errors.New("Secure GRPC not yet supported - use Istio")
 	} else {
-		clientConn, err = grpc.Dial(fmt.Sprintf("%s:%d", collSvcOptions.Address, collSvcOptions.Port))
+		clientConn, err = grpc.Dial(fmt.Sprintf("%s:%d", collSvcOptions.Address, collSvcOptions.Port), grpc.WithInsecure())
 		if err != nil {
 			return nil, err
 		}

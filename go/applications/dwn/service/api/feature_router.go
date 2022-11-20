@@ -36,7 +36,7 @@ func (fr *FeatureRouter) Route(requestObject *model.RequestObject) (interface{},
 	// Process Messages and append responses to responseObject
 	// We can probably parallel these message processors
 	for idx, message := range requestObject.Messages {
-		log.Info("Processing message $d", idx)
+		log.Info("Processing message %d", idx)
 		go fr.processMessage(idx, procChan, &message)
 	}
 
@@ -69,12 +69,17 @@ type MessageProcResult struct {
 // idx is for ordering, MessageProcResult wraps the messageresult object and the index for the responseobject
 func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResult, message *model.Message) {
 
-	procComm <- &MessageProcResult{
-		Index: idx,
-		MessageResult: &model.MessageResultObject{
-			Status:  model.ResponseStatus{Code: http.StatusOK},
-			Entries: nil,
-		},
+	if message.RecordID == "TEST" {
+
+		// This is a test message
+		procComm <- &MessageProcResult{
+			Index: idx,
+			MessageResult: &model.MessageResultObject{
+				Status:  model.ResponseStatus{Code: http.StatusOK},
+				Entries: nil,
+			},
+		}
+
 	}
 
 }
