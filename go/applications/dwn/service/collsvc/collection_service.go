@@ -42,7 +42,7 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 		return &response, nil
 	}
 
-	response.Status.Status = services.Status_OK
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
 	response.CollectionId = newOrExistingID
 
 	return &response, nil

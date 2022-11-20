@@ -23,7 +23,7 @@ func CreateCollectionDocumentDBStore(connectionUri string) (*CollectionDocumentD
 
 	dbStore := CollectionDocumentDBStore{
 		Client: client,
-		DB:     client.Database("dwn_collections"),
+		DB:     client.Database("dwn_collections_db"),
 	}
 
 	return &dbStore, nil
