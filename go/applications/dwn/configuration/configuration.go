@@ -17,8 +17,10 @@ type Configuration interface {
 	GetAPIListenAddress() string
 	GetAPIListenPort() int
 
-	// Storage Configuration
-	GetDocumentDBCollectionURI() string
+	// Collection Service
+	GetCollectionServiceListenAddress() string
+	GetCollectionServiceListenPort() int
+	GetCollectionServiceDocumentDBURI() string
 }
 
 func Config() (Configuration, error) {
