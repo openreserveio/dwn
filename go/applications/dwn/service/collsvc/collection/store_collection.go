@@ -24,6 +24,6 @@ func StoreCollection(collectionStore storage.CollectionStore, schemaURI string, 
 		return "", err
 	}
 
-	return collectionItem.ID.String(), nil
+	return collectionItem.ID.Hex(), nil
 
 }
