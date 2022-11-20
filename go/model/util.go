@@ -36,25 +36,7 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	// create the descriptor
 	var dataCID string = ""
 	if message.Data != "" {
-		d, err := qp.BuildList(basicnode.Prototype.Any, 1, func(la datamodel.ListAssembler) {
-			qp.ListEntry(la, qp.String(message.Data))
-		})
-		if err != nil {
-			return nil
-		}
-
-		var buf bytes.Buffer
-		dagcbor.Encode(d, &buf)
-
-		cidPrefix := cid.Prefix{
-			Version:  1,
-			Codec:    uint64(mc.Raw),
-			MhType:   mh.SHA2_256,
-			MhLength: -1,
-		}
-		cid, err := cidPrefix.Sum(buf.Bytes())
-		dataCID = cid.String()
-
+		dataCID = CreateDataCID(message.Data)
 	}
 
 	messageDesc := Descriptor{
@@ -66,5 +48,32 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	message.Descriptor = messageDesc
 
 	return &message
+
+}
+
+func CreateDataCID(data string) string {
+
+	d, err := qp.BuildList(basicnode.Prototype.Any, 1, func(la datamodel.ListAssembler) {
+		qp.ListEntry(la, qp.String(data))
+	})
+	if err != nil {
+		return ""
+	}
+
+	var buf bytes.Buffer
+	dagcbor.Encode(d, &buf)
+
+	cidPrefix := cid.Prefix{
+		Version:  1,
+		Codec:    uint64(mc.Raw),
+		MhType:   mh.SHA2_256,
+		MhLength: -1,
+	}
+	cid, err := cidPrefix.Sum(buf.Bytes())
+	if err != nil {
+		return ""
+	}
+
+	return cid.String()
 
 }
