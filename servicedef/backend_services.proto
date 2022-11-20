@@ -21,6 +21,9 @@ message CommonStatus {
  }
 
 
+ /*
+  * COLLECTION SERVICE
+  */
 
  message StoreCollectionRequest {
 
@@ -82,4 +85,14 @@ message CommonStatus {
     rpc ValidateCollection(ValidateCollectionRequest) returns (ValidateCollectionResponse) {}
     rpc InvalidateSchema(InvalidateSchemaRequest) returns (InvalidateSchemaResponse) {}
 
+ }
+
+
+
+/*
+ * KEY SERVICE
+ */
+
+ service KeyService {
+   
  }
