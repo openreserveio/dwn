@@ -27,7 +27,7 @@ var collsvcCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(apiCmd)
+	rootCmd.AddCommand(collsvcCmd)
 
 	// Here you will define your flags and configuration settings.
 
