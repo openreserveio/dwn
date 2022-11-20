@@ -20,6 +20,8 @@ type Configuration interface {
 	// Collection Service
 	GetCollectionServiceListenAddress() string
 	GetCollectionServiceListenPort() int
+	GetCollectionServiceExternalAddress() string
+	GetCollectionServiceExternalPort() int
 	GetCollectionServiceDocumentDBURI() string
 }
 

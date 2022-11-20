@@ -10,6 +10,8 @@ const (
 
 	KEY_COLLSVC_LISTEN_ADDRESS       = "collsvc.listenAddress"
 	KEY_COLLSVC_LISTEN_PORT          = "collsvc.listenPort"
+	KEY_COLLSVC_EXTERNAL_ADDRESS     = "collsvc.externalAddress"
+	KEY_COLLSVC_EXTERNAL_PORT        = "collsvc.externalPort"
 	KEY_COLLSVC_DOCDB_CONNECTION_URI = "collsvc.docdbConnectionURI"
 )
 
@@ -50,4 +52,12 @@ func (config FileEnvironmentConfiguration) GetCollectionServiceListenPort() int 
 
 func (config FileEnvironmentConfiguration) GetCollectionServiceDocumentDBURI() string {
 	return viper.GetString(KEY_COLLSVC_DOCDB_CONNECTION_URI)
+}
+
+func (config FileEnvironmentConfiguration) GetCollectionServiceExternalAddress() string {
+	return viper.GetString(KEY_COLLSVC_EXTERNAL_ADDRESS)
+}
+
+func (config FileEnvironmentConfiguration) GetCollectionServiceExternalPort() int {
+	return viper.GetInt(KEY_COLLSVC_EXTERNAL_PORT)
 }

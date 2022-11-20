@@ -5,8 +5,7 @@ Specification: https://identity.foundation/decentralized-web-node/spec/#request-
 */
 
 type RequestObject struct {
-	TargetDID string    `json:"target"`
-	Messages  []Message `json:"messages"`
+	Messages []Message `json:"messages"`
 }
 
 type Message struct {
