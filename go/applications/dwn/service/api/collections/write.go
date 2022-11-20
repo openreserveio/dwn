@@ -35,7 +35,7 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		return messageResultObj
 	}
 
-	// Store the collection!
+	// Store the collection if it passes schema validation!
 	storeReq := services.StoreCollectionRequest{
 		SchemaURI:        schemaUri,
 		CollectionItemId: message.RecordID,
