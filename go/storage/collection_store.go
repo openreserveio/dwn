@@ -13,4 +13,5 @@ type CollectionStore interface {
 type CollectionItem struct {
 	ID        primitive.ObjectID `bson:"_id"`
 	SchemaURI string             `bson:"schema_uri"`
+	Content   []byte             `bson:"content"`
 }

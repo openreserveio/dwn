@@ -24,10 +24,15 @@ message CommonStatus {
 
  message StoreCollectionRequest {
 
+   string schemaURI = 1;
+   string collectionItemId = 2;
+   bytes collectionItem = 3;
+
  }
 
  message StoreCollectionResponse {
     CommonStatus status = 1;
+    string collectionId = 2;
  }
 
  message FindCollectionRequest {

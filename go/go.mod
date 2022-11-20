@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
+	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.3.0
 	github.com/ipfs/go-cid v0.3.2
 	github.com/ipld/go-ipld-prime v0.19.0
