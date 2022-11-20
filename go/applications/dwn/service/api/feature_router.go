@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/api/collections"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
@@ -69,7 +71,8 @@ type MessageProcResult struct {
 // idx is for ordering, MessageProcResult wraps the messageresult object and the index for the responseobject
 func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResult, message *model.Message) {
 
-	if message.RecordID == "TEST" {
+	// Support Simple Test Messages
+	if message.RecordID == "TEST" && message.Data == "TEST" {
 
 		// This is a test message
 		procComm <- &MessageProcResult{
@@ -79,8 +82,32 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 				Entries: nil,
 			},
 		}
+		return
 
 	}
+
+	var messageResult model.MessageResultObject
+
+	// Route logic based on Method
+	switch message.Descriptor.Method {
+
+	case "CollectionsWrite":
+		messageResult = collections.CollectionsWrite()
+
+	case "CollectionsQuery":
+		messageResult = collections.CollectionsQuery()
+
+	default:
+		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
+
+	}
+
+	// Reply back to channel
+	procResult := MessageProcResult{
+		Index:         idx,
+		MessageResult: &messageResult,
+	}
+	procComm <- &procResult
 
 }
 
