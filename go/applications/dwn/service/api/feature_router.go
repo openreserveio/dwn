@@ -92,7 +92,7 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 	switch message.Descriptor.Method {
 
 	case "CollectionsWrite":
-		messageResult = collections.CollectionsWrite()
+		messageResult = collections.CollectionsWrite(message)
 
 	case "CollectionsQuery":
 		messageResult = collections.CollectionsQuery()

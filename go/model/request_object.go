@@ -22,6 +22,7 @@ type Descriptor struct {
 	Method     string `json:"method"`
 	DataCID    string `json:"dataCid"`
 	DataFormat string `json:"dataFormat"`
+	Schema     string `json:"schema"`
 }
 
 type MessageProcessing struct {
