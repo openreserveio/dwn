@@ -7,11 +7,12 @@ import (
 )
 
 type CollectionDocumentDBStore struct {
-	Client *mongo.Client
-	DB     *mongo.Database
+	SchemaURI string
+	Client    *mongo.Client
+	DB        *mongo.Database
 }
 
-func CreateCollectionDocumentDBStore(connectionUri string) (*CollectionDocumentDBStore, error) {
+func CreateCollectionDocumentDBStore(schemaUri string, connectionUri string) (*CollectionDocumentDBStore, error) {
 
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(connectionUri))
 	if err != nil {
@@ -19,8 +20,9 @@ func CreateCollectionDocumentDBStore(connectionUri string) (*CollectionDocumentD
 	}
 
 	dbStore := CollectionDocumentDBStore{
-		Client: client,
-		DB:     client.Database("dwn_collections"),
+		SchemaURI: schemaUri,
+		Client:    client,
+		DB:        client.Database("dwn_collections"),
 	}
 
 	return &dbStore, nil
@@ -28,8 +30,7 @@ func CreateCollectionDocumentDBStore(connectionUri string) (*CollectionDocumentD
 }
 
 func (store *CollectionDocumentDBStore) GetSchemaURI() string {
-	//TODO implement me
-	panic("implement me")
+	return store.SchemaURI
 }
 
 func (store *CollectionDocumentDBStore) GetCollectionItem(identifier any) any {
