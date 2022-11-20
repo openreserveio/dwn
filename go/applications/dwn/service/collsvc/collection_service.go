@@ -60,8 +60,11 @@ func (c CollectionService) CreateSchema(ctx context.Context, request *services.C
 }
 
 func (c CollectionService) ValidateCollection(ctx context.Context, request *services.ValidateCollectionRequest) (*services.ValidateCollectionResponse, error) {
-	//TODO implement me
-	panic("implement me")
+
+	return &services.ValidateCollectionResponse{
+		Status: &services.CommonStatus{Status: services.Status_OK},
+	}, nil
+
 }
 
 func (c CollectionService) InvalidateSchema(ctx context.Context, request *services.InvalidateSchemaRequest) (*services.InvalidateSchemaResponse, error) {
