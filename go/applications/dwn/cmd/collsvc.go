@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
-	"github.com/openreserveio/dwn/go/applications/dwn/service/api"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/spf13/cobra"
 	"os"
@@ -12,7 +12,7 @@ import (
 var collsvcCmd = &cobra.Command{
 	Use:   "collsvc",
 	Short: "OpenReserve DWN Backend CollectionService",
-	Long:  `Backend Service for managing collections, schemas, and schema definitions`,
+	Long:  `Backend gRPC Service for managing collections, schemas, and schema definitions`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Info("Starting DWN Backend CollectionService")
@@ -21,7 +21,7 @@ var collsvcCmd = &cobra.Command{
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
 		}
-		log.Error("Stopping API Service:  %v", api.Start(config))
+		log.Error("Stopping API Service:  %v", collsvc.Start(config))
 
 	},
 }

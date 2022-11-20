@@ -1,5 +1,9 @@
 SEMVER := 0.0.2-alpha
 
+generate-protobuf:
+	protoc --proto_path=../servicedef --go_out=generated/services/ --go_opt=paths=source_relative --go-grpc_out=generated/services/ --go-grpc_opt=paths=source_relative ../servicedef/backend_services.proto
+
+
 build-docker-base:
 	docker build -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
 
