@@ -280,3 +280,131 @@ func (mr *MockUnsafeCollectionServiceServerMockRecorder) mustEmbedUnimplementedC
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedCollectionServiceServer", reflect.TypeOf((*MockUnsafeCollectionServiceServer)(nil).mustEmbedUnimplementedCollectionServiceServer))
 }
+
+// MockKeyServiceClient is a mock of KeyServiceClient interface.
+type MockKeyServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockKeyServiceClientMockRecorder
+}
+
+// MockKeyServiceClientMockRecorder is the mock recorder for MockKeyServiceClient.
+type MockKeyServiceClientMockRecorder struct {
+	mock *MockKeyServiceClient
+}
+
+// NewMockKeyServiceClient creates a new mock instance.
+func NewMockKeyServiceClient(ctrl *gomock.Controller) *MockKeyServiceClient {
+	mock := &MockKeyServiceClient{ctrl: ctrl}
+	mock.recorder = &MockKeyServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockKeyServiceClient) EXPECT() *MockKeyServiceClientMockRecorder {
+	return m.recorder
+}
+
+// VerifyMessageAttestation mocks base method.
+func (m *MockKeyServiceClient) VerifyMessageAttestation(ctx context.Context, in *services.VerifyMessageAttestationRequest, opts ...grpc.CallOption) (*services.VerifyMessageAttestationResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "VerifyMessageAttestation", varargs...)
+	ret0, _ := ret[0].(*services.VerifyMessageAttestationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyMessageAttestation indicates an expected call of VerifyMessageAttestation.
+func (mr *MockKeyServiceClientMockRecorder) VerifyMessageAttestation(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyMessageAttestation", reflect.TypeOf((*MockKeyServiceClient)(nil).VerifyMessageAttestation), varargs...)
+}
+
+// MockKeyServiceServer is a mock of KeyServiceServer interface.
+type MockKeyServiceServer struct {
+	ctrl     *gomock.Controller
+	recorder *MockKeyServiceServerMockRecorder
+}
+
+// MockKeyServiceServerMockRecorder is the mock recorder for MockKeyServiceServer.
+type MockKeyServiceServerMockRecorder struct {
+	mock *MockKeyServiceServer
+}
+
+// NewMockKeyServiceServer creates a new mock instance.
+func NewMockKeyServiceServer(ctrl *gomock.Controller) *MockKeyServiceServer {
+	mock := &MockKeyServiceServer{ctrl: ctrl}
+	mock.recorder = &MockKeyServiceServerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockKeyServiceServer) EXPECT() *MockKeyServiceServerMockRecorder {
+	return m.recorder
+}
+
+// VerifyMessageAttestation mocks base method.
+func (m *MockKeyServiceServer) VerifyMessageAttestation(arg0 context.Context, arg1 *services.VerifyMessageAttestationRequest) (*services.VerifyMessageAttestationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyMessageAttestation", arg0, arg1)
+	ret0, _ := ret[0].(*services.VerifyMessageAttestationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyMessageAttestation indicates an expected call of VerifyMessageAttestation.
+func (mr *MockKeyServiceServerMockRecorder) VerifyMessageAttestation(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyMessageAttestation", reflect.TypeOf((*MockKeyServiceServer)(nil).VerifyMessageAttestation), arg0, arg1)
+}
+
+// mustEmbedUnimplementedKeyServiceServer mocks base method.
+func (m *MockKeyServiceServer) mustEmbedUnimplementedKeyServiceServer() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "mustEmbedUnimplementedKeyServiceServer")
+}
+
+// mustEmbedUnimplementedKeyServiceServer indicates an expected call of mustEmbedUnimplementedKeyServiceServer.
+func (mr *MockKeyServiceServerMockRecorder) mustEmbedUnimplementedKeyServiceServer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedKeyServiceServer", reflect.TypeOf((*MockKeyServiceServer)(nil).mustEmbedUnimplementedKeyServiceServer))
+}
+
+// MockUnsafeKeyServiceServer is a mock of UnsafeKeyServiceServer interface.
+type MockUnsafeKeyServiceServer struct {
+	ctrl     *gomock.Controller
+	recorder *MockUnsafeKeyServiceServerMockRecorder
+}
+
+// MockUnsafeKeyServiceServerMockRecorder is the mock recorder for MockUnsafeKeyServiceServer.
+type MockUnsafeKeyServiceServerMockRecorder struct {
+	mock *MockUnsafeKeyServiceServer
+}
+
+// NewMockUnsafeKeyServiceServer creates a new mock instance.
+func NewMockUnsafeKeyServiceServer(ctrl *gomock.Controller) *MockUnsafeKeyServiceServer {
+	mock := &MockUnsafeKeyServiceServer{ctrl: ctrl}
+	mock.recorder = &MockUnsafeKeyServiceServerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUnsafeKeyServiceServer) EXPECT() *MockUnsafeKeyServiceServerMockRecorder {
+	return m.recorder
+}
+
+// mustEmbedUnimplementedKeyServiceServer mocks base method.
+func (m *MockUnsafeKeyServiceServer) mustEmbedUnimplementedKeyServiceServer() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "mustEmbedUnimplementedKeyServiceServer")
+}
+
+// mustEmbedUnimplementedKeyServiceServer indicates an expected call of mustEmbedUnimplementedKeyServiceServer.
+func (mr *MockUnsafeKeyServiceServerMockRecorder) mustEmbedUnimplementedKeyServiceServer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedKeyServiceServer", reflect.TypeOf((*MockUnsafeKeyServiceServer)(nil).mustEmbedUnimplementedKeyServiceServer))
+}

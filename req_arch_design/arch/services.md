@@ -20,6 +20,8 @@
 ## Backend Services
 
 * Document DB (mongodb) for storage
+* Queueing system (NATS, ActiveMQ) for events
+* Webhook Service for Events
 * Cache service (?TBD) for caching of signer info, possibly
 * CollectionsService for management of collections, collection schema definitions -> docdb
 * KeyService for message authentication, message signing, key management -> docdb

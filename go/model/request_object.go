@@ -13,8 +13,8 @@ type Message struct {
 	Data          string            `json:"data,omitempty"`
 	Processing    MessageProcessing `json:"processing"`
 	Descriptor    Descriptor        `json:"descriptor"`
-	Attestation   interface{}       `json:"attestation,omitempty"`
-	Authorization interface{}       `json:"authorization,omitempty"`
+	Attestation   DWNJWS            `json:"attestation,omitempty"`
+	Authorization DWNJWS            `json:"authorization,omitempty"`
 }
 
 type Descriptor struct {
@@ -29,4 +29,14 @@ type MessageProcessing struct {
 	Nonce        string `json:"nonce"`
 	AuthorDID    string `json:"author"`
 	RecipientDID string `json:"recipient"`
+}
+
+type DWNJWS struct {
+	Payload    string      `json:"payload"`
+	Signatures []DWNJWSSig `json:"signatures"`
+}
+
+type DWNJWSSig struct {
+	Protected string `json:"protected"`
+	Signature string `json:"signature"`
 }

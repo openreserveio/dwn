@@ -5,6 +5,8 @@ volumes:
       driver: local
   documentdb_data:
       driver: local
+  localstack_data:
+      driver: local
     
 services:
   docdb:
@@ -31,3 +33,15 @@ services:
       - "DWN_API.LISTENPORT=8080"
       - "DWN_COLLSVC.EXTERNALADDRESS=collsvc"
       - "DWN_COLLSVC.EXTERNALPORT=9001"
+  localstack:
+    image: "localstack/localstack"
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=1
+      - PERSISTENCE=0
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "localstack_data:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

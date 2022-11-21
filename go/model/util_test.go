@@ -1,6 +1,9 @@
 package model_test
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"encoding/base64"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -57,6 +60,47 @@ var _ = Describe("Util", func() {
 				Expect(message.Descriptor.Method).To(Equal("CollectionsWrite"))
 				Expect(message.Descriptor.DataCID).ToNot(BeEmpty())
 				Expect(message.Descriptor.DataFormat).To(Equal(model.DATA_FORMAT_JSON))
+
+			})
+
+		})
+
+	})
+
+	Describe("Messages with attestations", func() {
+
+		Context("With correct signature, should verify", func() {
+
+			It("Should verify", func() {
+
+				data := "{\"name\":\"test user\"}"
+				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite")
+				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+
+				attestation := model.CreateAttestation(message, *privateKey)
+				message.Attestation = attestation
+
+				result := model.VerifyAttestation(message)
+				Expect(result).To(BeTrue())
+
+			})
+
+		})
+
+		Context("With bad signature, should not verify", func() {
+
+			It("Should not verify", func() {
+
+				data := "{\"name\":\"test user\"}"
+				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite")
+				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+
+				attestation := model.CreateAttestation(message, *privateKey)
+				attestation.Signatures[0].Signature = "12345"
+				message.Attestation = attestation
+
+				result := model.VerifyAttestation(message)
+				Expect(result).To(BeFalse())
 
 			})
 

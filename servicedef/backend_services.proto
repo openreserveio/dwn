@@ -7,6 +7,8 @@ enum Status {
     NOT_FOUND = 1;
     ERROR = 2;
     CONFLICT = 3;
+    INVALID_ATTESTATION = 4;
+    INVALID_AUTHORIZATION = 5;
 }
 
 enum QueryType {
@@ -93,6 +95,16 @@ message CommonStatus {
  * KEY SERVICE
  */
 
+ message VerifyMessageAttestationRequest {
+   bytes message = 1;
+ }
+
+ message VerifyMessageAttestationResponse {
+   CommonStatus status = 1;
+ }
+
  service KeyService {
-   
+
+   rpc VerifyMessageAttestation(VerifyMessageAttestationRequest) returns (VerifyMessageAttestationResponse) {}
+
  }
