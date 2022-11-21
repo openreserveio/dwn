@@ -34,7 +34,7 @@ func CreateCollectionService(collectionStoreConnectionURI string) (*CollectionSe
 func (c CollectionService) StoreCollection(ctx context.Context, request *services.StoreCollectionRequest) (*services.StoreCollectionResponse, error) {
 
 	response := services.StoreCollectionResponse{}
-	newOrExistingID, err := collection.StoreCollection(c.CollectionStore, request.SchemaURI, request.CollectionItemId, request.CollectionItem)
+	newOrExistingID, ownerDID, err := collection.StoreCollection(c.CollectionStore, request.SchemaURI, request.CollectionItemId, request.CollectionItem, request.AuthorDID, request.RecipientDID)
 	if err != nil {
 		log.Error("Storing the collection failed:  %v", err)
 		response.Status.Status = services.Status_ERROR
@@ -44,6 +44,7 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 
 	response.Status = &services.CommonStatus{Status: services.Status_OK}
 	response.CollectionId = newOrExistingID
+	response.OwnerDID = ownerDID
 
 	return &response, nil
 

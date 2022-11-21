@@ -46,6 +46,8 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		SchemaURI:        schemaUri,
 		CollectionItemId: message.RecordID,
 		CollectionItem:   []byte(message.Data),
+		AuthorDID:        message.Processing.AuthorDID,
+		RecipientDID:     message.Processing.RecipientDID,
 	}
 	storeResp, err := collSvcClient.StoreCollection(context.Background(), &storeReq)
 	if err != nil {

@@ -30,9 +30,9 @@ var _ = Describe("Write Collection", func() {
 		It("Stores the message correctly", func() {
 
 			message := testutils.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite", "")
+			message.Descriptor.Schema = "https://openreserve.io/schemas/test.json"
 			attestation := testutils.CreateAttestation(message, *authorPrivateKey)
 			message.Attestation = attestation
-			message.Descriptor.Schema = "https://openreserve.io/schemas/test.json"
 
 			ro := model.RequestObject{}
 			ro.Messages = append(ro.Messages, *message)
