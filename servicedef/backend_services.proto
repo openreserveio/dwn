@@ -32,12 +32,15 @@ message CommonStatus {
    string schemaURI = 1;
    string collectionItemId = 2;
    bytes collectionItem = 3;
+   string authorDID = 4;
+   string recipientDID = 5;
 
  }
 
  message StoreCollectionResponse {
     CommonStatus status = 1;
     string collectionId = 2;
+    string ownerDID = 3;
  }
 
  message FindCollectionRequest {
@@ -45,11 +48,14 @@ message CommonStatus {
     QueryType queryType = 1;
     string collectionItemId = 2;
     string schemaURI = 3;
+    string requestorDID = 4;
 
  }
 
  message FindCollectionResponse {
     CommonStatus status = 1;
+    string schemaURI = 2;
+    bytes collectionItem = 3;
  }
 
 

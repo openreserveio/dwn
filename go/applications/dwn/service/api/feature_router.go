@@ -95,7 +95,7 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 		messageResult = collections.CollectionsWrite(fr.CollectionServiceClient, message)
 
 	case "CollectionsQuery":
-		messageResult = collections.CollectionsQuery()
+		messageResult = collections.CollectionsQuery(fr.CollectionServiceClient, message)
 
 	default:
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}

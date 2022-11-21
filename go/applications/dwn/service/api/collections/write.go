@@ -11,7 +11,13 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 
 	var messageResultObj model.MessageResultObject
 
-	// First, find the schema and make sure it has been registered
+	// First, make sure attestations are valid and correct for this message
+	if !model.VerifyAttestation(message) {
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Unable to verify attestation(s)."}
+		return messageResultObj
+	}
+
+	// Next, find the schema and make sure it has been registered
 	schemaUri := message.Descriptor.Schema
 	if schemaUri == "" {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a CollectionsWrite"}
@@ -40,6 +46,8 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		SchemaURI:        schemaUri,
 		CollectionItemId: message.RecordID,
 		CollectionItem:   []byte(message.Data),
+		AuthorDID:        message.Processing.AuthorDID,
+		RecipientDID:     message.Processing.RecipientDID,
 	}
 	storeResp, err := collSvcClient.StoreCollection(context.Background(), &storeReq)
 	if err != nil {

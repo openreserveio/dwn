@@ -1,4 +1,4 @@
-package model
+package testutils
 
 import (
 	"bytes"
@@ -19,9 +19,10 @@ import (
 	mc "github.com/multiformats/go-multicodec"
 	mh "github.com/multiformats/go-multihash"
 	"github.com/openreserveio/dwn/go/did"
+	"github.com/openreserveio/dwn/go/model"
 )
 
-func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string) *Message {
+func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string) *model.Message {
 
 	// Verify Message Name
 
@@ -32,10 +33,10 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	}
 
 	// Start the Message
-	message := Message{
+	message := model.Message{
 		RecordID: recordId,
 		Data:     encodedData,
-		Processing: MessageProcessing{
+		Processing: model.MessageProcessing{
 			Nonce:        uuid.NewString(),
 			AuthorDID:    authorDID,
 			RecipientDID: recipientDID,
@@ -48,7 +49,7 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 		dataCID = CreateDataCID(message.Data)
 	}
 
-	messageDesc := Descriptor{
+	messageDesc := model.Descriptor{
 		Nonce:      uuid.New().String(),
 		Method:     methodName,
 		DataCID:    dataCID,
@@ -87,7 +88,7 @@ func CreateDataCID(data string) string {
 
 }
 
-func CreateDescriptorCID(descriptor Descriptor) string {
+func CreateDescriptorCID(descriptor model.Descriptor) string {
 
 	d, err := qp.BuildMap(basicnode.Prototype.Any, 1, func(ma datamodel.MapAssembler) {
 		qp.MapEntry(ma, "method", qp.String(descriptor.Method))
@@ -118,7 +119,7 @@ func CreateDescriptorCID(descriptor Descriptor) string {
 
 }
 
-func CreateProcessingCID(mp MessageProcessing) string {
+func CreateProcessingCID(mp model.MessageProcessing) string {
 
 	d, err := qp.BuildMap(basicnode.Prototype.Any, 1, func(ma datamodel.MapAssembler) {
 		qp.MapEntry(ma, "nonce", qp.String(mp.Nonce))
@@ -147,7 +148,7 @@ func CreateProcessingCID(mp MessageProcessing) string {
 
 }
 
-func VerifyAttestation(message *Message) bool {
+func VerifyAttestation(message *model.Message) bool {
 
 	encodedProtectedHeader := message.Attestation.Signatures[0].Protected
 	encodedSignature := message.Attestation.Signatures[0].Signature
@@ -182,9 +183,6 @@ func VerifyAttestation(message *Message) bool {
 	if attestorDid == "" {
 		return false
 	}
-	if attestorDid != message.Processing.AuthorDID {
-		return false
-	}
 
 	res := did.ResolvePublicKey(attestorDid)
 	if res == nil {
@@ -200,9 +198,9 @@ func VerifyAttestation(message *Message) bool {
 	return true
 }
 
-func CreateAttestation(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
+func CreateAttestation(message *model.Message, privateKey ecdsa.PrivateKey) model.DWNJWS {
 
-	attestation := DWNJWS{}
+	attestation := model.DWNJWS{}
 
 	// PEM encode public key -> multibase(base64url)
 	publicKey := privateKey.PublicKey
@@ -234,7 +232,7 @@ func CreateAttestation(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
 	}
 
 	attestation.Payload = jwsPayload
-	attestation.Signatures = []DWNJWSSig{
+	attestation.Signatures = []model.DWNJWSSig{
 		{
 			Protected: jwsProtectedHeader,
 			Signature: sig,
@@ -242,103 +240,5 @@ func CreateAttestation(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
 	}
 
 	return attestation
-
-}
-
-func VerifyAuthorization(message *Message) bool {
-
-	encodedProtectedHeader := message.Authorization.Signatures[0].Protected
-	encodedSignature := message.Authorization.Signatures[0].Signature
-	encodedPayload := message.Authorization.Payload
-
-	// Make sure the payloads match as expected
-	expectedPayload := map[string]string{
-		"descriptorCid": CreateDescriptorCID(message.Descriptor),
-		"processingCid": CreateProcessingCID(message.Processing),
-	}
-	expectedJsonPayload, _ := json.Marshal(&expectedPayload)
-	expectedJwsPayload := base64.URLEncoding.EncodeToString(expectedJsonPayload)
-
-	if expectedJwsPayload != encodedPayload {
-		// These should match
-		return false
-	}
-
-	// Get the ecdsa.PublicKey
-	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
-	if err != nil {
-		return false
-	}
-
-	var protectedHeaderMap map[string]string
-	err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
-	if err != nil {
-		return false
-	}
-
-	authorizerDid := protectedHeaderMap["kid"]
-	if authorizerDid == "" {
-		return false
-	}
-	if authorizerDid != message.Processing.RecipientDID {
-		return false
-	}
-
-	res := did.ResolvePublicKey(authorizerDid)
-	if res == nil {
-		return false
-	}
-
-	var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
-	err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
-	if err != nil {
-		return false
-	}
-
-	return true
-}
-
-func CreateAuthorization(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
-
-	authorization := DWNJWS{}
-
-	// PEM encode public key -> multibase(base64url)
-	publicKey := privateKey.PublicKey
-	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(&publicKey)
-	pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
-	publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
-
-	protectedHeader := map[string]string{
-		"typ": "JWS",
-		"alg": jwt.SigningMethodES512.Alg(),
-		"kid": fmt.Sprintf("did:key:%s", publicKeyMultibase),
-	}
-	jsonProtectedHeader, _ := json.Marshal(&protectedHeader)
-	jwsProtectedHeader := base64.URLEncoding.EncodeToString(jsonProtectedHeader)
-
-	payload := map[string]string{
-		"descriptorCid": CreateDescriptorCID(message.Descriptor),
-		"processingCid": CreateProcessingCID(message.Processing),
-	}
-	jsonPayload, _ := json.Marshal(&payload)
-	jwsPayload := base64.URLEncoding.EncodeToString(jsonPayload)
-
-	var jwsPayloadBytes []byte = make([]byte, base64.URLEncoding.EncodedLen(len(jsonPayload)))
-	base64.URLEncoding.Encode(jwsPayloadBytes, jsonPayload)
-
-	sig, err := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
-	if err != nil {
-
-	}
-
-	authorization.Payload = jwsPayload
-	authorization.Signatures = []DWNJWSSig{
-		{
-			Protected: jwsProtectedHeader,
-			Signature: sig,
-		},
-	}
-
-	return authorization
 
 }

@@ -9,6 +9,11 @@ volumes:
       driver: local
     
 services:
+  eventsqueue:
+    image: "nats"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
   docdb:
     image: "mongo:latest"
     ports:
