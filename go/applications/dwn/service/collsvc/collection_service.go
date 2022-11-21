@@ -51,8 +51,37 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 }
 
 func (c CollectionService) FindCollection(ctx context.Context, request *services.FindCollectionRequest) (*services.FindCollectionResponse, error) {
-	//TODO implement me
-	panic("implement me")
+
+	response := services.FindCollectionResponse{}
+
+	// TODO: We are only doing single record finds right now
+	if request.QueryType != services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "TODO: We are only doing single record finds right now"}
+		return &response, nil
+	}
+
+	collectionItem, err := c.CollectionStore.GetCollectionItem(request.CollectionItemId)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	if collectionItem == nil || collectionItem.SchemaURI != request.SchemaURI {
+		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
+		return &response, nil
+	}
+
+	if request.RequestorDID != collectionItem.OwnerDID {
+		response.Status = &services.CommonStatus{Status: services.Status_INVALID_AUTHORIZATION}
+		return &response, nil
+	}
+
+	response.CollectionItem = collectionItem.Content
+	response.SchemaURI = collectionItem.SchemaURI
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+
+	return &response, nil
+
 }
 
 func (c CollectionService) CreateSchema(ctx context.Context, request *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {

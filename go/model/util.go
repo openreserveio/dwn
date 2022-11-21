@@ -182,6 +182,9 @@ func VerifyAttestation(message *Message) bool {
 	if attestorDid == "" {
 		return false
 	}
+	if attestorDid != message.Processing.AuthorDID {
+		return false
+	}
 
 	res := did.ResolvePublicKey(attestorDid)
 	if res == nil {
@@ -273,12 +276,15 @@ func VerifyAuthorization(message *Message) bool {
 		return false
 	}
 
-	attestorDid := protectedHeaderMap["kid"]
-	if attestorDid == "" {
+	authorizerDid := protectedHeaderMap["kid"]
+	if authorizerDid == "" {
+		return false
+	}
+	if authorizerDid != message.Processing.RecipientDID {
 		return false
 	}
 
-	res := did.ResolvePublicKey(attestorDid)
+	res := did.ResolvePublicKey(authorizerDid)
 	if res == nil {
 		return false
 	}

@@ -48,6 +48,7 @@ message CommonStatus {
     QueryType queryType = 1;
     string collectionItemId = 2;
     string schemaURI = 3;
+    string requestorDID = 4;
 
  }
 
