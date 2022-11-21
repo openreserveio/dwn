@@ -21,7 +21,7 @@ import (
 	"github.com/openreserveio/dwn/go/did"
 )
 
-func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string) *Message {
+func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string) *Message {
 
 	// Verify Message Name
 
@@ -33,7 +33,8 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 
 	// Start the Message
 	message := Message{
-		Data: encodedData,
+		RecordID: recordId,
+		Data:     encodedData,
 		Processing: MessageProcessing{
 			Nonce:        uuid.NewString(),
 			AuthorDID:    authorDID,

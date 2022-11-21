@@ -16,7 +16,7 @@ var _ = Describe("Util", func() {
 
 		Context("Without data", func() {
 
-			message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", nil, "CollectionsQuery")
+			message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", nil, "CollectionsQuery", "")
 
 			It("Should be a valid and well formed message", func() {
 
@@ -37,7 +37,7 @@ var _ = Describe("Util", func() {
 
 		Context("With data", func() {
 
-			message := model.CreateMessage("did:tmp:10", "did:tmp:20", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"), "CollectionsWrite")
+			message := model.CreateMessage("did:tmp:10", "did:tmp:20", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"), "CollectionsWrite", "")
 			decodedData, err := base64.URLEncoding.DecodeString(message.Data)
 
 			It("The Data should be decoded and match what was passed in", func() {
@@ -74,7 +74,7 @@ var _ = Describe("Util", func() {
 			It("Should verify", func() {
 
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite")
+				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "")
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 
 				attestation := model.CreateAttestation(message, *privateKey)
@@ -92,7 +92,7 @@ var _ = Describe("Util", func() {
 			It("Should not verify", func() {
 
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite")
+				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "")
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 
 				attestation := model.CreateAttestation(message, *privateKey)

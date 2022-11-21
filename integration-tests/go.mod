@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/onsi/ginkgo/v2 v2.5.1 // indirect
 	github.com/onsi/gomega v1.24.1 // indirect
-	github.com/openreserveio/dwn/go v0.0.0-20221116193632-46cee9805b27 // indirect
+	github.com/openreserveio/dwn/go v0.0.0-20221121160453-ac71bb17e859 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
