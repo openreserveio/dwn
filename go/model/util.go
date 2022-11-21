@@ -169,7 +169,7 @@ func VerifyAttestation(message *Message) bool {
 		return false
 	}
 
-	res := did.Resolve(attestorDid)
+	res := did.ResolvePublicKey(attestorDid)
 	if res == nil {
 		return false
 	}

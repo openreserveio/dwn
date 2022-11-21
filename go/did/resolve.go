@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Resolve(didString string) any {
+func ResolvePublicKey(didString string) any {
 
 	if didString == "" {
 		return nil
