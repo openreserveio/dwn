@@ -1,0 +1,47 @@
+version: "3.9"
+
+volumes:
+  mysql_data:
+      driver: local
+  documentdb_data:
+      driver: local
+  localstack_data:
+      driver: local
+    
+services:
+  docdb:
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME=openreserveuser"
+      - "MONGO_INITDB_ROOT_PASSWORD=openreservepass"
+    volumes:
+      - "documentdb_data:/data/db"
+  collsvc:
+    image: "openreserveio/collsvc:latest"
+    ports:
+      - "9001:9001"
+    environment:
+      - "DWN_COLLSVC.DOCDBCONNECTIONURI=mongodb://openreserveuser:openreservepass@docdb:27017"
+      - "DWN_COLLSVC.LISTENPORT=9001"
+  api:
+    image: "openreserveio/api:latest"
+    ports:
+      - "8080:8080"
+    environment:
+      - "DWN_API.LISTENPORT=8080"
+      - "DWN_COLLSVC.EXTERNALADDRESS=collsvc"
+      - "DWN_COLLSVC.EXTERNALPORT=9001"
+  localstack:
+    image: "localstack/localstack"
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=1
+      - PERSISTENCE=0
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "localstack_data:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

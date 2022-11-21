@@ -5,17 +5,16 @@ Specification: https://identity.foundation/decentralized-web-node/spec/#request-
 */
 
 type RequestObject struct {
-	TargetDID string    `json:"target"`
-	Messages  []Message `json:"messages"`
+	Messages []Message `json:"messages"`
 }
 
 type Message struct {
 	RecordID      string            `json:"recordId"`
-	Processing    MessageProcessing `json:"processing"`
 	Data          string            `json:"data,omitempty"`
+	Processing    MessageProcessing `json:"processing"`
 	Descriptor    Descriptor        `json:"descriptor"`
-	Attestation   interface{}       `json:"attestation,omitempty"`
-	Authorization interface{}       `json:"authorization,omitempty"`
+	Attestation   DWNJWS            `json:"attestation,omitempty"`
+	Authorization DWNJWS            `json:"authorization,omitempty"`
 }
 
 type Descriptor struct {
@@ -23,10 +22,21 @@ type Descriptor struct {
 	Method     string `json:"method"`
 	DataCID    string `json:"dataCid"`
 	DataFormat string `json:"dataFormat"`
+	Schema     string `json:"schema"`
 }
 
 type MessageProcessing struct {
 	Nonce        string `json:"nonce"`
 	AuthorDID    string `json:"author"`
 	RecipientDID string `json:"recipient"`
+}
+
+type DWNJWS struct {
+	Payload    string      `json:"payload"`
+	Signatures []DWNJWSSig `json:"signatures"`
+}
+
+type DWNJWSSig struct {
+	Protected string `json:"protected"`
+	Signature string `json:"signature"`
 }

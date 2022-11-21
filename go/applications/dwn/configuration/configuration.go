@@ -16,6 +16,13 @@ type Configuration interface {
 	// API Configuration
 	GetAPIListenAddress() string
 	GetAPIListenPort() int
+
+	// Collection Service
+	GetCollectionServiceListenAddress() string
+	GetCollectionServiceListenPort() int
+	GetCollectionServiceExternalAddress() string
+	GetCollectionServiceExternalPort() int
+	GetCollectionServiceDocumentDBURI() string
 }
 
 func Config() (Configuration, error) {

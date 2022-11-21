@@ -1,0 +1,13 @@
+FROM openreserveio/base:latest
+MAINTAINER mzero@openreserve.io
+
+LABEL org.opencontainers.image.source=https://github.com/openreserveio/dwn/docs/operations/keysvc
+LABEL org.opencontainers.image.description="OpenReserve DWN Key Service Container Image"
+LABEL org.opencontainers.image.licenses="Apache 2.0"
+
+EXPOSE 9002
+
+VOLUME /etc/dwn
+VOLUME /opt/dwn
+
+CMD ["dwn", "keysvc"]

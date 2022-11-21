@@ -1,0 +1,110 @@
+syntax = "proto3";
+package services;
+option go_package = "github.com/openreserveio/dwn/go/generated/services";
+
+enum Status {
+    OK = 0;
+    NOT_FOUND = 1;
+    ERROR = 2;
+    CONFLICT = 3;
+    INVALID_ATTESTATION = 4;
+    INVALID_AUTHORIZATION = 5;
+}
+
+enum QueryType {
+    SINGLE_COLLECTION_BY_ID_SCHEMA_URI = 0;
+
+
+}
+
+message CommonStatus {
+    Status status = 1;
+    string details = 2; 
+ }
+
+
+ /*
+  * COLLECTION SERVICE
+  */
+
+ message StoreCollectionRequest {
+
+   string schemaURI = 1;
+   string collectionItemId = 2;
+   bytes collectionItem = 3;
+
+ }
+
+ message StoreCollectionResponse {
+    CommonStatus status = 1;
+    string collectionId = 2;
+ }
+
+ message FindCollectionRequest {
+
+    QueryType queryType = 1;
+    string collectionItemId = 2;
+    string schemaURI = 3;
+
+ }
+
+ message FindCollectionResponse {
+    CommonStatus status = 1;
+ }
+
+
+ message CreateSchemaRequest {
+
+ }
+
+ message CreateSchemaResponse {
+    CommonStatus status = 1;
+ }
+
+ message ValidateCollectionRequest {
+    string schemaURI = 1;
+    bytes document = 2;
+ }
+
+ message ValidateCollectionResponse {
+    CommonStatus status = 1;
+ }
+
+ message InvalidateSchemaRequest {
+    string schemaURI = 1;
+ }
+
+ message InvalidateSchemaResponse {
+    CommonStatus status = 1;
+ }
+
+ service CollectionService {
+
+    rpc StoreCollection(StoreCollectionRequest) returns (StoreCollectionResponse) {}
+    rpc FindCollection(FindCollectionRequest) returns (FindCollectionResponse) {}
+
+    rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse) {}
+    rpc ValidateCollection(ValidateCollectionRequest) returns (ValidateCollectionResponse) {}
+    rpc InvalidateSchema(InvalidateSchemaRequest) returns (InvalidateSchemaResponse) {}
+
+ }
+
+
+
+/*
+ * KEY SERVICE
+ */
+
+ message VerifyMessageAttestationRequest {
+   bytes message = 1;
+ }
+
+ message VerifyMessageAttestationResponse {
+   CommonStatus status = 1;
+ }
+
+ service KeyService {
+
+   rpc VerifyMessageAttestation(VerifyMessageAttestationRequest) returns (VerifyMessageAttestationResponse) {}
+
+ }

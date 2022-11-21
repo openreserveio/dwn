@@ -1,11 +1,14 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/openreserveio/dwn/go/framework"
+	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
+	"google.golang.org/grpc"
 	"net/http"
 )
 
@@ -13,14 +16,32 @@ type APIService struct {
 	ListenAddress string
 	ListenPort    int
 	Gin           *gin.Engine
+	Router        *FeatureRouter
+	CollSvcClient *services.CollectionServiceClient
 }
 
-func CreateAPIService(options *framework.ServiceOptions) (*APIService, error) {
+func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOptions *framework.ServiceOptions) (*APIService, error) {
 
+	var err error
+	var clientConn *grpc.ClientConn
+	if collSvcOptions.SecureFlag {
+		log.Fatal("Secure GRPC not yet supported - use Istio")
+		return nil, errors.New("Secure GRPC not yet supported - use Istio")
+	} else {
+		clientConn, err = grpc.Dial(fmt.Sprintf("%s:%d", collSvcOptions.Address, collSvcOptions.Port), grpc.WithInsecure())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	collSvcClient := services.NewCollectionServiceClient(clientConn)
+	fr, err := CreateFeatureRouter(collSvcClient, 15)
 	apiService := APIService{
-		ListenAddress: options.Address,
-		ListenPort:    options.Port,
+		ListenAddress: apiServiceOptions.Address,
+		ListenPort:    apiServiceOptions.Port,
 		Gin:           gin.Default(),
+		CollSvcClient: &collSvcClient,
+		Router:        fr,
 	}
 
 	apiService.Gin.GET("/", apiService.HandleFeatureRequest)
@@ -43,10 +64,13 @@ func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 		return
 	}
 
-	response := model.ResponseObject{
-		Status: model.ResponseStatus{Code: 200, Detail: fmt.Sprintf("TargetDID:  %s", ro.TargetDID)},
+	responseObject, err := apiService.Router.Route(ro)
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
-	ctx.JSON(200, &response)
+
+	ctx.JSON(200, &responseObject)
 
 }
 

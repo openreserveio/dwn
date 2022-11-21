@@ -14,12 +14,18 @@ func Start(config configuration.Configuration) error {
 		SecureFlag: false,
 	}
 
-	apiService, err := CreateAPIService(&apiServiceOptions)
+	collSvcOptions := framework.ServiceOptions{
+		Address:    config.GetCollectionServiceExternalAddress(),
+		Port:       config.GetCollectionServiceExternalPort(),
+		SecureFlag: false,
+	}
+
+	apiService, err := CreateAPIService(&apiServiceOptions, &collSvcOptions)
 	if err != nil {
 		log.Fatal("Unable to create API Service:  %v", err)
 		return err
 	}
 
 	return apiService.Run()
-	
+
 }
