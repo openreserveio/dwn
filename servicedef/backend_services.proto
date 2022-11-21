@@ -53,6 +53,8 @@ message CommonStatus {
 
  message FindCollectionResponse {
     CommonStatus status = 1;
+    string schemaURI = 2;
+    bytes collectionItem = 3;
  }
 
 
