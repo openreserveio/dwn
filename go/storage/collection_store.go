@@ -18,3 +18,18 @@ type CollectionItem struct {
 	SchemaURI    string             `bson:"schema_uri"`
 	Content      []byte             `bson:"content"`
 }
+
+type CollectionRecord struct {
+	ID         primitive.ObjectID `bson:"_id"`
+	RecordID   string             `bson:"record_id"`
+	CreatorDID string             `bson:"creator_did"`
+	OwnerDID   string             `bson:"owner_did"`
+	WriterDIDs []string           `bson:"writer_dids"`
+	ReaderDIDs []string           `bson:"reader_dids"`
+}
+
+type DataEntry struct {
+	ID       primitive.ObjectID `bson:"_id"`
+	RecordID string             `bson:"record_id"`
+	Schema   string             `bson:"schema"`
+}
