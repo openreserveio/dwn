@@ -28,7 +28,7 @@ type CollectionRecord struct {
 	ReaderDIDs []string           `bson:"reader_dids"`
 }
 
-type DataEntry struct {
+type MessageEntry struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	RecordID string             `bson:"record_id"`
 	Schema   string             `bson:"schema"`
