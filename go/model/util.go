@@ -21,7 +21,7 @@ import (
 	"github.com/openreserveio/dwn/go/did"
 )
 
-func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string) *Message {
+func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string, schema string) *Message {
 
 	// Verify Message Name
 
@@ -53,6 +53,7 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 		Method:     methodName,
 		DataCID:    dataCID,
 		DataFormat: dataFormat,
+		Schema:     schema,
 	}
 	message.Descriptor = messageDesc
 
@@ -149,6 +150,10 @@ func CreateProcessingCID(mp MessageProcessing) string {
 
 func VerifyAttestation(message *Message) bool {
 
+	if message.Attestation.Payload == "" || len(message.Attestation.Signatures) == 0 {
+		return false
+	}
+
 	encodedProtectedHeader := message.Attestation.Signatures[0].Protected
 	encodedSignature := message.Attestation.Signatures[0].Signature
 	encodedPayload := message.Attestation.Payload
@@ -180,9 +185,6 @@ func VerifyAttestation(message *Message) bool {
 
 	attestorDid := protectedHeaderMap["kid"]
 	if attestorDid == "" {
-		return false
-	}
-	if attestorDid != message.Processing.AuthorDID {
 		return false
 	}
 

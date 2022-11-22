@@ -12,7 +12,7 @@ func init() {
 
 func Debug(msg string, v ...interface{}) {
 	if v != nil {
-		log.Debug().Msgf(msg, v)
+		log.Debug().Msgf(msg, v...)
 		return
 	}
 	log.Debug().Msg(msg)
@@ -20,7 +20,7 @@ func Debug(msg string, v ...interface{}) {
 
 func Info(msg string, v ...interface{}) {
 	if v != nil {
-		log.Info().Msgf(msg, v)
+		log.Info().Msgf(msg, v...)
 		return
 	}
 	log.Info().Msg(msg)
@@ -28,7 +28,7 @@ func Info(msg string, v ...interface{}) {
 
 func Warn(msg string, v ...interface{}) {
 	if v != nil {
-		log.Warn().Msgf(msg, v)
+		log.Warn().Msgf(msg, v...)
 		return
 	}
 	log.Warn().Msg(msg)
@@ -36,7 +36,7 @@ func Warn(msg string, v ...interface{}) {
 
 func Error(msg string, v ...interface{}) {
 	if v != nil {
-		log.Error().Msgf(msg, v)
+		log.Error().Msgf(msg, v...)
 		return
 	}
 	log.Error().Msg(msg)
@@ -44,7 +44,7 @@ func Error(msg string, v ...interface{}) {
 
 func Fatal(msg string, v ...interface{}) {
 	if v != nil {
-		log.Fatal().Msgf(msg, v)
+		log.Fatal().Msgf(msg, v...)
 		return
 	}
 	log.Fatal().Msg(msg)

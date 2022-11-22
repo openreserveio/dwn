@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/model"
 )
 
@@ -16,7 +17,7 @@ var _ = Describe("Util", func() {
 
 		Context("Without data", func() {
 
-			message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", nil, "CollectionsQuery", "")
+			message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", nil, "CollectionsQuery", "", "https://openreserve.io/schemas/test.json")
 
 			It("Should be a valid and well formed message", func() {
 
@@ -37,7 +38,7 @@ var _ = Describe("Util", func() {
 
 		Context("With data", func() {
 
-			message := model.CreateMessage("did:tmp:10", "did:tmp:20", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"), "CollectionsWrite", "")
+			message := model.CreateMessage("did:tmp:10", "did:tmp:20", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"), "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
 			decodedData, err := base64.URLEncoding.DecodeString(message.Data)
 
 			It("The Data should be decoded and match what was passed in", func() {
@@ -73,9 +74,10 @@ var _ = Describe("Util", func() {
 
 			It("Should verify", func() {
 
-				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "")
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+				authorDID, _ := did.CreateKeyDID(&privateKey.PublicKey)
+				data := "{\"name\":\"test user\"}"
+				message := model.CreateMessage(authorDID, "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
 
 				attestation := model.CreateAttestation(message, *privateKey)
 				message.Attestation = attestation
@@ -92,7 +94,7 @@ var _ = Describe("Util", func() {
 			It("Should not verify", func() {
 
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "")
+				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 
 				attestation := model.CreateAttestation(message, *privateKey)

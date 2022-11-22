@@ -1,6 +1,9 @@
 package api_test
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"encoding/base64"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -173,24 +176,28 @@ var _ = Describe("Feature Router", func() {
 		It("Should accept and store a well formed CollectionsWrite with a known SchemaURI and no recordID", func() {
 
 			data := base64.URLEncoding.EncodeToString([]byte("{}"))
+			message := model.Message{
+				RecordID: "",
+				Data:     data,
+				Processing: model.MessageProcessing{
+					Nonce:        uuid.NewString(),
+					AuthorDID:    "did:test:test1",
+					RecipientDID: "did:test:test2",
+				},
+				Descriptor: model.Descriptor{
+					Nonce:      uuid.NewString(),
+					Method:     "CollectionsWrite",
+					DataCID:    model.CreateDataCID(data),
+					DataFormat: model.DATA_FORMAT_JSON,
+					Schema:     "https://github.com/openreserveio/schemas/test.json",
+				},
+			}
+			prikey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+			message.Attestation = model.CreateAttestation(&message, *prikey)
+
 			ro := model.RequestObject{
 				Messages: []model.Message{
-					model.Message{
-						RecordID: "",
-						Data:     data,
-						Processing: model.MessageProcessing{
-							Nonce:        uuid.NewString(),
-							AuthorDID:    "did:test:test1",
-							RecipientDID: "did:test:test2",
-						},
-						Descriptor: model.Descriptor{
-							Nonce:      uuid.NewString(),
-							Method:     "CollectionsWrite",
-							DataCID:    model.CreateDataCID(data),
-							DataFormat: model.DATA_FORMAT_JSON,
-							Schema:     "https://github.com/openreserveio/schemas/test.json",
-						},
-					},
+					message,
 				},
 			}
 
