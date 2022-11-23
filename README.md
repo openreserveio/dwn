@@ -27,6 +27,11 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 - [ ] Sync
 - [ ] Commit Strategy changes to message processing
 - [ ] DID service for openreserve DID method
+- [ ] Support [DIDComm](https://identity.foundation/didcomm-messaging/spec/)
+
+### To be scheduled:
+
+- [ ] Support [DID Registration](https://identity.foundation/did-registration/)
 
 
 # Documentation
