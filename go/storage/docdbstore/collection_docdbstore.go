@@ -59,3 +59,23 @@ func (store *CollectionDocumentDBStore) PutCollectionItem(collectionItem *storag
 	return nil
 
 }
+
+func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.CollectionRecord, initialEntry *storage.MessageEntry) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID string) *storage.MessageEntry {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *storage.CollectionRecord {
+	//TODO implement me
+	panic("implement me")
+}

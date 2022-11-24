@@ -11,6 +11,12 @@ import (
 type CollectionStore interface {
 	GetCollectionItem(identifier string) (*CollectionItem, error)
 	PutCollectionItem(collectionItem *CollectionItem) error
+
+	// Refactored methods here
+	CreateCollectionRecord(record *CollectionRecord, initialEntry *MessageEntry) error
+	AddCollectionMessageEntry(entry *MessageEntry) error
+	GetMessageEntryByID(messageEntryID string) *MessageEntry
+	GetCollectionRecord(recordId string) *CollectionRecord
 }
 
 type CollectionItem struct {
