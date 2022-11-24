@@ -2,6 +2,7 @@ package docdbstore
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -61,8 +62,25 @@ func (store *CollectionDocumentDBStore) PutCollectionItem(collectionItem *storag
 }
 
 func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.CollectionRecord, initialEntry *storage.MessageEntry) error {
-	//TODO implement me
-	panic("implement me")
+
+	initialEntry.RecordID = record.RecordID
+	initialEntry.MessageEntryID = uuid.NewString()
+	_, err := store.DB.Collection("dwn_collections").InsertOne(context.Background(), initialEntry)
+	if err != nil {
+		return err
+	}
+
+	record.InitialEntryID = initialEntry.MessageEntryID
+	record.LatestEntryID = initialEntry.MessageEntryID
+	record.LatestCheckpointEntryID = initialEntry.MessageEntryID
+
+	_, err = store.DB.Collection("dwn_collections").InsertOne(context.Background(), record)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {

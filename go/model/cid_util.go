@@ -11,6 +11,34 @@ import (
 	mh "github.com/multiformats/go-multihash"
 )
 
+func CreateRecordCID(descriptorCID string, processingCID string) string {
+
+	d, err := qp.BuildMap(basicnode.Prototype.Any, 1, func(ma datamodel.MapAssembler) {
+		qp.MapEntry(ma, "descriptorCid", qp.String(descriptorCID))
+		qp.MapEntry(ma, "processingCid", qp.String(processingCID))
+	})
+	if err != nil {
+		return ""
+	}
+
+	var buf bytes.Buffer
+	dagcbor.Encode(d, &buf)
+
+	cidPrefix := cid.Prefix{
+		Version:  1,
+		Codec:    uint64(mc.Raw),
+		MhType:   mh.SHA2_256,
+		MhLength: -1,
+	}
+	cid, err := cidPrefix.Sum(buf.Bytes())
+	if err != nil {
+		return ""
+	}
+
+	return cid.String()
+
+}
+
 func CreateDataCID(data string) string {
 
 	d, err := qp.BuildList(basicnode.Prototype.Any, 1, func(la datamodel.ListAssembler) {
