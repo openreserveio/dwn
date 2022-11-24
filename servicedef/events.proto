@@ -12,6 +12,6 @@ enum EventType {
 message Event {
 
     EventType eventType = 1;
-    
+    string recordId = 2;
 
 }

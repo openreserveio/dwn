@@ -3,6 +3,8 @@ package events
 import (
 	"errors"
 	"github.com/nats-io/nats.go"
+	"github.com/openreserveio/dwn/go/generated/events"
+	"google.golang.org/protobuf/proto"
 )
 
 type EventHub struct {
@@ -45,4 +47,15 @@ func (eh *EventHub) Unsubscribe(queueName string) error {
 		return errors.New("No subscription")
 	}
 	return eh.Subs[queueName].Unsubscribe()
+}
+
+func (eh *EventHub) RaiseCreateRecordEvent(recordId string) {
+
+	event := events.Event{
+		EventType: events.EventType_CREATE_RECORD,
+		RecordId:  recordId,
+	}
+	encodedEvent, _ := proto.Marshal(&event)
+	eh.Publish(CreateRecordEventQueue, encodedEvent)
+
 }
