@@ -2,6 +2,7 @@ SEMVER := 0.0.3-alpha
 
 generate-protobuf:
 	protoc --proto_path=../servicedef --go_out=generated/services/ --go_opt=paths=source_relative --go-grpc_out=generated/services/ --go-grpc_opt=paths=source_relative ../servicedef/backend_services.proto
+	protoc --proto_path=../servicedef --go_out=generated/events/ --go_opt=paths=source_relative --go-grpc_out=generated/events/ --go-grpc_opt=paths=source_relative ../servicedef/events.proto
 
 generate-mocks: generate-protobuf
 	mockgen -source storage/collection_store.go -destination generated/mocks/collection_store.go -package mocks
