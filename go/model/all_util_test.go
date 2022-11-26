@@ -33,7 +33,6 @@ var _ = Describe("Util", func() {
 				Expect(message.Processing.AuthorDID).To(Equal("did:tmp:1"))
 				Expect(message.Processing.RecipientDID).To(Equal("did:tmp:2"))
 
-				Expect(message.Descriptor.Nonce).ToNot(BeEmpty())
 				Expect(message.Descriptor.Method).To(Equal("CollectionsQuery"))
 				Expect(message.Descriptor.DataCID).To(Equal(""))
 				Expect(message.Descriptor.DataFormat).To(Equal(""))
@@ -63,7 +62,6 @@ var _ = Describe("Util", func() {
 				Expect(message.Processing.AuthorDID).To(Equal("did:tmp:10"))
 				Expect(message.Processing.RecipientDID).To(Equal("did:tmp:20"))
 
-				Expect(message.Descriptor.Nonce).ToNot(BeEmpty())
 				Expect(message.Descriptor.Method).To(Equal("CollectionsWrite"))
 				Expect(message.Descriptor.DataCID).ToNot(BeEmpty())
 				Expect(message.Descriptor.DataFormat).To(Equal(model.DATA_FORMAT_JSON))

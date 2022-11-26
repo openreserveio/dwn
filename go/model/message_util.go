@@ -33,7 +33,6 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	}
 
 	messageDesc := Descriptor{
-		Nonce:      uuid.New().String(),
 		Method:     methodName,
 		DataCID:    dataCID,
 		DataFormat: dataFormat,
