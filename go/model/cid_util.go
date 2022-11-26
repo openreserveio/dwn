@@ -7,9 +7,20 @@ import (
 	"github.com/ipld/go-ipld-prime/datamodel"
 	"github.com/ipld/go-ipld-prime/fluent/qp"
 	"github.com/ipld/go-ipld-prime/node/basicnode"
-	mc "github.com/multiformats/go-multicodec"
-	mh "github.com/multiformats/go-multihash"
 )
+
+func CreateCIDFromNode(node datamodel.Node) cid.Cid {
+
+	var buf bytes.Buffer
+	dagcbor.Encode(node, &buf)
+
+	cidPrefix := cid.Prefix{
+		Version: 1,
+	}
+	cid, _ := cidPrefix.Sum(buf.Bytes())
+	return cid
+
+}
 
 func CreateRecordCID(descriptorCID string, processingCID string) string {
 
@@ -21,21 +32,7 @@ func CreateRecordCID(descriptorCID string, processingCID string) string {
 		return ""
 	}
 
-	var buf bytes.Buffer
-	dagcbor.Encode(d, &buf)
-
-	cidPrefix := cid.Prefix{
-		Version:  1,
-		Codec:    uint64(mc.Raw),
-		MhType:   mh.SHA2_256,
-		MhLength: -1,
-	}
-	cid, err := cidPrefix.Sum(buf.Bytes())
-	if err != nil {
-		return ""
-	}
-
-	return cid.String()
+	return CreateCIDFromNode(d).String()
 
 }
 
@@ -48,21 +45,7 @@ func CreateDataCID(data string) string {
 		return ""
 	}
 
-	var buf bytes.Buffer
-	dagcbor.Encode(d, &buf)
-
-	cidPrefix := cid.Prefix{
-		Version:  1,
-		Codec:    uint64(mc.Raw),
-		MhType:   mh.SHA2_256,
-		MhLength: -1,
-	}
-	cid, err := cidPrefix.Sum(buf.Bytes())
-	if err != nil {
-		return ""
-	}
-
-	return cid.String()
+	return CreateCIDFromNode(d).String()
 
 }
 
@@ -79,21 +62,7 @@ func CreateDescriptorCID(descriptor Descriptor) string {
 		return ""
 	}
 
-	var buf bytes.Buffer
-	dagcbor.Encode(d, &buf)
-
-	cidPrefix := cid.Prefix{
-		Version:  1,
-		Codec:    uint64(mc.Raw),
-		MhType:   mh.SHA2_256,
-		MhLength: -1,
-	}
-	cid, err := cidPrefix.Sum(buf.Bytes())
-	if err != nil {
-		return ""
-	}
-
-	return cid.String()
+	return CreateCIDFromNode(d).String()
 
 }
 
@@ -108,20 +77,6 @@ func CreateProcessingCID(mp MessageProcessing) string {
 		return ""
 	}
 
-	var buf bytes.Buffer
-	dagcbor.Encode(d, &buf)
-
-	cidPrefix := cid.Prefix{
-		Version:  1,
-		Codec:    uint64(mc.Raw),
-		MhType:   mh.SHA2_256,
-		MhLength: -1,
-	}
-	cid, err := cidPrefix.Sum(buf.Bytes())
-	if err != nil {
-		return ""
-	}
-
-	return cid.String()
+	return CreateCIDFromNode(d).String()
 
 }

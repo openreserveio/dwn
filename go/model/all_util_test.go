@@ -1,10 +1,16 @@
 package model_test
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
+	"github.com/ipfs/go-cid"
+	"github.com/ipld/go-ipld-prime/codec/dagcbor"
+	"github.com/ipld/go-ipld-prime/datamodel"
+	"github.com/ipld/go-ipld-prime/fluent/qp"
+	"github.com/ipld/go-ipld-prime/node/basicnode"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/openreserveio/dwn/go/did"
@@ -104,6 +110,63 @@ var _ = Describe("Util", func() {
 				result := model.VerifyAttestation(message)
 				Expect(result).To(BeFalse())
 
+			})
+
+		})
+
+		Context("CBOR Encoding", func() {
+
+			node, err := qp.BuildMap(basicnode.Prototype.Any, 4, func(ma datamodel.MapAssembler) {
+				qp.MapEntry(ma, "authorDID", qp.String("did:web:openreserve.io:echo"))
+				qp.MapEntry(ma, "recipientDID", qp.String("did:web:did.openreserve.io:KJDSOIDH7HDFJDS8KDNCKDC8DKNKNCSD9822298KJKJDCB"))
+				qp.MapEntry(ma, "content", qp.Map(2, func(maDeep datamodel.MapAssembler) {
+					qp.MapEntry(maDeep, "foo", qp.String("bar"))
+					qp.MapEntry(maDeep, "goo", qp.String("car"))
+				}))
+				qp.MapEntry(ma, "create-date", qp.String("1/1/2020"))
+			})
+
+			It("Should be a valid node", func() {
+				Expect(err).To(BeNil())
+				Expect(node.IsNull()).To(BeFalse())
+			})
+
+			var initialCid cid.Cid
+			var secondCid cid.Cid
+			It("Should encode to CBOR and CID", func() {
+
+				var cborBuffer bytes.Buffer
+				err = dagcbor.Encode(node, &cborBuffer)
+				Expect(err).To(BeNil())
+
+				cidPrefix := cid.Prefix{Version: 1}
+				initialCid, err = cidPrefix.Sum(cborBuffer.Bytes())
+				Expect(err).To(BeNil())
+				Expect(initialCid.String()).ToNot(BeEmpty())
+			})
+
+			It("Should match another CBOR DAG ordered differently", func() {
+
+				// Same content, different ordering
+				secondNode, err := qp.BuildMap(basicnode.Prototype.Any, 4, func(ma datamodel.MapAssembler) {
+					qp.MapEntry(ma, "content", qp.Map(2, func(maDeep datamodel.MapAssembler) {
+						qp.MapEntry(maDeep, "foo", qp.String("bar"))
+						qp.MapEntry(maDeep, "goo", qp.String("car"))
+					}))
+					qp.MapEntry(ma, "create-date", qp.String("1/1/2020"))
+					qp.MapEntry(ma, "authorDID", qp.String("did:web:openreserve.io:echo"))
+					qp.MapEntry(ma, "recipientDID", qp.String("did:web:did.openreserve.io:KJDSOIDH7HDFJDS8KDNCKDC8DKNKNCSD9822298KJKJDCB"))
+				})
+
+				var cborBuffer bytes.Buffer
+				err = dagcbor.Encode(secondNode, &cborBuffer)
+				Expect(err).To(BeNil())
+
+				cidPrefix := cid.Prefix{Version: 1}
+				secondCid, err = cidPrefix.Sum(cborBuffer.Bytes())
+				Expect(err).To(BeNil())
+				Expect(secondCid.String()).ToNot(BeEmpty())
+				Expect(initialCid.Equals(secondCid)).To(BeTrue())
 			})
 
 		})
