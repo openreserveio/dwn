@@ -34,6 +34,34 @@ func (m *MockCollectionStore) EXPECT() *MockCollectionStoreMockRecorder {
 	return m.recorder
 }
 
+// AddCollectionMessageEntry mocks base method.
+func (m *MockCollectionStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddCollectionMessageEntry", entry)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddCollectionMessageEntry indicates an expected call of AddCollectionMessageEntry.
+func (mr *MockCollectionStoreMockRecorder) AddCollectionMessageEntry(entry interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollectionMessageEntry", reflect.TypeOf((*MockCollectionStore)(nil).AddCollectionMessageEntry), entry)
+}
+
+// CreateCollectionRecord mocks base method.
+func (m *MockCollectionStore) CreateCollectionRecord(record *storage.CollectionRecord, initialEntry *storage.MessageEntry) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCollectionRecord", record, initialEntry)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateCollectionRecord indicates an expected call of CreateCollectionRecord.
+func (mr *MockCollectionStoreMockRecorder) CreateCollectionRecord(record, initialEntry interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCollectionRecord", reflect.TypeOf((*MockCollectionStore)(nil).CreateCollectionRecord), record, initialEntry)
+}
+
 // GetCollectionItem mocks base method.
 func (m *MockCollectionStore) GetCollectionItem(identifier string) (*storage.CollectionItem, error) {
 	m.ctrl.T.Helper()
@@ -47,6 +75,34 @@ func (m *MockCollectionStore) GetCollectionItem(identifier string) (*storage.Col
 func (mr *MockCollectionStoreMockRecorder) GetCollectionItem(identifier interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollectionItem", reflect.TypeOf((*MockCollectionStore)(nil).GetCollectionItem), identifier)
+}
+
+// GetCollectionRecord mocks base method.
+func (m *MockCollectionStore) GetCollectionRecord(recordId string) *storage.CollectionRecord {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCollectionRecord", recordId)
+	ret0, _ := ret[0].(*storage.CollectionRecord)
+	return ret0
+}
+
+// GetCollectionRecord indicates an expected call of GetCollectionRecord.
+func (mr *MockCollectionStoreMockRecorder) GetCollectionRecord(recordId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollectionRecord", reflect.TypeOf((*MockCollectionStore)(nil).GetCollectionRecord), recordId)
+}
+
+// GetMessageEntryByID mocks base method.
+func (m *MockCollectionStore) GetMessageEntryByID(messageEntryID string) *storage.MessageEntry {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMessageEntryByID", messageEntryID)
+	ret0, _ := ret[0].(*storage.MessageEntry)
+	return ret0
+}
+
+// GetMessageEntryByID indicates an expected call of GetMessageEntryByID.
+func (mr *MockCollectionStoreMockRecorder) GetMessageEntryByID(messageEntryID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessageEntryByID", reflect.TypeOf((*MockCollectionStore)(nil).GetMessageEntryByID), messageEntryID)
 }
 
 // PutCollectionItem mocks base method.

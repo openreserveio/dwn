@@ -1,0 +1,17 @@
+syntax = "proto3";
+package services;
+option go_package = "github.com/openreserveio/dwn/go/generated/events";
+
+
+enum EventType {
+    CREATE_RECORD = 0;
+    UPDATE_RECORD = 1;
+    DELETE_RECORD = 2;
+}
+
+message Event {
+
+    EventType eventType = 1;
+    string recordId = 2;
+
+}
