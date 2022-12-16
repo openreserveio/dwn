@@ -46,7 +46,6 @@ var _ = Describe("Feature Router", func() {
 							RecipientDID: "did:test:test",
 						},
 						Descriptor: model.Descriptor{
-							Nonce:      "TEST",
 							Method:     "TEST",
 							DataCID:    "TEST",
 							DataFormat: "TEST",
@@ -76,7 +75,6 @@ var _ = Describe("Feature Router", func() {
 							RecipientDID: "did:test:test2",
 						},
 						Descriptor: model.Descriptor{
-							Nonce:      "TEST",
 							Method:     "TEST",
 							DataCID:    "TEST",
 							DataFormat: "TEST",
@@ -91,7 +89,6 @@ var _ = Describe("Feature Router", func() {
 							RecipientDID: "did:test:test4",
 						},
 						Descriptor: model.Descriptor{
-							Nonce:      "TEST",
 							Method:     "TEST",
 							DataCID:    "TEST",
 							DataFormat: "TEST",
@@ -106,7 +103,6 @@ var _ = Describe("Feature Router", func() {
 							RecipientDID: "did:test:test6",
 						},
 						Descriptor: model.Descriptor{
-							Nonce:      "TEST",
 							Method:     "TEST",
 							DataCID:    "TEST",
 							DataFormat: "TEST",
@@ -152,7 +148,6 @@ var _ = Describe("Feature Router", func() {
 							RecipientDID: "did:test:test2",
 						},
 						Descriptor: model.Descriptor{
-							Nonce:      uuid.NewString(),
 							Method:     "CollectionsWrite",
 							DataCID:    "",
 							DataFormat: model.DATA_FORMAT_JSON,
@@ -185,7 +180,6 @@ var _ = Describe("Feature Router", func() {
 					RecipientDID: "did:test:test2",
 				},
 				Descriptor: model.Descriptor{
-					Nonce:      uuid.NewString(),
 					Method:     "CollectionsWrite",
 					DataCID:    model.CreateDataCID(data),
 					DataFormat: model.DATA_FORMAT_JSON,
