@@ -22,7 +22,7 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 )
 
-func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string) *model.Message {
+func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string) *model.Message {
 
 	// Verify Message Name
 
@@ -34,13 +34,7 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 
 	// Start the Message
 	message := model.Message{
-		RecordID: recordId,
-		Data:     encodedData,
-		Processing: model.MessageProcessing{
-			Nonce:        uuid.NewString(),
-			AuthorDID:    authorDID,
-			RecipientDID: recipientDID,
-		},
+		Data: encodedData,
 	}
 
 	// create the descriptor
@@ -57,7 +51,44 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	}
 	message.Descriptor = messageDesc
 
+	processing := model.MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    authorDID,
+		RecipientDID: recipientDID,
+	}
+
+	descriptorCID := CreateDescriptorCID(messageDesc)
+	processingCID := CreateProcessingCID(processing)
+	message.RecordID = CreateRecordCID(descriptorCID, processingCID)
+
 	return &message
+
+}
+
+func CreateCIDFromNode(node datamodel.Node) cid.Cid {
+
+	var buf bytes.Buffer
+	dagcbor.Encode(node, &buf)
+
+	cidPrefix := cid.Prefix{
+		Version: 1,
+	}
+	cid, _ := cidPrefix.Sum(buf.Bytes())
+	return cid
+
+}
+
+func CreateRecordCID(descriptorCID string, processingCID string) string {
+
+	d, err := qp.BuildMap(basicnode.Prototype.Any, 1, func(ma datamodel.MapAssembler) {
+		qp.MapEntry(ma, "descriptorCid", qp.String(descriptorCID))
+		qp.MapEntry(ma, "processingCid", qp.String(processingCID))
+	})
+	if err != nil {
+		return ""
+	}
+
+	return CreateCIDFromNode(d).String()
 
 }
 
