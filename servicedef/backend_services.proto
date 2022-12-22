@@ -29,24 +29,20 @@ message CommonStatus {
 
  message StoreCollectionRequest {
 
-   string schemaURI = 1;
-   string collectionItemId = 2;
-   bytes collectionItem = 3;
-   string authorDID = 4;
-   string recipientDID = 5;
+   bytes message = 1;
 
  }
 
  message StoreCollectionResponse {
     CommonStatus status = 1;
-    string collectionId = 2;
+    string recordId = 2;
     string ownerDID = 3;
  }
 
  message FindCollectionRequest {
 
     QueryType queryType = 1;
-    string collectionItemId = 2;
+    string recordId = 2;
     string schemaURI = 3;
     string requestorDID = 4;
 

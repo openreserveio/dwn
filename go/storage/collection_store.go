@@ -9,23 +9,12 @@ import (
 // Will probably need:
 //   - methods for finding by content in the collection
 type CollectionStore interface {
-	GetCollectionItem(identifier string) (*CollectionItem, error)
-	PutCollectionItem(collectionItem *CollectionItem) error
 
 	// Refactored methods here
 	CreateCollectionRecord(record *CollectionRecord, initialEntry *MessageEntry) error
 	AddCollectionMessageEntry(entry *MessageEntry) error
 	GetMessageEntryByID(messageEntryID string) *MessageEntry
 	GetCollectionRecord(recordId string) *CollectionRecord
-}
-
-type CollectionItem struct {
-	ID           primitive.ObjectID `bson:"_id"`
-	OwnerDID     string             `bson:"owner_did"`
-	AuthorDID    string             `bson:"author_did"`
-	RecipientDID string             `bson:"recipient_did"`
-	SchemaURI    string             `bson:"schema_uri"`
-	Content      []byte             `bson:"content"`
 }
 
 type CollectionRecord struct {

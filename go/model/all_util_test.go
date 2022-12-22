@@ -43,7 +43,7 @@ var _ = Describe("Util", func() {
 
 		Context("With data", func() {
 
-			message := model.CreateMessage("did:tmp:10", "did:tmp:20", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"), "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
+			message := model.CreateCollectionsWriteMessage("did:tmp:10", "did:tmp:20", "", "", "https://openreserve.io/schemas/test.json", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"))
 			decodedData, err := base64.URLEncoding.DecodeString(message.Data)
 
 			It("The Data should be decoded and match what was passed in", func() {

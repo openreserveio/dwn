@@ -34,10 +34,10 @@ func CollectionsQuery(collSvcClient services.CollectionServiceClient, message *m
 
 	// Get the collection item
 	req := services.FindCollectionRequest{
-		QueryType:        services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI,
-		CollectionItemId: message.RecordID,
-		SchemaURI:        message.Descriptor.Schema,
-		RequestorDID:     message.Processing.AuthorDID,
+		QueryType:    services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI,
+		RecordId:     message.RecordID,
+		SchemaURI:    message.Descriptor.Schema,
+		RequestorDID: message.Processing.AuthorDID,
 	}
 
 	findCollResponse, err := collSvcClient.FindCollection(context.Background(), &req)

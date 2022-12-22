@@ -2,11 +2,14 @@ package collsvc
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc/collection"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
+	"time"
 )
 
 type CollectionService struct {
@@ -34,17 +37,55 @@ func CreateCollectionService(collectionStoreConnectionURI string) (*CollectionSe
 func (c CollectionService) StoreCollection(ctx context.Context, request *services.StoreCollectionRequest) (*services.StoreCollectionResponse, error) {
 
 	response := services.StoreCollectionResponse{}
-	newOrExistingID, ownerDID, err := collection.StoreCollection(c.CollectionStore, request.SchemaURI, request.CollectionItemId, request.CollectionItem, request.AuthorDID, request.RecipientDID)
+	var collectionMessage model.Message
+	err := json.Unmarshal(request.Message, &collectionMessage)
 	if err != nil {
-		log.Error("Storing the collection failed:  %v", err)
-		response.Status.Status = services.Status_ERROR
-		response.Status.Details = err.Error()
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 		return &response, nil
 	}
 
-	response.Status = &services.CommonStatus{Status: services.Status_OK}
-	response.CollectionId = newOrExistingID
-	response.OwnerDID = ownerDID
+	if collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_WRITE ||
+		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_COMMIT ||
+		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_DELETE {
+
+		writeParams := collection.CollectionsWriteParams{
+			RecordID:        collectionMessage.RecordID,
+			ContextID:       collectionMessage.ContextID,
+			Data:            collectionMessage.Data,
+			ProcessingNonce: collectionMessage.Processing.Nonce,
+			AuthorDID:       collectionMessage.Processing.AuthorDID,
+			RecipientDID:    collectionMessage.Processing.RecipientDID,
+			Method:          collectionMessage.Descriptor.Method,
+			DataCID:         collectionMessage.Descriptor.DataCID,
+			DataFormat:      collectionMessage.Descriptor.DataFormat,
+			ParentID:        collectionMessage.Descriptor.ParentID,
+			Protocol:        collectionMessage.Descriptor.Protocol,
+			ProtocolVersion: collectionMessage.Descriptor.ProtocolVersion,
+			Schema:          collectionMessage.Descriptor.Schema,
+			CommitStrategy:  collectionMessage.Descriptor.CommitStrategy,
+			Published:       collectionMessage.Descriptor.Published,
+			DateCreated:     time.Time{},
+			DatePublished:   time.Time{},
+		}
+
+		result, err := collection.StoreCollection(c.CollectionStore, &writeParams)
+		if err != nil {
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+			return &response, nil
+		}
+
+		if result.Status == "UNSUPPORTED_METHOD" {
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "UNSUPPORTED METHOD"}
+			return &response, nil
+		} else if result.Status == "ERROR" {
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: result.Error.Error()}
+			return &response, nil
+		}
+
+		response.Status = &services.CommonStatus{Status: services.Status_OK}
+		response.RecordId = result.RecordID
+
+	}
 
 	return &response, nil
 
@@ -59,26 +100,6 @@ func (c CollectionService) FindCollection(ctx context.Context, request *services
 		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "TODO: We are only doing single record finds right now"}
 		return &response, nil
 	}
-
-	collectionItem, err := c.CollectionStore.GetCollectionItem(request.CollectionItemId)
-	if err != nil {
-		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
-		return &response, nil
-	}
-
-	if collectionItem == nil || collectionItem.SchemaURI != request.SchemaURI {
-		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
-		return &response, nil
-	}
-
-	if request.RequestorDID != collectionItem.OwnerDID {
-		response.Status = &services.CommonStatus{Status: services.Status_INVALID_AUTHORIZATION}
-		return &response, nil
-	}
-
-	response.CollectionItem = collectionItem.Content
-	response.SchemaURI = collectionItem.SchemaURI
-	response.Status = &services.CommonStatus{Status: services.Status_OK}
 
 	return &response, nil
 

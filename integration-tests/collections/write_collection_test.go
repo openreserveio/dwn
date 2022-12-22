@@ -29,7 +29,7 @@ var _ = Describe("Write Collection", func() {
 
 		It("Stores the message correctly", func() {
 
-			message := testutils.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite", "")
+			message := testutils.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite")
 			message.Descriptor.Schema = "https://openreserve.io/schemas/test.json"
 			attestation := testutils.CreateAttestation(message, *authorPrivateKey)
 			message.Attestation = attestation
@@ -53,6 +53,7 @@ var _ = Describe("Write Collection", func() {
 			Expect(responseObject.Status.Code).To(Equal(http.StatusOK))
 			Expect(len(responseObject.Replies)).To(Equal(1))
 			Expect(responseObject.Replies[0].Status.Code).To(Equal(http.StatusOK))
+			Expect(responseObject.Replies[0].Entries[0].Result).ToNot(BeNil())
 
 		})
 

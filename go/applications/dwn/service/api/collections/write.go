@@ -2,6 +2,7 @@ package collections
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
 	"net/http"
@@ -42,12 +43,9 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 	}
 
 	// Store the collection if it passes schema validation!
+	encodedMsg, _ := json.Marshal(message)
 	storeReq := services.StoreCollectionRequest{
-		SchemaURI:        schemaUri,
-		CollectionItemId: message.RecordID,
-		CollectionItem:   []byte(message.Data),
-		AuthorDID:        message.Processing.AuthorDID,
-		RecipientDID:     message.Processing.RecipientDID,
+		Message: encodedMsg,
 	}
 	storeResp, err := collSvcClient.StoreCollection(context.Background(), &storeReq)
 	if err != nil {
@@ -60,7 +58,7 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		return messageResultObj
 	}
 
-	existingOrNewId := storeResp.CollectionId
+	existingOrNewId := storeResp.RecordId
 	messageResultObj.Status = model.ResponseStatus{Code: http.StatusOK}
 	messageResultObj.Entries = append(messageResultObj.Entries, model.MessageResultEntry{Result: []byte(existingOrNewId)})
 
