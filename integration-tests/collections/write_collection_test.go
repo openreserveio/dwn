@@ -53,6 +53,7 @@ var _ = Describe("Write Collection", func() {
 			Expect(responseObject.Status.Code).To(Equal(http.StatusOK))
 			Expect(len(responseObject.Replies)).To(Equal(1))
 			Expect(responseObject.Replies[0].Status.Code).To(Equal(http.StatusOK))
+			Expect(responseObject.Replies[0].Entries[0].Result).ToNot(BeNil())
 
 		})
 

@@ -181,6 +181,10 @@ func CreateProcessingCID(mp model.MessageProcessing) string {
 
 func VerifyAttestation(message *model.Message) bool {
 
+	if message.Attestation.Payload == "" || len(message.Attestation.Signatures) == 0 {
+		return false
+	}
+
 	encodedProtectedHeader := message.Attestation.Signatures[0].Protected
 	encodedSignature := message.Attestation.Signatures[0].Signature
 	encodedPayload := message.Attestation.Payload
