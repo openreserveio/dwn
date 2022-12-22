@@ -14,8 +14,8 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 
 - [x] [Initial API layer](https://github.com/openreserveio/dwn/pull/4)
 - [x] [Initial message processing, collections write/read](https://github.com/openreserveio/dwn/pull/9)
-- [ ] [Create Record and Initial Entry](https://github.com/openreserveio/dwn/pull/19)
-- [ ] CollectionsWrite, CollectionsDelete, CollectionsCommit Message Chains
+- [x] [Create Record and Initial Entry](https://github.com/openreserveio/dwn/pull/19)
+- [ ] [CollectionsWrite](https://github.com/openreserveio/dwn/issues/23), CollectionsDelete, CollectionsCommit Message Chains
 - [ ] CollectionsQuery with filters
 - [ ] Hooks and Webhooks, [Events](https://github.com/openreserveio/dwn/issues/12)
 - [ ] Permissions
