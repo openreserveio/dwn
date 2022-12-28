@@ -80,7 +80,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 	*/
 	descriptor := model.Descriptor{
 		Method:          model.METHOD_COLLECTIONS_WRITE,
-		DataCID:         model.CreateDataCID(params.Data),
+		DataCID:         params.DataCID,
 		DataFormat:      params.DataFormat,
 		ParentID:        params.ParentID,
 		Protocol:        params.Protocol,

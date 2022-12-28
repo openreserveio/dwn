@@ -11,6 +11,7 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/integration-tests/testutils"
 	"net/http"
+	"time"
 )
 
 var _ = Describe("Write Collection", func() {
@@ -30,6 +31,8 @@ var _ = Describe("Write Collection", func() {
 		It("Stores the message correctly", func() {
 
 			message := model.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
+			message.Descriptor.DateCreated = time.Now()
+
 			descriptorCID := model.CreateDescriptorCID(message.Descriptor)
 			processingCID := model.CreateProcessingCID(message.Processing)
 			recordId := model.CreateRecordCID(descriptorCID, processingCID)

@@ -9,7 +9,6 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
-	"time"
 )
 
 type CollectionService struct {
@@ -64,8 +63,8 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 			Schema:          collectionMessage.Descriptor.Schema,
 			CommitStrategy:  collectionMessage.Descriptor.CommitStrategy,
 			Published:       collectionMessage.Descriptor.Published,
-			DateCreated:     time.Time{},
-			DatePublished:   time.Time{},
+			DateCreated:     collectionMessage.Descriptor.DateCreated,
+			DatePublished:   collectionMessage.Descriptor.DatePublished,
 		}
 
 		result, err := collection.StoreCollection(c.CollectionStore, &writeParams)
