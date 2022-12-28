@@ -94,10 +94,7 @@ func CreateAttestation(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
 	var jwsPayloadBytes []byte = make([]byte, base64.URLEncoding.EncodedLen(len(jsonPayload)))
 	base64.URLEncoding.Encode(jwsPayloadBytes, jsonPayload)
 
-	sig, err := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
-	if err != nil {
-
-	}
+	sig, _ := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
 
 	attestation.Payload = jwsPayload
 	attestation.Signatures = []DWNJWSSig{
