@@ -130,6 +130,16 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 
 		err := collectionStore.CreateCollectionRecord(&record, &entry)
 		return err
+
+	} else if true {
+
+		// This is an attempt to overwrite a previous version.
+		// So, let's get the parent version
+		parentCollRec := collectionStore.GetCollectionRecord(params.ParentID)
+		if parentCollRec == nil {
+			// We dont have the parent.  Reject with err
+			return errors.New("Unable to find Parent Record for Overwrite")
+		}
 	}
 
 	return errors.New("Supports initial entry only for now")
