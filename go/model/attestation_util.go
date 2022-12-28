@@ -23,17 +23,17 @@ func VerifyAttestation(message *Message) bool {
 	encodedPayload := message.Attestation.Payload
 
 	// Make sure the payloads match as expected
-	expectedPayload := map[string]string{
-		"descriptorCid": CreateDescriptorCID(message.Descriptor),
-		"processingCid": CreateProcessingCID(message.Processing),
-	}
-	expectedJsonPayload, _ := json.Marshal(&expectedPayload)
-	expectedJwsPayload := base64.URLEncoding.EncodeToString(expectedJsonPayload)
-
-	if expectedJwsPayload != encodedPayload {
-		// These should match
-		return false
-	}
+	//expectedPayload := map[string]string{
+	//	"descriptorCid": CreateDescriptorCID(message.Descriptor),
+	//	"processingCid": CreateProcessingCID(message.Processing),
+	//}
+	//expectedJsonPayload, _ := json.Marshal(&expectedPayload)
+	//expectedJwsPayload := base64.URLEncoding.EncodeToString(expectedJsonPayload)
+	//
+	//if expectedJwsPayload != encodedPayload {
+	//	// These should match
+	//	return false
+	//}
 
 	// Get the ecdsa.PublicKey
 	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
