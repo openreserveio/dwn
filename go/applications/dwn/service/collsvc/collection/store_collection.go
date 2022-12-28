@@ -91,7 +91,14 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		DateCreated:     params.DateCreated,
 		DatePublished:   params.DatePublished,
 	}
-	entryId := model.CreateDescriptorCID(descriptor)
+	messageProcessing := model.MessageProcessing{
+		Nonce:        params.ProcessingNonce,
+		AuthorDID:    params.AuthorDID,
+		RecipientDID: params.RecipientDID,
+	}
+	descriptorId := model.CreateDescriptorCID(descriptor)
+	processingId := model.CreateProcessingCID(messageProcessing)
+	entryId := model.CreateRecordCID(descriptorId, processingId)
 
 	if entryId == params.RecordID {
 
@@ -115,17 +122,18 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		}
 
 		entry := storage.MessageEntry{
-			ID:             primitive.NewObjectID(),
-			MessageEntryID: entryId,
-			ParentEntryID:  "",
-			RecordID:       entryId,
-			Schema:         params.Schema,
-			Method:         params.Method,
-			Data:           []byte(params.Data),
-			DataCID:        params.DataCID,
-			Protocol:       params.Protocol,
-			CreatedDate:    params.DateCreated,
-			PublishedDate:  params.DatePublished,
+			ID:              primitive.NewObjectID(),
+			MessageEntryID:  entryId,
+			ParentEntryID:   "",
+			RecordID:        entryId,
+			Schema:          params.Schema,
+			Method:          params.Method,
+			Data:            []byte(params.Data),
+			DataCID:         params.DataCID,
+			Protocol:        params.Protocol,
+			ProtocolVersion: params.ProtocolVersion,
+			CreatedDate:     params.DateCreated,
+			PublishedDate:   params.DatePublished,
 		}
 
 		err := collectionStore.CreateCollectionRecord(&record, &entry)
@@ -133,12 +141,124 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 
 	} else if true {
 
+		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
 		parentCollRec := collectionStore.GetCollectionRecord(params.ParentID)
 		if parentCollRec == nil {
+			// If a message is not the Initial Entry, its descriptor MUST contain a parentId to
+			// determine the entry’s position in the record’s lineage. If a parentId is present
+			// proceed with processing, else discard the record and cease processing.
 			// We dont have the parent.  Reject with err
 			return errors.New("Unable to find Parent Record for Overwrite")
+		}
+
+		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
+		// inbound message. If any have been mutated, discard the message and cease processing.
+		initialMessageEntry := collectionStore.GetMessageEntryByID(parentCollRec.InitialEntryID)
+		if initialMessageEntry == nil {
+			return errors.New("Unable to find an initial entry")
+		}
+		if initialMessageEntry.Protocol != params.Protocol ||
+			initialMessageEntry.ProtocolVersion != params.ProtocolVersion ||
+			initialMessageEntry.Schema != params.Schema {
+			return errors.New("Attempt to mutate an immutable value")
+		}
+
+		// Retrieve the Latest Checkpoint Entry, which will be either the Initial Entry or the latest CollectionsDelete,
+		// and compare the parentId value of the inbound message to the Entry ID of the
+		// Latest Checkpoint Entry derived from running the Record ID Generation Process on it.
+		// If the values match, proceed with processing, if the values do not match discard the message and cease processing.
+		latestCheckpointEntry := collectionStore.GetMessageEntryByID(parentCollRec.LatestCheckpointEntryID)
+		if latestCheckpointEntry == nil {
+			return errors.New("Unable to find the latest checkpoint entry")
+		}
+
+		if params.ParentID != latestCheckpointEntry.MessageEntryID {
+			return errors.New("The parent ID of the inbound message must match the latest checkpoint ID.")
+		}
+
+		// If an existing CollectionsWrite entry linked to the Latest Checkpoint Entry IS NOT present and
+		// the dateCreated value of the inbound message is greater than the Latest Checkpoint Entry,
+		// store the message as the Latest Entry and cease processing, else discard the inbound message
+		// and cease processing.
+		if latestCheckpointEntry.Method != model.METHOD_COLLECTIONS_WRITE &&
+			params.DateCreated.After(latestCheckpointEntry.CreatedDate) {
+			latestEntry := storage.MessageEntry{
+				ID:              primitive.NewObjectID(),
+				MessageEntryID:  entryId,
+				ParentEntryID:   params.ParentID,
+				RecordID:        params.RecordID,
+				Schema:          params.Schema,
+				Method:          params.Method,
+				Data:            []byte(params.Data),
+				DataCID:         params.DataCID,
+				Protocol:        params.Protocol,
+				ProtocolVersion: params.ProtocolVersion,
+				CreatedDate:     params.DateCreated,
+				PublishedDate:   params.DatePublished,
+			}
+
+			err := collectionStore.AddCollectionMessageEntry(&latestEntry)
+			if err != nil {
+				return err
+			}
+
+			parentCollRec.LatestEntryID = entryId
+			err = collectionStore.SaveCollectionRecord(parentCollRec)
+			if err != nil {
+				return err
+			}
+
+		}
+
+		// If an exiting CollectionsWrite entry linked to the Latest Checkpoint Entry IS present
+		// all of the following conditions MUST be true:
+		//   - The dateCreated value of the inbound message is greater than the existing CollectionsWrite,
+		//     or if the dateCreated values are the same, the Entry ID of the inbound message is greater
+		//     than the existing entry when the Entry IDs of the two are compared lexicographically.
+		// If all of the following conditions for Step 6 are true, store the inbound message as the Latest Entry
+		// and discard the existing CollectionsWrite entry that was attached to the Latest Checkpoint Entry.
+		if latestCheckpointEntry.Method == model.METHOD_COLLECTIONS_WRITE {
+
+			if latestCheckpointEntry.CreatedDate.Equal(params.DateCreated) ||
+				params.DateCreated.After(latestCheckpointEntry.CreatedDate) {
+
+				// TODO:  How to compare lexicographically?  Will come back to this
+
+				latestEntry := storage.MessageEntry{
+					ID:              primitive.NewObjectID(),
+					MessageEntryID:  entryId,
+					ParentEntryID:   params.ParentID,
+					RecordID:        params.RecordID,
+					Schema:          params.Schema,
+					Method:          params.Method,
+					Data:            []byte(params.Data),
+					DataCID:         params.DataCID,
+					Protocol:        params.Protocol,
+					ProtocolVersion: params.ProtocolVersion,
+					CreatedDate:     params.DateCreated,
+					PublishedDate:   params.DatePublished,
+				}
+
+				err := collectionStore.AddCollectionMessageEntry(&latestEntry)
+				if err != nil {
+					return err
+				}
+
+				err = collectionStore.DeleteCollectionMessageEntry(latestCheckpointEntry)
+				if err != nil {
+					return err
+				}
+
+				parentCollRec.LatestCheckpointEntryID = entryId
+				err = collectionStore.SaveCollectionRecord(parentCollRec)
+				if err != nil {
+					return err
+				}
+
+			}
+
 		}
 	}
 

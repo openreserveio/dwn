@@ -54,6 +54,16 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 
 }
 
+func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
+
+	_, err := store.DB.Collection("dwn_collections").UpdateOne(context.Background(), bson.D{{"record_id", record.RecordID}}, record)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
 
 	// Get Record
@@ -108,4 +118,17 @@ func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *st
 	}
 
 	return &collectionRecord
+}
+
+func (store *CollectionDocumentDBStore) DeleteCollectionMessageEntry(entry *storage.MessageEntry) error {
+	return store.DeleteCollectionMessageEntryByID(entry.MessageEntryID)
+}
+
+func (store *CollectionDocumentDBStore) DeleteCollectionMessageEntryByID(messageEntryId string) error {
+
+	_, err := store.DB.Collection("dwn_collections").DeleteOne(context.Background(), bson.D{{"message_entry_id", messageEntryId}})
+	if err != nil {
+		return err
+	}
+	return nil
 }

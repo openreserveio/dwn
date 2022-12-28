@@ -12,9 +12,13 @@ type CollectionStore interface {
 
 	// Refactored methods here
 	CreateCollectionRecord(record *CollectionRecord, initialEntry *MessageEntry) error
+	SaveCollectionRecord(record *CollectionRecord) error
+
 	AddCollectionMessageEntry(entry *MessageEntry) error
 	GetMessageEntryByID(messageEntryID string) *MessageEntry
 	GetCollectionRecord(recordId string) *CollectionRecord
+	DeleteCollectionMessageEntry(entry *MessageEntry) error
+	DeleteCollectionMessageEntryByID(messageEntryId string) error
 }
 
 type CollectionRecord struct {
@@ -30,15 +34,16 @@ type CollectionRecord struct {
 }
 
 type MessageEntry struct {
-	ID             primitive.ObjectID `bson:"_id"`
-	MessageEntryID string             `bson:"message_entry_id"`
-	ParentEntryID  string             `bson:"parent_message_entry_id"`
-	RecordID       string             `bson:"record_id"`
-	Schema         string             `bson:"schema"`
-	Method         string             `bson:"method"`
-	Data           []byte             `bson:"data"`
-	DataCID        string             `bson:"dataCID"`
-	Protocol       string             `bson:"protocol"`
-	CreatedDate    time.Time          `bson:"created_date"`
-	PublishedDate  time.Time          `bson:"published_date"`
+	ID              primitive.ObjectID `bson:"_id"`
+	MessageEntryID  string             `bson:"message_entry_id"`
+	ParentEntryID   string             `bson:"parent_message_entry_id"`
+	RecordID        string             `bson:"record_id"`
+	Schema          string             `bson:"schema"`
+	Method          string             `bson:"method"`
+	Data            []byte             `bson:"data"`
+	DataCID         string             `bson:"dataCID"`
+	Protocol        string             `bson:"protocol"`
+	ProtocolVersion string             `bson:"protocol_version"`
+	CreatedDate     time.Time          `bson:"created_date"`
+	PublishedDate   time.Time          `bson:"published_date"`
 }
