@@ -36,7 +36,6 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	}
 
 	messageDesc := model.Descriptor{
-		Nonce:      uuid.New().String(),
 		Method:     methodName,
 		DataCID:    dataCID,
 		DataFormat: dataFormat,
@@ -117,7 +116,6 @@ func CreateDescriptorCID(descriptor model.Descriptor) string {
 		qp.MapEntry(ma, "method", qp.String(descriptor.Method))
 		qp.MapEntry(ma, "schema", qp.String(descriptor.Schema))
 		qp.MapEntry(ma, "dataCid", qp.String(descriptor.DataCID))
-		qp.MapEntry(ma, "nonce", qp.String(descriptor.Nonce))
 		qp.MapEntry(ma, "dataFormat", qp.String(descriptor.DataFormat))
 	})
 	if err != nil {

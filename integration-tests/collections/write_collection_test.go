@@ -29,8 +29,12 @@ var _ = Describe("Write Collection", func() {
 
 		It("Stores the message correctly", func() {
 
-			message := model.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite")
-			message.Descriptor.Schema = "https://openreserve.io/schemas/test.json"
+			message := model.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
+			descriptorCID := model.CreateDescriptorCID(message.Descriptor)
+			processingCID := model.CreateProcessingCID(message.Processing)
+			recordId := model.CreateRecordCID(descriptorCID, processingCID)
+			message.RecordID = recordId
+
 			attestation := model.CreateAttestation(message, *authorPrivateKey)
 			message.Attestation = attestation
 
