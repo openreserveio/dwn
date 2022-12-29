@@ -75,12 +75,40 @@ func (c CollectionService) FindCollection(ctx context.Context, request *services
 	response := services.FindCollectionResponse{}
 
 	// TODO: We are only doing single record finds right now
-	if request.QueryType != services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI {
-		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "TODO: We are only doing single record finds right now"}
-		return &response, nil
+	if request.QueryType == services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI {
+
+		result, err := collection.FindCollectionBySchemaAndRecordID(c.CollectionStore, request.SchemaURI, request.RecordId)
+		if err != nil {
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+			return &response, nil
+		}
+
+		switch result.Status {
+
+		case "OK":
+			response.Status = &services.CommonStatus{Status: services.Status_OK}
+			response.SchemaURI = request.SchemaURI
+			response.Writers = []string{result.LatestEntry.Processing.AuthorDID}
+			response.Readers = []string{result.LatestEntry.Processing.AuthorDID, result.LatestEntry.Processing.RecipientDID}
+			response.IsPublished = result.LatestEntry.Descriptor.Published
+
+			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)
+			response.CollectionItem = latestEntryJsonBytes
+
+			return &response, nil
+
+		case "NOT_FOUND":
+			response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
+			return &response, nil
+
+		default:
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Some kind of error"}
+			return &response, nil
+		}
+
 	}
 
-	response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND, Details: "TODO: We are only doing single record finds right now"}
+	response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Unsupport query type"}
 	return &response, nil
 
 }

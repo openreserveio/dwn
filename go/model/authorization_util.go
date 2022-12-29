@@ -51,7 +51,7 @@ func VerifyAuthorization(message *Message) bool {
 	if authorizerDid == "" {
 		return false
 	}
-	if authorizerDid != message.Processing.RecipientDID {
+	if authorizerDid != message.Processing.AuthorDID {
 		return false
 	}
 
