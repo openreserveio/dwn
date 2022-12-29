@@ -102,7 +102,7 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 
 	case model.METHOD_COLLECTIONS_DELETE:
 		messageResult = collections.CollectionsDelete(fr.CollectionServiceClient, message)
-		
+
 	default:
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
 
