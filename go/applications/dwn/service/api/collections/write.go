@@ -28,8 +28,8 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 	}
 
 	// If no record was found, then we don't need to authorize
-	var foundCollMessage model.Message
-	json.Unmarshal(findCollResp.CollectionItem, &foundCollMessage)
+	//var foundCollMessage model.Message
+	//json.Unmarshal(findCollResp.CollectionItem, &foundCollMessage)
 
 	switch findCollResp.Status.Status {
 
