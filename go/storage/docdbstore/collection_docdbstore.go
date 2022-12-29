@@ -64,7 +64,7 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 
 func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
 
-	_, err := store.DB.Collection(COLLECTION_RECORD).UpdateOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, record.RecordID}}, record)
+	_, err := store.DB.Collection(COLLECTION_RECORD).ReplaceOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, record.RecordID}}, record)
 	if err != nil {
 		return err
 	}
@@ -75,10 +75,10 @@ func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.Col
 func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
 
 	// Get Record
-	if entry.RecordID == "" {
-		return errors.New("No Record ID")
+	if entry.Descriptor.ParentID == "" {
+		return errors.New("Parent ID must be present to add a message entry to a collection")
 	}
-	collectionRecord := store.GetCollectionRecord(entry.RecordID)
+	collectionRecord := store.GetCollectionRecord(entry.Descriptor.ParentID)
 	if collectionRecord == nil {
 		return errors.New("No Record Found")
 	}
@@ -114,8 +114,14 @@ func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *st
 
 	res := store.DB.Collection(COLLECTION_RECORD).FindOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, recordId}})
 	if res.Err() != nil {
-		log.Error("Error getting record by ID:  %v", res.Err())
+		if res.Err() != mongo.ErrNoDocuments {
+			log.Error("Error getting record by ID:  %v", res.Err())
+			return nil
+		}
+
+		log.Debug("No records found")
 		return nil
+
 	}
 
 	var collectionRecord storage.CollectionRecord

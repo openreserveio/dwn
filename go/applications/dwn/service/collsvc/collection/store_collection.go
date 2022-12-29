@@ -2,6 +2,8 @@ package collection
 
 import (
 	"errors"
+	"fmt"
+	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -42,6 +44,14 @@ func StoreCollection(collectionStore storage.CollectionStore, collectionMessage 
 		result.RecordID = collectionMessage.RecordID
 
 	case model.METHOD_COLLECTIONS_COMMIT:
+		err := collectionsCommit(collectionStore, collectionMessage)
+		if err != nil {
+			result.Status = "ERROR"
+			result.Error = err
+			return &result, nil
+		}
+		result.Status = "OK"
+		result.RecordID = collectionMessage.RecordID
 
 	case model.METHOD_COLLECTIONS_DELETE:
 
@@ -136,15 +146,12 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 		}
 
 		record := storage.CollectionRecord{
-			ID:                      primitive.NewObjectID(),
-			RecordID:                entryId,
-			CreatorDID:              collectionsWriteMessage.Processing.AuthorDID,
-			OwnerDID:                collectionsWriteMessage.Processing.RecipientDID,
-			WriterDIDs:              []string{collectionsWriteMessage.Processing.AuthorDID},
-			ReaderDIDs:              []string{collectionsWriteMessage.Processing.AuthorDID, collectionsWriteMessage.Processing.RecipientDID},
-			InitialEntryID:          entryId,
-			LatestEntryID:           entryId,
-			LatestCheckpointEntryID: entryId,
+			ID:         primitive.NewObjectID(),
+			RecordID:   collectionsWriteMessage.RecordID,
+			CreatorDID: collectionsWriteMessage.Processing.AuthorDID,
+			OwnerDID:   collectionsWriteMessage.Processing.RecipientDID,
+			WriterDIDs: []string{collectionsWriteMessage.Processing.AuthorDID},
+			ReaderDIDs: []string{collectionsWriteMessage.Processing.AuthorDID, collectionsWriteMessage.Processing.RecipientDID},
 		}
 
 		entry := storage.MessageEntry{
@@ -167,7 +174,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 			// determine the entry’s position in the record’s lineage. If a parentId is present
 			// proceed with processing, else discard the record and cease processing.
 			// We dont have the parent.  Reject with err
-			return errors.New("Unable to find Parent Record for Overwrite")
+			return fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", collectionsWriteMessage.Descriptor.ParentID)
 		}
 
 		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
@@ -191,8 +198,8 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 			return errors.New("Unable to find the latest checkpoint entry")
 		}
 
-		if collectionsWriteMessage.Descriptor.ParentID != latestCheckpointEntry.MessageEntryID {
-			return errors.New("The parent ID of the inbound message must match the latest checkpoint ID.")
+		if collectionsWriteMessage.Descriptor.ParentID != latestCheckpointEntry.RecordID {
+			return errors.New("The parent ID of the inbound message must match the latest checkpoint record ID.")
 		}
 
 		// If an existing CollectionsWrite entry linked to the Latest Checkpoint Entry IS NOT present and
@@ -201,9 +208,10 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 		// and cease processing.
 		if latestCheckpointEntry.Descriptor.Method != model.METHOD_COLLECTIONS_WRITE &&
 			collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
+
 			latestEntry := storage.MessageEntry{
 				ID:             primitive.NewObjectID(),
-				MessageEntryID: entryId,
+				MessageEntryID: uuid.NewString(),
 				Message:        *collectionsWriteMessage,
 			}
 
@@ -212,7 +220,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 				return err
 			}
 
-			parentCollRec.LatestEntryID = entryId
+			parentCollRec.LatestEntryID = latestEntry.MessageEntryID
 			err = collectionStore.SaveCollectionRecord(parentCollRec)
 			if err != nil {
 				return err
@@ -236,7 +244,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 
 				latestEntry := storage.MessageEntry{
 					ID:             primitive.NewObjectID(),
-					MessageEntryID: entryId,
+					MessageEntryID: uuid.NewString(),
 					Message:        *collectionsWriteMessage,
 				}
 
@@ -245,12 +253,13 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 					return err
 				}
 
-				err = collectionStore.DeleteCollectionMessageEntry(latestCheckpointEntry)
-				if err != nil {
-					return err
-				}
+				// I don't believe ww want to delete the message entry
+				//err = collectionStore.DeleteCollectionMessageEntry(latestCheckpointEntry)
+				//if err != nil {
+				//	return err
+				//}
 
-				parentCollRec.LatestCheckpointEntryID = entryId
+				parentCollRec.LatestCheckpointEntryID = latestEntry.MessageEntryID
 				err = collectionStore.SaveCollectionRecord(parentCollRec)
 				if err != nil {
 					return err
@@ -261,6 +270,6 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 		}
 	}
 
-	return errors.New("Supports initial entry only for now")
+	return nil
 
 }
