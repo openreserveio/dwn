@@ -42,7 +42,7 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		return messageResultObj
 	}
 
-	// Store the collection if it passes schema validation!
+	// Store and process the message if it passes schema validation!
 	encodedMsg, _ := json.Marshal(message)
 	storeReq := services.StoreCollectionRequest{
 		Message: encodedMsg,
