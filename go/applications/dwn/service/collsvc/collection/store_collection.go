@@ -67,7 +67,7 @@ func collectionsCommit(collectionsStore storage.CollectionStore, collectionsComm
 
 	// Retrieve the currently active CollectionsWrite entry for the recordId specified in the inbound CollectionsCommit
 	// message. If there is no currently active CollectionsWrite entry, discard the inbound message and cease processing.
-	existingCollRecord := collectionsStore.GetCollectionRecord(collectionsCommitMessage.RecordID)
+	existingCollRecord := collectionsStore.GetCollectionRecord(collectionsCommitMessage.Descriptor.ParentID)
 	if existingCollRecord == nil {
 		return errors.New(ERR_COMMIT_TO_RECORD_NOT_FOUND)
 	}

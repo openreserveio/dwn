@@ -22,19 +22,6 @@ func VerifyAuthorization(message *Message) bool {
 	encodedSignature := message.Authorization.Signatures[0].Signature
 	encodedPayload := message.Authorization.Payload
 
-	// Make sure the payloads match as expected
-	//expectedPayload := map[string]string{
-	//	"descriptorCid": CreateDescriptorCID(message.Descriptor),
-	//	"processingCid": CreateProcessingCID(message.Processing),
-	//}
-	//expectedJsonPayload, _ := json.Marshal(&expectedPayload)
-	//expectedJwsPayload := base64.URLEncoding.EncodeToString(expectedJsonPayload)
-	//
-	//if expectedJwsPayload != encodedPayload {
-	//	// These should match
-	//	return false
-	//}
-
 	// Get the ecdsa.PublicKey
 	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
 	if err != nil {
@@ -49,9 +36,6 @@ func VerifyAuthorization(message *Message) bool {
 
 	authorizerDid := protectedHeaderMap["kid"]
 	if authorizerDid == "" {
-		return false
-	}
-	if authorizerDid != message.Processing.AuthorDID {
 		return false
 	}
 

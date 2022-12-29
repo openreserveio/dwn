@@ -13,8 +13,10 @@ require (
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/onsi/ginkgo/v2 v2.5.1
 	github.com/onsi/gomega v1.24.1
-	github.com/openreserveio/dwn/go v0.0.0-20221228220606-f2b2337e5c07
+	github.com/openreserveio/dwn/go v0.0.0
 )
+
+replace github.com/openreserveio/dwn/go v0.0.0 => ../go
 
 require (
 	github.com/go-logr/logr v1.2.3 // indirect
