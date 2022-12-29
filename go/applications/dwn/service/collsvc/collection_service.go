@@ -76,7 +76,7 @@ func (c CollectionService) FindCollection(ctx context.Context, request *services
 
 	// TODO: We are only doing single record finds right now
 	if request.QueryType != services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI {
-		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "TODO: We are only doing single record finds right now"}
+		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND, Details: "TODO: We are only doing single record finds right now"}
 		return &response, nil
 	}
 
