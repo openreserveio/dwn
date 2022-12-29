@@ -139,7 +139,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		err := collectionStore.CreateCollectionRecord(&record, &entry)
 		return err
 
-	} else if true {
+	} else {
 
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.

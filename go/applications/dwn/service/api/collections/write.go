@@ -14,7 +14,7 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 
 	// First, make sure attestations are valid and correct for this message
 	if !model.VerifyAttestation(message) {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Unable to verify attestation(s)."}
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Unable to verify attestation(s)."}
 		return messageResultObj
 	}
 
