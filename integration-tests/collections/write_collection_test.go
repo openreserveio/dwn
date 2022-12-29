@@ -4,8 +4,10 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"github.com/go-resty/resty/v2"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/openreserveio/dwn/go/model"
@@ -27,22 +29,47 @@ var _ = Describe("Write Collection", func() {
 		recipientDID, _ := testutils.CreateKeyDID(&recipientPublicKey)
 
 		body := []byte("{\"name\":\"test\"}")
+		bodyEncoded := base64.RawURLEncoding.EncodeToString(body)
 
 		It("Stores the message correctly", func() {
 
-			message := model.CreateMessage(authorDID, recipientDID, "application/json", body, "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
-			message.Descriptor.DateCreated = time.Now()
+			descriptor := model.Descriptor{
+				Method:          model.METHOD_COLLECTIONS_WRITE,
+				DataCID:         model.CreateDataCID(bodyEncoded),
+				DataFormat:      model.DATA_FORMAT_JSON,
+				ParentID:        "",
+				Protocol:        "",
+				ProtocolVersion: "",
+				Schema:          "https://openreserve.io/schemas/test.json",
+				CommitStrategy:  "",
+				Published:       false,
+				DateCreated:     time.Now(),
+				DatePublished:   time.Now(),
+			}
 
-			descriptorCID := model.CreateDescriptorCID(message.Descriptor)
-			processingCID := model.CreateProcessingCID(message.Processing)
+			processing := model.MessageProcessing{
+				Nonce:        uuid.NewString(),
+				AuthorDID:    authorDID,
+				RecipientDID: recipientDID,
+			}
+
+			descriptorCID := model.CreateDescriptorCID(descriptor)
+			processingCID := model.CreateProcessingCID(processing)
 			recordId := model.CreateRecordCID(descriptorCID, processingCID)
-			message.RecordID = recordId
 
-			attestation := model.CreateAttestation(message, *authorPrivateKey)
+			message := model.Message{
+				RecordID:   recordId,
+				ContextID:  "",
+				Data:       bodyEncoded,
+				Processing: processing,
+				Descriptor: descriptor,
+			}
+
+			attestation := model.CreateAttestation(&message, *authorPrivateKey)
 			message.Attestation = attestation
 
 			ro := model.RequestObject{}
-			ro.Messages = append(ro.Messages, *message)
+			ro.Messages = append(ro.Messages, message)
 
 			res, err := resty.New().R().
 				SetBody(ro).
