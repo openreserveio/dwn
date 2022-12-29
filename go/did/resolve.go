@@ -1,8 +1,6 @@
 package did
 
 import (
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/multiformats/go-multibase"
 	"github.com/openreserveio/dwn/go/log"
 	"strings"
 )
@@ -22,18 +20,12 @@ func ResolvePublicKey(didString string) any {
 	// Get the method
 	didMethod := didParts[1]
 	switch didMethod {
-	case "key":
-		multibaseKey := didParts[2]
-		_, pemPublicKey, err := multibase.Decode(multibaseKey)
-		if err != nil {
-			return nil
-		}
+	case DID_METHOD_KEY:
+		return ParseKeyFromKeyDID(didParts[2])
 
-		publicKey, err := jwt.ParseECPublicKeyFromPEM(pemPublicKey)
-		if err != nil {
-			return nil
-		}
-		return publicKey
+	case DID_METHOD_WEB:
+		log.Error("Support for did:web coming soon!")
+		return nil
 
 	default:
 		log.Error("Only support for did:key")
