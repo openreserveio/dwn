@@ -18,6 +18,19 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		return messageResultObj
 	}
 
+	// Make sure authorizations are valid for messages that are writes to existing records
+	// Check for existing record
+	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{RecordId: message.RecordID})
+	if err != nil {
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
+		return messageResultObj
+	}
+	
+	if !model.VerifyAuthorization(message) {
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Unable to verify authorization(s)."}
+		return messageResultObj
+	}
+
 	// Next, find the schema and make sure it has been registered
 	schemaUri := message.Descriptor.Schema
 	if schemaUri == "" {

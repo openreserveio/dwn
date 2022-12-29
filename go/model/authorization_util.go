@@ -14,6 +14,10 @@ import (
 
 func VerifyAuthorization(message *Message) bool {
 
+	if message.Authorization.Payload == "" || len(message.Authorization.Signatures) == 0 {
+		return false
+	}
+
 	encodedProtectedHeader := message.Authorization.Signatures[0].Protected
 	encodedSignature := message.Authorization.Signatures[0].Signature
 	encodedPayload := message.Authorization.Payload
@@ -93,10 +97,7 @@ func CreateAuthorization(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
 	var jwsPayloadBytes []byte = make([]byte, base64.URLEncoding.EncodedLen(len(jsonPayload)))
 	base64.URLEncoding.Encode(jwsPayloadBytes, jsonPayload)
 
-	sig, err := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
-	if err != nil {
-
-	}
+	sig, _ := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
 
 	authorization.Payload = jwsPayload
 	authorization.Signatures = []DWNJWSSig{
