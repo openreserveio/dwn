@@ -14,22 +14,13 @@ import (
 
 func VerifyAuthorization(message *Message) bool {
 
+	if message.Authorization.Payload == "" || len(message.Authorization.Signatures) == 0 {
+		return false
+	}
+
 	encodedProtectedHeader := message.Authorization.Signatures[0].Protected
 	encodedSignature := message.Authorization.Signatures[0].Signature
 	encodedPayload := message.Authorization.Payload
-
-	// Make sure the payloads match as expected
-	expectedPayload := map[string]string{
-		"descriptorCid": CreateDescriptorCID(message.Descriptor),
-		"processingCid": CreateProcessingCID(message.Processing),
-	}
-	expectedJsonPayload, _ := json.Marshal(&expectedPayload)
-	expectedJwsPayload := base64.URLEncoding.EncodeToString(expectedJsonPayload)
-
-	if expectedJwsPayload != encodedPayload {
-		// These should match
-		return false
-	}
 
 	// Get the ecdsa.PublicKey
 	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
@@ -45,9 +36,6 @@ func VerifyAuthorization(message *Message) bool {
 
 	authorizerDid := protectedHeaderMap["kid"]
 	if authorizerDid == "" {
-		return false
-	}
-	if authorizerDid != message.Processing.RecipientDID {
 		return false
 	}
 
@@ -93,10 +81,7 @@ func CreateAuthorization(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
 	var jwsPayloadBytes []byte = make([]byte, base64.URLEncoding.EncodedLen(len(jsonPayload)))
 	base64.URLEncoding.Encode(jwsPayloadBytes, jsonPayload)
 
-	sig, err := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
-	if err != nil {
-
-	}
+	sig, _ := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
 
 	authorization.Payload = jwsPayload
 	authorization.Signatures = []DWNJWSSig{

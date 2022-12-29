@@ -62,19 +62,32 @@ func (mr *MockCollectionStoreMockRecorder) CreateCollectionRecord(record, initia
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCollectionRecord", reflect.TypeOf((*MockCollectionStore)(nil).CreateCollectionRecord), record, initialEntry)
 }
 
-// GetCollectionItem mocks base method.
-func (m *MockCollectionStore) GetCollectionItem(identifier string) (*storage.CollectionItem, error) {
+// DeleteCollectionMessageEntry mocks base method.
+func (m *MockCollectionStore) DeleteCollectionMessageEntry(entry *storage.MessageEntry) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCollectionItem", identifier)
-	ret0, _ := ret[0].(*storage.CollectionItem)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "DeleteCollectionMessageEntry", entry)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// GetCollectionItem indicates an expected call of GetCollectionItem.
-func (mr *MockCollectionStoreMockRecorder) GetCollectionItem(identifier interface{}) *gomock.Call {
+// DeleteCollectionMessageEntry indicates an expected call of DeleteCollectionMessageEntry.
+func (mr *MockCollectionStoreMockRecorder) DeleteCollectionMessageEntry(entry interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollectionItem", reflect.TypeOf((*MockCollectionStore)(nil).GetCollectionItem), identifier)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollectionMessageEntry", reflect.TypeOf((*MockCollectionStore)(nil).DeleteCollectionMessageEntry), entry)
+}
+
+// DeleteCollectionMessageEntryByID mocks base method.
+func (m *MockCollectionStore) DeleteCollectionMessageEntryByID(messageEntryId string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCollectionMessageEntryByID", messageEntryId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCollectionMessageEntryByID indicates an expected call of DeleteCollectionMessageEntryByID.
+func (mr *MockCollectionStoreMockRecorder) DeleteCollectionMessageEntryByID(messageEntryId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollectionMessageEntryByID", reflect.TypeOf((*MockCollectionStore)(nil).DeleteCollectionMessageEntryByID), messageEntryId)
 }
 
 // GetCollectionRecord mocks base method.
@@ -105,16 +118,16 @@ func (mr *MockCollectionStoreMockRecorder) GetMessageEntryByID(messageEntryID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessageEntryByID", reflect.TypeOf((*MockCollectionStore)(nil).GetMessageEntryByID), messageEntryID)
 }
 
-// PutCollectionItem mocks base method.
-func (m *MockCollectionStore) PutCollectionItem(collectionItem *storage.CollectionItem) error {
+// SaveCollectionRecord mocks base method.
+func (m *MockCollectionStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutCollectionItem", collectionItem)
+	ret := m.ctrl.Call(m, "SaveCollectionRecord", record)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PutCollectionItem indicates an expected call of PutCollectionItem.
-func (mr *MockCollectionStoreMockRecorder) PutCollectionItem(collectionItem interface{}) *gomock.Call {
+// SaveCollectionRecord indicates an expected call of SaveCollectionRecord.
+func (mr *MockCollectionStoreMockRecorder) SaveCollectionRecord(record interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCollectionItem", reflect.TypeOf((*MockCollectionStore)(nil).PutCollectionItem), collectionItem)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveCollectionRecord", reflect.TypeOf((*MockCollectionStore)(nil).SaveCollectionRecord), record)
 }

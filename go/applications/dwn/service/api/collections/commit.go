@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func CollectionsCommit(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
 
 	var messageResultObj model.MessageResultObject
 
@@ -21,20 +21,22 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
-	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
+	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
 	}
 
-	// If no record was found, then we don't need to authorize
-	//var foundCollMessage model.Message
-	//json.Unmarshal(findCollResp.CollectionItem, &foundCollMessage)
-
+	// There can be no COMMIT to a record that does not exist or is erroring out
 	switch findCollResp.Status.Status {
 
 	case services.Status_NOT_FOUND:
-	// No need to authorize!
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Cannot COMMIT to a record that does not exist."}
+		return messageResultObj
+
+	case services.Status_ERROR:
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: findCollResp.Status.Details}
+		return messageResultObj
 
 	case services.Status_OK:
 		// We found a record.  Must authorize
@@ -51,37 +53,13 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		}
 
 		if !authorized {
-			messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Author is not authorized to write to this record."}
+			messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Author is not authorized to COMMIT to this record."}
 			return messageResultObj
 		}
 
 	}
 
-	// Next, find the schema and make sure it has been registered
-	schemaUri := message.Descriptor.Schema
-	if schemaUri == "" {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a CollectionsWrite"}
-		return messageResultObj
-	}
-
-	// Validate given collection data validates against given schema
-	validateCollRequest := services.ValidateCollectionRequest{
-		SchemaURI: schemaUri,
-		Document:  []byte(message.Data),
-	}
-
-	validateCollResponse, err := collSvcClient.ValidateCollection(context.Background(), &validateCollRequest)
-	if err != nil {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
-		return messageResultObj
-	}
-
-	if validateCollResponse.Status.Status != services.Status_OK {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: validateCollResponse.Status.Details}
-		return messageResultObj
-	}
-
-	// Store and process the message if it passes schema validation!
+	// Store and process the message if it is authorized!
 	encodedMsg, _ := json.Marshal(message)
 	storeReq := services.StoreCollectionRequest{
 		Message: encodedMsg,
@@ -102,5 +80,4 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 	messageResultObj.Entries = append(messageResultObj.Entries, model.MessageResultEntry{Result: []byte(existingOrNewId)})
 
 	return messageResultObj
-
 }

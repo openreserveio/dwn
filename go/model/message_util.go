@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	METHOD_COLLECTIONS_QUERY  = "CollectionsQuery"
 	METHOD_COLLECTIONS_WRITE  = "CollectionsWrite"
 	METHOD_COLLECTIONS_COMMIT = "CollectionsCommit"
 	METHOD_COLLECTIONS_DELETE = "CollectionsDelete"

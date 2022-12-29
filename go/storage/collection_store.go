@@ -1,8 +1,8 @@
 package storage
 
 import (
+	"github.com/openreserveio/dwn/go/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 )
 
 // Base interface for stores for collections
@@ -34,16 +34,7 @@ type CollectionRecord struct {
 }
 
 type MessageEntry struct {
-	ID              primitive.ObjectID `bson:"_id"`
-	MessageEntryID  string             `bson:"message_entry_id"`
-	ParentEntryID   string             `bson:"parent_message_entry_id"`
-	RecordID        string             `bson:"record_id"`
-	Schema          string             `bson:"schema"`
-	Method          string             `bson:"method"`
-	Data            []byte             `bson:"data"`
-	DataCID         string             `bson:"dataCID"`
-	Protocol        string             `bson:"protocol"`
-	ProtocolVersion string             `bson:"protocol_version"`
-	CreatedDate     time.Time          `bson:"created_date"`
-	PublishedDate   time.Time          `bson:"published_date"`
+	model.Message
+	ID             primitive.ObjectID `bson:"_id"`
+	MessageEntryID string             `bson:"message_entry_id"`
 }

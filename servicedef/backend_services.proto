@@ -51,7 +51,10 @@ message CommonStatus {
  message FindCollectionResponse {
     CommonStatus status = 1;
     string schemaURI = 2;
-    bytes collectionItem = 3;
+    repeated string writers = 3;
+    repeated string readers = 4;
+    bool isPublished = 5;
+    bytes collectionItem = 6;
  }
 
 

@@ -25,6 +25,11 @@ services:
       - "documentdb_data:/data/db"
   collsvc:
     image: "openreserveio/collsvc:latest"
+    build:
+      context: "../../../go"
+      dockerfile: "applications/pkg/Dockerfile-collsvc"
+      tags:
+        - "openreserveio/collsvc"
     ports:
       - "9001:9001"
     environment:
@@ -32,6 +37,11 @@ services:
       - "DWN_COLLSVC.LISTENPORT=9001"
   api:
     image: "openreserveio/api:latest"
+    build:
+      context: "../../../go"
+      dockerfile: "applications/pkg/Dockerfile-api"
+      tags:
+        - "openreserveio/api"
     ports:
       - "8080:8080"
     environment:

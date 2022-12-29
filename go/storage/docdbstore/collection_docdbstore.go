@@ -11,6 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const (
+	COLLECTION_RECORD        = "records"
+	COLLECTION_MESSAGE_ENTRY = "message_entries"
+
+	COLLECTION_RECORD_ID_FIELD_NAME        = "record_id"
+	COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME = "message_entry_id"
+)
+
 type CollectionDocumentDBStore struct {
 	Client *mongo.Client
 	DB     *mongo.Database
@@ -36,7 +44,7 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 
 	initialEntry.RecordID = record.RecordID
 	initialEntry.MessageEntryID = uuid.NewString()
-	_, err := store.DB.Collection("dwn_collections").InsertOne(context.Background(), initialEntry)
+	_, err := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).InsertOne(context.Background(), initialEntry)
 	if err != nil {
 		return err
 	}
@@ -45,7 +53,7 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 	record.LatestEntryID = initialEntry.MessageEntryID
 	record.LatestCheckpointEntryID = initialEntry.MessageEntryID
 
-	_, err = store.DB.Collection("dwn_collections").InsertOne(context.Background(), record)
+	_, err = store.DB.Collection(COLLECTION_RECORD).InsertOne(context.Background(), record)
 	if err != nil {
 		return err
 	}
@@ -56,7 +64,7 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 
 func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
 
-	_, err := store.DB.Collection("dwn_collections").UpdateOne(context.Background(), bson.D{{"record_id", record.RecordID}}, record)
+	_, err := store.DB.Collection(COLLECTION_RECORD).ReplaceOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, record.RecordID}}, record)
 	if err != nil {
 		return err
 	}
@@ -67,15 +75,15 @@ func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.Col
 func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
 
 	// Get Record
-	if entry.RecordID == "" {
-		return errors.New("No Record ID")
+	if entry.Descriptor.ParentID == "" {
+		return errors.New("Parent ID must be present to add a message entry to a collection")
 	}
-	collectionRecord := store.GetCollectionRecord(entry.RecordID)
+	collectionRecord := store.GetCollectionRecord(entry.Descriptor.ParentID)
 	if collectionRecord == nil {
 		return errors.New("No Record Found")
 	}
 
-	_, err := store.DB.Collection("dwn_collections").InsertOne(context.Background(), entry)
+	_, err := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).InsertOne(context.Background(), entry)
 	if err != nil {
 		return err
 	}
@@ -86,7 +94,7 @@ func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage
 
 func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID string) *storage.MessageEntry {
 
-	res := store.DB.Collection("dwn_collections").FindOne(context.Background(), bson.D{{"message_entry_id", messageEntryID}})
+	res := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).FindOne(context.Background(), bson.D{{COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME, messageEntryID}})
 	if res.Err() != nil {
 		log.Error("Error getting message entry by ID:  %v", res.Err())
 		return nil
@@ -104,10 +112,16 @@ func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID strin
 
 func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *storage.CollectionRecord {
 
-	res := store.DB.Collection("dwn_collections").FindOne(context.Background(), bson.D{{"record_id", recordId}})
+	res := store.DB.Collection(COLLECTION_RECORD).FindOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, recordId}})
 	if res.Err() != nil {
-		log.Error("Error getting record by ID:  %v", res.Err())
+		if res.Err() != mongo.ErrNoDocuments {
+			log.Error("Error getting record by ID:  %v", res.Err())
+			return nil
+		}
+
+		log.Debug("No records found")
 		return nil
+
 	}
 
 	var collectionRecord storage.CollectionRecord
@@ -126,7 +140,7 @@ func (store *CollectionDocumentDBStore) DeleteCollectionMessageEntry(entry *stor
 
 func (store *CollectionDocumentDBStore) DeleteCollectionMessageEntryByID(messageEntryId string) error {
 
-	_, err := store.DB.Collection("dwn_collections").DeleteOne(context.Background(), bson.D{{"message_entry_id", messageEntryId}})
+	_, err := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).DeleteOne(context.Background(), bson.D{{COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME, messageEntryId}})
 	if err != nil {
 		return err
 	}

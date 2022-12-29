@@ -91,11 +91,17 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 	// Route logic based on Method
 	switch message.Descriptor.Method {
 
-	case "CollectionsWrite":
+	case model.METHOD_COLLECTIONS_QUERY:
+		messageResult = collections.CollectionsQuery(fr.CollectionServiceClient, message)
+
+	case model.METHOD_COLLECTIONS_WRITE:
 		messageResult = collections.CollectionsWrite(fr.CollectionServiceClient, message)
 
-	case "CollectionsQuery":
-		messageResult = collections.CollectionsQuery(fr.CollectionServiceClient, message)
+	case model.METHOD_COLLECTIONS_COMMIT:
+		messageResult = collections.CollectionsCommit(fr.CollectionServiceClient, message)
+
+	case model.METHOD_COLLECTIONS_DELETE:
+		messageResult = collections.CollectionsDelete(fr.CollectionServiceClient, message)
 
 	default:
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}

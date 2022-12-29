@@ -5,8 +5,26 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/multiformats/go-multibase"
 )
+
+func ParseKeyFromKeyDID(didPart string) *ecdsa.PublicKey {
+
+	multibaseKey := didPart
+	_, pemPublicKey, err := multibase.Decode(multibaseKey)
+	if err != nil {
+		return nil
+	}
+
+	publicKey, err := jwt.ParseECPublicKeyFromPEM(pemPublicKey)
+	if err != nil {
+		return nil
+	}
+
+	return publicKey
+
+}
 
 func CreateKeyDID(publicKey *ecdsa.PublicKey) (string, error) {
 
