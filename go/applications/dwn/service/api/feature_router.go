@@ -98,8 +98,8 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 		messageResult = collections.CollectionsWrite(fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_COMMIT:
-		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
-
+		messageResult = collections.CollectionsCommit(fr.CollectionServiceClient, message)
+		
 	case model.METHOD_COLLECTIONS_DELETE:
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
 
