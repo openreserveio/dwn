@@ -11,49 +11,49 @@ type RequestObject struct {
 }
 
 type Message struct {
-	RecordID      string            `json:"recordId,omitempty"`
-	ContextID     string            `json:"contextId,omitempty"`
-	Data          string            `json:"data,omitempty"`
-	Processing    MessageProcessing `json:"processing"`
-	Descriptor    Descriptor        `json:"descriptor"`
-	Attestation   DWNJWS            `json:"attestation,omitempty"`
-	Authorization DWNJWS            `json:"authorization,omitempty"`
+	RecordID      string            `json:"recordId,omitempty" bson:"record_id"`
+	ContextID     string            `json:"contextId,omitempty" bson:"context_id"`
+	Data          string            `json:"data,omitempty" bson:"data"`
+	Processing    MessageProcessing `json:"processing" bson:"processing"`
+	Descriptor    Descriptor        `json:"descriptor" bson:"descriptor"`
+	Attestation   DWNJWS            `json:"attestation,omitempty" bson:"attestation"`
+	Authorization DWNJWS            `json:"authorization,omitempty" bson:"authorization"`
 }
 
 type Descriptor struct {
 	// Base Required Fields per https://identity.foundation/decentralized-web-node/spec/#messages
-	Method     string `json:"method"`
-	DataCID    string `json:"dataCid,omitempty"`
-	DataFormat string `json:"dataFormat,omitempty"`
+	Method     string `json:"method" bson:"method"`
+	DataCID    string `json:"dataCid,omitempty" bson:"dataCID"`
+	DataFormat string `json:"dataFormat,omitempty" bson:"dataFormat"`
 
 	// CollectionsQuery per https://identity.foundation/decentralized-web-node/spec/#collectionsquery
 	Filter CollectionsQueryFilter `json:"filter,omitempty"`
 
 	// CollectionsWrite, Delete, Commit per https://identity.foundation/decentralized-web-node/spec/#collectionswrite
-	ParentID        string    `json:"parentId,omitempty"`
-	Protocol        string    `json:"protocol,omitempty"`
-	ProtocolVersion string    `json:"protocolVersion,omitempty"`
-	Schema          string    `json:"schema,omitempty"`
-	CommitStrategy  string    `json:"commitStrategy,omitempty"`
-	Published       bool      `json:"published,omitempty"`
-	DateCreated     time.Time `json:"dateCreated,omitempty"`
-	DatePublished   time.Time `json:"datePublished,omitempty"`
+	ParentID        string    `json:"parentId,omitempty" bson:"parent_id"`
+	Protocol        string    `json:"protocol,omitempty" bson:"protocol"`
+	ProtocolVersion string    `json:"protocolVersion,omitempty" bson:"protocol_version"`
+	Schema          string    `json:"schema,omitempty" bson:"schema"`
+	CommitStrategy  string    `json:"commitStrategy,omitempty" bson:"commit_strategy"`
+	Published       bool      `json:"published,omitempty" bson:"published"`
+	DateCreated     time.Time `json:"dateCreated,omitempty" bson:"date_created"`
+	DatePublished   time.Time `json:"datePublished,omitempty" bson:"date_published"`
 }
 
 type MessageProcessing struct {
-	Nonce        string `json:"nonce"`
-	AuthorDID    string `json:"author"`
-	RecipientDID string `json:"recipient"`
+	Nonce        string `json:"nonce" bson:"nonce"`
+	AuthorDID    string `json:"author" bson:"author_did"`
+	RecipientDID string `json:"recipient" bson:"recipient_did"`
 }
 
 type DWNJWS struct {
-	Payload    string      `json:"payload"`
-	Signatures []DWNJWSSig `json:"signatures"`
+	Payload    string      `json:"payload" bson:"payload"`
+	Signatures []DWNJWSSig `json:"signatures" bson:"signatures"`
 }
 
 type DWNJWSSig struct {
-	Protected string `json:"protected"`
-	Signature string `json:"signature"`
+	Protected string `json:"protected" bson:"protected"`
+	Signature string `json:"signature" bson:"signature"`
 }
 
 type CollectionsQueryFilter struct {

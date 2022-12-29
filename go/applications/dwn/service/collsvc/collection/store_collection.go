@@ -5,7 +5,6 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 )
 
 const (
@@ -18,44 +17,22 @@ type StoreCollectionResult struct {
 	Error    error
 }
 
-type CollectionsWriteParams struct {
-	RecordID  string `json:"recordId,omitempty"`
-	ContextID string `json:"contextId,omitempty"`
-	Data      string `json:"data,omitempty"`
-
-	ProcessingNonce string `json:"nonce"`
-	AuthorDID       string `json:"author"`
-	RecipientDID    string `json:"recipient"`
-
-	Method          string    `json:"method"`
-	DataCID         string    `json:"dataCid,omitempty"`
-	DataFormat      string    `json:"dataFormat,omitempty"`
-	ParentID        string    `json:"parentId,omitempty"`
-	Protocol        string    `json:"protocol,omitempty"`
-	ProtocolVersion string    `json:"protocolVersion,omitempty"`
-	Schema          string    `json:"schema,omitempty"`
-	CommitStrategy  string    `json:"commitStrategy,omitempty"`
-	Published       bool      `json:"published,omitempty"`
-	DateCreated     time.Time `json:"dateCreated,omitempty"`
-	DatePublished   time.Time `json:"datePublished,omitempty"`
-}
-
-func StoreCollection(collectionStore storage.CollectionStore, collectionsWriteParams *CollectionsWriteParams) (*StoreCollectionResult, error) {
+func StoreCollection(collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
 
 	// Need to implement this message process flow per spec:
 	// https://identity.foundation/decentralized-web-node/spec/#retained-message-processing
 	result := StoreCollectionResult{}
-	switch collectionsWriteParams.Method {
+	switch collectionMessage.Descriptor.Method {
 
 	case model.METHOD_COLLECTIONS_WRITE:
-		err := collectionsWrite(collectionStore, collectionsWriteParams)
+		err := collectionsWrite(collectionStore, collectionMessage)
 		if err != nil {
 			result.Status = "ERROR"
 			result.Error = err
 			return &result, nil
 		}
 		result.Status = "OK"
-		result.RecordID = collectionsWriteParams.RecordID
+		result.RecordID = collectionMessage.RecordID
 
 	case model.METHOD_COLLECTIONS_COMMIT:
 
@@ -69,7 +46,7 @@ func StoreCollection(collectionStore storage.CollectionStore, collectionsWritePa
 	return &result, nil
 }
 
-func collectionsWrite(collectionStore storage.CollectionStore, params *CollectionsWriteParams) error {
+func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteMessage *model.Message) error {
 
 	/*
 			Generate the message’s Entry ID by performing the Record ID Generation Process.
@@ -78,29 +55,11 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		      and cease any further processing.
 			- ELSE the message may be an overwriting entry for the record; continue processing.
 	*/
-	descriptor := model.Descriptor{
-		Method:          model.METHOD_COLLECTIONS_WRITE,
-		DataCID:         params.DataCID,
-		DataFormat:      params.DataFormat,
-		ParentID:        params.ParentID,
-		Protocol:        params.Protocol,
-		ProtocolVersion: params.ProtocolVersion,
-		Schema:          params.Schema,
-		CommitStrategy:  params.CommitStrategy,
-		Published:       params.Published,
-		DateCreated:     params.DateCreated,
-		DatePublished:   params.DatePublished,
-	}
-	messageProcessing := model.MessageProcessing{
-		Nonce:        params.ProcessingNonce,
-		AuthorDID:    params.AuthorDID,
-		RecipientDID: params.RecipientDID,
-	}
-	descriptorId := model.CreateDescriptorCID(descriptor)
-	processingId := model.CreateProcessingCID(messageProcessing)
+	descriptorId := model.CreateDescriptorCID(collectionsWriteMessage.Descriptor)
+	processingId := model.CreateProcessingCID(collectionsWriteMessage.Processing)
 	entryId := model.CreateRecordCID(descriptorId, processingId)
 
-	if entryId == params.RecordID {
+	if entryId == collectionsWriteMessage.RecordID {
 
 		// This is the first entry of the record.  Create it and return
 		// If there is an existing record id, there's a problem and return an error
@@ -112,28 +71,19 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		record := storage.CollectionRecord{
 			ID:                      primitive.NewObjectID(),
 			RecordID:                entryId,
-			CreatorDID:              params.AuthorDID,
-			OwnerDID:                params.RecipientDID,
-			WriterDIDs:              []string{params.AuthorDID},
-			ReaderDIDs:              []string{params.AuthorDID, params.RecipientDID},
+			CreatorDID:              collectionsWriteMessage.Processing.AuthorDID,
+			OwnerDID:                collectionsWriteMessage.Processing.RecipientDID,
+			WriterDIDs:              []string{collectionsWriteMessage.Processing.AuthorDID},
+			ReaderDIDs:              []string{collectionsWriteMessage.Processing.AuthorDID, collectionsWriteMessage.Processing.RecipientDID},
 			InitialEntryID:          entryId,
 			LatestEntryID:           entryId,
 			LatestCheckpointEntryID: entryId,
 		}
 
 		entry := storage.MessageEntry{
-			ID:              primitive.NewObjectID(),
-			MessageEntryID:  entryId,
-			ParentEntryID:   "",
-			RecordID:        entryId,
-			Schema:          params.Schema,
-			Method:          params.Method,
-			Data:            []byte(params.Data),
-			DataCID:         params.DataCID,
-			Protocol:        params.Protocol,
-			ProtocolVersion: params.ProtocolVersion,
-			CreatedDate:     params.DateCreated,
-			PublishedDate:   params.DatePublished,
+			ID:             primitive.NewObjectID(),
+			MessageEntryID: entryId,
+			Message:        *collectionsWriteMessage,
 		}
 
 		err := collectionStore.CreateCollectionRecord(&record, &entry)
@@ -144,7 +94,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
-		parentCollRec := collectionStore.GetCollectionRecord(params.ParentID)
+		parentCollRec := collectionStore.GetCollectionRecord(collectionsWriteMessage.Descriptor.ParentID)
 		if parentCollRec == nil {
 			// If a message is not the Initial Entry, its descriptor MUST contain a parentId to
 			// determine the entry’s position in the record’s lineage. If a parentId is present
@@ -159,9 +109,9 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		if initialMessageEntry == nil {
 			return errors.New("Unable to find an initial entry")
 		}
-		if initialMessageEntry.Protocol != params.Protocol ||
-			initialMessageEntry.ProtocolVersion != params.ProtocolVersion ||
-			initialMessageEntry.Schema != params.Schema {
+		if initialMessageEntry.Descriptor.Protocol != collectionsWriteMessage.Descriptor.Protocol ||
+			initialMessageEntry.Descriptor.ProtocolVersion != collectionsWriteMessage.Descriptor.ProtocolVersion ||
+			initialMessageEntry.Descriptor.Schema != collectionsWriteMessage.Descriptor.Schema {
 			return errors.New("Attempt to mutate an immutable value")
 		}
 
@@ -174,7 +124,7 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 			return errors.New("Unable to find the latest checkpoint entry")
 		}
 
-		if params.ParentID != latestCheckpointEntry.MessageEntryID {
+		if collectionsWriteMessage.Descriptor.ParentID != latestCheckpointEntry.MessageEntryID {
 			return errors.New("The parent ID of the inbound message must match the latest checkpoint ID.")
 		}
 
@@ -182,21 +132,12 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		// the dateCreated value of the inbound message is greater than the Latest Checkpoint Entry,
 		// store the message as the Latest Entry and cease processing, else discard the inbound message
 		// and cease processing.
-		if latestCheckpointEntry.Method != model.METHOD_COLLECTIONS_WRITE &&
-			params.DateCreated.After(latestCheckpointEntry.CreatedDate) {
+		if latestCheckpointEntry.Descriptor.Method != model.METHOD_COLLECTIONS_WRITE &&
+			collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 			latestEntry := storage.MessageEntry{
-				ID:              primitive.NewObjectID(),
-				MessageEntryID:  entryId,
-				ParentEntryID:   params.ParentID,
-				RecordID:        params.RecordID,
-				Schema:          params.Schema,
-				Method:          params.Method,
-				Data:            []byte(params.Data),
-				DataCID:         params.DataCID,
-				Protocol:        params.Protocol,
-				ProtocolVersion: params.ProtocolVersion,
-				CreatedDate:     params.DateCreated,
-				PublishedDate:   params.DatePublished,
+				ID:             primitive.NewObjectID(),
+				MessageEntryID: entryId,
+				Message:        *collectionsWriteMessage,
 			}
 
 			err := collectionStore.AddCollectionMessageEntry(&latestEntry)
@@ -219,26 +160,17 @@ func collectionsWrite(collectionStore storage.CollectionStore, params *Collectio
 		//     than the existing entry when the Entry IDs of the two are compared lexicographically.
 		// If all of the following conditions for Step 6 are true, store the inbound message as the Latest Entry
 		// and discard the existing CollectionsWrite entry that was attached to the Latest Checkpoint Entry.
-		if latestCheckpointEntry.Method == model.METHOD_COLLECTIONS_WRITE {
+		if latestCheckpointEntry.Descriptor.Method == model.METHOD_COLLECTIONS_WRITE {
 
-			if latestCheckpointEntry.CreatedDate.Equal(params.DateCreated) ||
-				params.DateCreated.After(latestCheckpointEntry.CreatedDate) {
+			if latestCheckpointEntry.Descriptor.DateCreated.Equal(collectionsWriteMessage.Descriptor.DateCreated) ||
+				collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 
 				// TODO:  How to compare lexicographically?  Will come back to this
 
 				latestEntry := storage.MessageEntry{
-					ID:              primitive.NewObjectID(),
-					MessageEntryID:  entryId,
-					ParentEntryID:   params.ParentID,
-					RecordID:        params.RecordID,
-					Schema:          params.Schema,
-					Method:          params.Method,
-					Data:            []byte(params.Data),
-					DataCID:         params.DataCID,
-					Protocol:        params.Protocol,
-					ProtocolVersion: params.ProtocolVersion,
-					CreatedDate:     params.DateCreated,
-					PublishedDate:   params.DatePublished,
+					ID:             primitive.NewObjectID(),
+					MessageEntryID: entryId,
+					Message:        *collectionsWriteMessage,
 				}
 
 				err := collectionStore.AddCollectionMessageEntry(&latestEntry)

@@ -47,27 +47,7 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_COMMIT ||
 		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_DELETE {
 
-		writeParams := collection.CollectionsWriteParams{
-			RecordID:        collectionMessage.RecordID,
-			ContextID:       collectionMessage.ContextID,
-			Data:            collectionMessage.Data,
-			ProcessingNonce: collectionMessage.Processing.Nonce,
-			AuthorDID:       collectionMessage.Processing.AuthorDID,
-			RecipientDID:    collectionMessage.Processing.RecipientDID,
-			Method:          collectionMessage.Descriptor.Method,
-			DataCID:         collectionMessage.Descriptor.DataCID,
-			DataFormat:      collectionMessage.Descriptor.DataFormat,
-			ParentID:        collectionMessage.Descriptor.ParentID,
-			Protocol:        collectionMessage.Descriptor.Protocol,
-			ProtocolVersion: collectionMessage.Descriptor.ProtocolVersion,
-			Schema:          collectionMessage.Descriptor.Schema,
-			CommitStrategy:  collectionMessage.Descriptor.CommitStrategy,
-			Published:       collectionMessage.Descriptor.Published,
-			DateCreated:     collectionMessage.Descriptor.DateCreated,
-			DatePublished:   collectionMessage.Descriptor.DatePublished,
-		}
-
-		result, err := collection.StoreCollection(c.CollectionStore, &writeParams)
+		result, err := collection.StoreCollection(c.CollectionStore, &collectionMessage)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
