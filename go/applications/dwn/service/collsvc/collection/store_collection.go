@@ -2,6 +2,7 @@ package collection
 
 import (
 	"errors"
+	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -59,7 +60,13 @@ func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteM
 	processingId := model.CreateProcessingCID(collectionsWriteMessage.Processing)
 	entryId := model.CreateRecordCID(descriptorId, processingId)
 
-	if entryId == collectionsWriteMessage.RecordID {
+	log.Info(" Entry ID: %s", entryId)
+	log.Info("Record ID: %s", collectionsWriteMessage.RecordID)
+
+	// TODO:  Come back to this.  This should match
+	// if entryId == collectionsWriteMessage.RecordID {
+	// For now:  If there is no parent ID, ASSUME first entry
+	if collectionsWriteMessage.Descriptor.ParentID == "" {
 
 		// This is the first entry of the record.  Create it and return
 		// If there is an existing record id, there's a problem and return an error
