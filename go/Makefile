@@ -39,4 +39,11 @@ push-docker-github-packages: tag-docker-github-packages
 	docker push ghcr.io/openreserveio/keysvc:$(SEMVER)
 	docker push ghcr.io/openreserveio/keysvc:latest
 
-
+build-release-executables:
+	cd applications/dwn && GOOS=darwin GOARCH=arm64 go build -o dwn-darwin-arm64-$(SEMVER) .
+	cd applications/dwn && GOOS=darwin GOARCH=amd64 go build -o dwn-darwin-amd64-$(SEMVER) .
+	cd applications/dwn && GOOS=linux GOARCH=amd64 go build -o dwn-linux-amd64-$(SEMVER) .
+	cd applications/dwn && GOOS=linux GOARCH=arm64 go build -o dwn-linux-arm64-$(SEMVER) .
+	cd applications/dwn && GOOS=linux GOARCH=386 go build -o dwn-linux-386-$(SEMVER) .
+	cd applications/dwn && GOOS=windows GOARCH=amd64 go build -o dwn-windows-amd64-$(SEMVER) .
+	cd applications/dwn && GOOS=windows GOARCH=386 go build -o dwn-windows-386-$(SEMVER) .
