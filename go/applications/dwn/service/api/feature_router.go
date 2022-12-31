@@ -1,11 +1,13 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api/collections"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/tracing"
 	"net/http"
 	"time"
 )
@@ -27,6 +29,11 @@ func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, maxTime
 }
 
 func (fr *FeatureRouter) Route(requestObject *model.RequestObject) (interface{}, error) {
+
+	// Setup Tracing
+	t := tracing.Tracer("api")
+	_, childSpan := t.Start(context.Background(), "Route Operation")
+	defer childSpan.End()
 
 	// Setup Response Object
 	responseObject := model.ResponseObject{}
