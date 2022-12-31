@@ -5,10 +5,16 @@ import (
 	"encoding/json"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/tracing"
 	"net/http"
 )
 
 func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+
+	// Tracing
+	t := tracing.Tracer("collections")
+	_, childSpan := t.Start(context.Background(), "CollectionsWrite")
+	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
 
@@ -21,11 +27,14 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
+	childSpan.AddEvent("Looking for existing collection")
 	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
 	if err != nil {
+		childSpan.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
 	}
+	childSpan.AddEvent("Looked for existing collection")
 
 	// If no record was found, then we don't need to authorize
 	//var foundCollMessage model.Message

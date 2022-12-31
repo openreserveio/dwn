@@ -1,11 +1,13 @@
 package collection
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
+	"github.com/openreserveio/dwn/go/tracing"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -27,6 +29,11 @@ type StoreCollectionResult struct {
 }
 
 func StoreCollection(collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
+
+	// tracing
+	t := tracing.Tracer("collection")
+	_, sp := t.Start(context.Background(), "Store_Collection")
+	defer sp.End()
 
 	// Need to implement this message process flow per spec:
 	// https://identity.foundation/decentralized-web-node/spec/#retained-message-processing

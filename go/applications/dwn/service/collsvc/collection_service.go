@@ -9,6 +9,7 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
+	"github.com/openreserveio/dwn/go/tracing"
 )
 
 type CollectionService struct {
@@ -34,6 +35,11 @@ func CreateCollectionService(collectionStoreConnectionURI string) (*CollectionSe
 }
 
 func (c CollectionService) StoreCollection(ctx context.Context, request *services.StoreCollectionRequest) (*services.StoreCollectionResponse, error) {
+
+	// Tracing
+	t := tracing.Tracer("collsvc")
+	_, s := t.Start(context.Background(), "StoreCollection")
+	defer s.End()
 
 	response := services.StoreCollectionResponse{}
 	var collectionMessage model.Message
