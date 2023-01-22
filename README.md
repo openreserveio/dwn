@@ -17,10 +17,11 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 - [x] [Create Record and Initial Entry](https://github.com/openreserveio/dwn/pull/19)
 - [x] [CollectionsWrite](https://github.com/openreserveio/dwn/issues/23), [CollectionsDelete](https://github.com/openreserveio/dwn/issues/26), [CollectionsCommit](https://github.com/openreserveio/dwn/issues/25) Message Chains
 - [x] [CollectionsQuery with filters](https://github.com/openreserveio/dwn/issues/27)
+- [ ] [Public Alpha Deployment](https://github.com/openreserveio/dwn/issues/41)
+- [ ] [Opinionated Client Library](https://github.com/openreserveio/dwn/issues/39)
 - [ ] [Hooks](https://github.com/openreserveio/dwn/issues/28) and [Webhooks](https://github.com/openreserveio/dwn/issues/29), [Events](https://github.com/openreserveio/dwn/issues/12)
 - [ ] [Permissions](https://github.com/openreserveio/dwn/issues/30)
 - [x] Docker-based deployment focus
-- [ ] [Opinionated Client Library](https://github.com/openreserveio/dwn/issues/39)
 
 ### For v0.2.0 release (2023 Q2)
 
