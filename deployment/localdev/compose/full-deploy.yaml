@@ -1,5 +1,12 @@
 version: "3.9"
 
+x-default-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+
+
 volumes:
   mysql_data:
       driver: local
@@ -10,37 +17,83 @@ volumes:
     
 services:
 
-  # Telemetry, Metrics, and Monitoring
+  # ********************
+  # Telemetry Components
+  # ********************
+  # Jaeger
   jaeger:
     image: jaegertracing/all-in-one:latest
-    volumes:
-      - "./jaeger-ui.json:/etc/jaeger/jaeger-ui.json"
-    command: --query.ui-config /etc/jaeger/jaeger-ui.json
+    container_name: jaeger
+    command:
+      - "--memory.max-traces"
+      - "10000"
+      - "--query.base-path"
+      - "/jaeger/ui"
+      - "--prometheus.server-url"
+      - "http://prometheus:9090"
+    deploy:
+      resources:
+        limits:
+          memory: 275M
+    restart: always
+    ports:
+      - "16686"                          # Jaeger UI
+      - "4317"                           # OTLP gRPC default port
     environment:
+      - COLLECTOR_OTLP_ENABLED=true
       - METRICS_STORAGE_TYPE=prometheus
-      - PROMETHEUS_SERVER_URL=http://prometheus:9090
-    ports:
-      - "14250:14250"
-      - "14268:14268"
-      - "6831:6831/udp"
-      - "16686:16686"
-      - "16685:16685"
-  otel_collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    logging: *logging
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:9.1.0
+    container_name: grafana
     volumes:
-      - "./otel-collector-config.yml:/etc/otelcol/otel-collector-config.yml"
-    command: --config /etc/otelcol/otel-collector-config.yml
+      - ./grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
     ports:
-      - "8889:8889"
-      - "14278:14278"
+      - "3000:3000"
+    logging: *logging
+
+  # OpenTelemetry Collector
+  otelcol:
+    image: otel/opentelemetry-collector-contrib:0.61.0
+    container_name: otelcol
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+    restart: always
+    command: [ "--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-config-extras.yml" ]
+    volumes:
+      - ./otelcol-config.yml:/etc/otelcol-config.yml
+      - ./otelcol-config-extras.yml:/etc/otelcol-config-extras.yml
+    ports:
+      - "4317:4317"     # OTLP over gRPC receiver
+      - "4318:4318"     # OTLP over HTTP receiver
+      - "9464"          # Prometheus exporter
+      - "8888"          # metrics endpoint
     depends_on:
       - jaeger
+    logging: *logging
+
+  # Prometheus
   prometheus:
-    image: prom/prometheus:latest
+    image: quay.io/prometheus/prometheus:v2.34.0
+    container_name: prometheus
+    command:
+      - --web.console.templates=/etc/prometheus/consoles
+      - --web.console.libraries=/etc/prometheus/console_libraries
+      - --storage.tsdb.retention.time=1h
+      - --config.file=/etc/prometheus/prometheus-config.yaml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.route-prefix=/
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - ./prometheus-config.yaml:/etc/prometheus/prometheus-config.yaml
     ports:
       - "9090:9090"
+    logging: *logging
 
   # Common Infrastructure Components
   eventsqueue:
@@ -83,7 +136,8 @@ services:
     environment:
       - "DWN_COLLSVC.DOCDBCONNECTIONURI=mongodb://openreserveuser:openreservepass@docdb:27017"
       - "DWN_COLLSVC.LISTENPORT=9001"
-      - "OPEN_TELEMETRY_COLLECTOR_URL=http://otel_collector:14278/api/traces"
+      - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4317"
+      - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317"
   api:
     image: "openreserveio/api:latest"
     build:
@@ -97,5 +151,7 @@ services:
       - "DWN_API.LISTENPORT=8080"
       - "DWN_COLLSVC.EXTERNALADDRESS=collsvc"
       - "DWN_COLLSVC.EXTERNALPORT=9001"
-      - "OPEN_TELEMETRY_COLLECTOR_URL=http://otel_collector:14278/api/traces"
+      # - "OPEN_TELEMETRY_COLLECTOR_URL=http://otelcol:4318/v1/traces"
+      - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
+      # - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317"
   

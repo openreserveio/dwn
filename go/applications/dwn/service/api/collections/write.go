@@ -5,15 +5,14 @@ import (
 	"encoding/json"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
-	"github.com/openreserveio/dwn/go/tracing"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 )
 
-func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
 
-	// Tracing
-	t := tracing.Tracer("collections")
-	_, childSpan := t.Start(context.Background(), "CollectionsWrite")
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "CollectionsWrite")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject

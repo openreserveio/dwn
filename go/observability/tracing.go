@@ -1,4 +1,4 @@
-package tracing
+package observability
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -14,10 +16,7 @@ import (
 )
 
 var TP *tracesdk.TracerProvider
-
-func Tracer(packageName string) trace.Tracer {
-	return TP.Tracer(packageName)
-}
+var Tracer trace.Tracer
 
 // Helper function to define sampling.
 // When in development mode, AlwaysSample is defined,
@@ -54,8 +53,18 @@ func newResource(ctx context.Context, serviceName string) *resource.Resource {
 
 // Creates Jaeger exporter
 func exporterToJaeger() (*jaeger.Exporter, error) {
-	log.Info("Open Telemetry Collector URL:  %s", os.Getenv("OPEN_TELEMETRY_COLLECTOR_URL"))
-	return jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(os.Getenv("OPEN_TELEMETRY_COLLECTOR_URL"))))
+	collUrl := os.Getenv("OPEN_TELEMETRY_COLLECTOR_URL")
+	log.Info("Open Telemetry Collector URL:  %s", collUrl)
+	return jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(collUrl)))
+}
+
+// Maybe this will work?
+func exporterToCollector(ctx context.Context) (tracesdk.SpanExporter, error) {
+	collUrl := os.Getenv("OPEN_TELEMETRY_COLLECTOR_URL")
+	log.Info("Open Telemetry Collector URL:  %s", collUrl)
+
+	client := otlptracehttp.NewClient()
+	return otlptrace.New(ctx, client)
 }
 
 // Initiates OpenTelemetry provider sending data to OpenTelemetry Collector.
@@ -67,7 +76,7 @@ func InitProviderWithJaegerExporter(ctx context.Context, serviceName string) (fu
 
 	log.Info("Creating a new Tracing Provider, should only happen once")
 
-	exp, err := exporterToJaeger()
+	exp, err := exporterToCollector(ctx)
 	if err != nil {
 		log.Fatal("error: %s", err.Error())
 		os.Exit(1)
@@ -79,5 +88,6 @@ func InitProviderWithJaegerExporter(ctx context.Context, serviceName string) (fu
 	)
 	otel.SetTracerProvider(tp)
 	TP = tp
+	Tracer = tp.Tracer(serviceName)
 	return tp.Shutdown, nil
 }

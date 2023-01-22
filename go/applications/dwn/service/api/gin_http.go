@@ -9,7 +9,7 @@ import (
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
-	"github.com/openreserveio/dwn/go/tracing"
+	"github.com/openreserveio/dwn/go/observability"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"google.golang.org/grpc"
 	"net/http"
@@ -42,7 +42,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	// Configure Tracing
 	ginEngine := gin.Default()
-	ginEngine.Use(otelgin.Middleware("DWN API SERVICE"))
+	ginEngine.Use(otelgin.Middleware("DWN_API_SERVICE"))
 
 	apiService := APIService{
 		ListenAddress: apiServiceOptions.Address,
@@ -66,8 +66,7 @@ func (apiService APIService) Run() error {
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	t := tracing.Tracer("api")
-	_, childSpan := t.Start(context.Background(), "DWNRequest")
+	_, childSpan := observability.Tracer.Start(ctx, "DWNRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Parsing Request Object")
@@ -80,7 +79,7 @@ func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 	childSpan.AddEvent("Request Object Parsed")
 
 	childSpan.AddEvent("Routing Request")
-	responseObject, err := apiService.Router.Route(ro)
+	responseObject, err := apiService.Router.Route(ctx, ro)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -105,11 +104,11 @@ func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestO
 
 func (apiService APIService) HandleFeatureRequest(ctx *gin.Context) {
 
-	t := tracing.Tracer("api")
-	_, sp := t.Start(context.Background(), "HandleFeatureRequest")
-	defer sp.End()
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(context.Background(), "HandleFeatureRequest")
+	defer childSpan.End()
 
-	sp.AddEvent("Current Feature Detection!")
+	childSpan.AddEvent("Current Feature Detection!")
 	ctx.JSON(http.StatusOK, model.CurrentFeatureDetection)
 
 	return

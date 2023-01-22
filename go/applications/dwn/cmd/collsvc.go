@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -14,6 +16,9 @@ var collsvcCmd = &cobra.Command{
 	Short: "OpenReserve DWN Backend CollectionService",
 	Long:  `Backend gRPC Service for managing collections, schemas, and schema definitions`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		log.Info("Observability")
+		observability.InitProviderWithJaegerExporter(context.Background(), "Collection Service")
 
 		log.Info("Starting DWN Backend CollectionService")
 		config, err := configuration.Config()

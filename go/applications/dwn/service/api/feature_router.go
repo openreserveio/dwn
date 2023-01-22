@@ -7,7 +7,7 @@ import (
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
-	"github.com/openreserveio/dwn/go/tracing"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 	"time"
 )
@@ -28,11 +28,10 @@ func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, maxTime
 
 }
 
-func (fr *FeatureRouter) Route(requestObject *model.RequestObject) (interface{}, error) {
+func (fr *FeatureRouter) Route(ctx context.Context, requestObject *model.RequestObject) (interface{}, error) {
 
-	// Setup Tracing
-	t := tracing.Tracer("api")
-	_, childSpan := t.Start(context.Background(), "Route Operation")
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "Route Operation")
 	defer childSpan.End()
 
 	// Setup Response Object
@@ -46,7 +45,7 @@ func (fr *FeatureRouter) Route(requestObject *model.RequestObject) (interface{},
 	// We can probably parallel these message processors
 	for idx, message := range requestObject.Messages {
 		log.Info("Processing message %d", idx)
-		go fr.processMessage(idx, procChan, &message)
+		go fr.processMessage(ctx, idx, procChan, &message)
 	}
 
 	// Listen for all responses to come back, wrap the result objects into the response object and respond
@@ -76,7 +75,11 @@ type MessageProcResult struct {
 }
 
 // idx is for ordering, MessageProcResult wraps the messageresult object and the index for the responseobject
-func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResult, message *model.Message) {
+func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, procComm chan *MessageProcResult, message *model.Message) {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "processMessage")
+	defer childSpan.End()
 
 	// Support Simple Test Messages
 	if message.RecordID == "TEST" && message.Data == "TEST" {
@@ -99,18 +102,23 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 	switch message.Descriptor.Method {
 
 	case model.METHOD_COLLECTIONS_QUERY:
-		messageResult = collections.CollectionsQuery(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Query")
+		messageResult = collections.CollectionsQuery(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_WRITE:
-		messageResult = collections.CollectionsWrite(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Write")
+		messageResult = collections.CollectionsWrite(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_COMMIT:
-		messageResult = collections.CollectionsCommit(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Commit")
+		messageResult = collections.CollectionsCommit(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_DELETE:
-		messageResult = collections.CollectionsDelete(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Delete")
+		messageResult = collections.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
 
 	default:
+		childSpan.AddEvent("Bad Method")
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
 
 	}

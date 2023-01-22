@@ -5,10 +5,15 @@ import (
 	"encoding/json"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 )
 
-func CollectionsCommit(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func CollectionsCommit(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "CollectionsCommit")
+	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
 

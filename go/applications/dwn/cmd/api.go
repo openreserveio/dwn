@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -14,6 +16,9 @@ var apiCmd = &cobra.Command{
 	Short: "OpenReserve DWN Public APIs",
 	Long:  `APIs that confirm to the DIF DWN Specification`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		log.Info("Observability")
+		observability.InitProviderWithJaegerExporter(context.Background(), "API Service")
 
 		log.Info("Starting DWN APIs")
 		config, err := configuration.Config()
