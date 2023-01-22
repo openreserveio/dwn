@@ -30,14 +30,14 @@ type Descriptor struct {
 	Filter CollectionsQueryFilter `json:"filter,omitempty"`
 
 	// CollectionsWrite, Delete, Commit per https://identity.foundation/decentralized-web-node/spec/#collectionswrite
-	ParentID        string    `json:"parentId,omitempty" bson:"parent_id"`
-	Protocol        string    `json:"protocol,omitempty" bson:"protocol"`
-	ProtocolVersion string    `json:"protocolVersion,omitempty" bson:"protocol_version"`
-	Schema          string    `json:"schema,omitempty" bson:"schema"`
-	CommitStrategy  string    `json:"commitStrategy,omitempty" bson:"commit_strategy"`
-	Published       bool      `json:"published,omitempty" bson:"published"`
-	DateCreated     time.Time `json:"dateCreated,omitempty" bson:"date_created"`
-	DatePublished   time.Time `json:"datePublished,omitempty" bson:"date_published"`
+	ParentID        string     `json:"parentId,omitempty" bson:"parent_id"`
+	Protocol        string     `json:"protocol,omitempty" bson:"protocol"`
+	ProtocolVersion string     `json:"protocolVersion,omitempty" bson:"protocol_version"`
+	Schema          string     `json:"schema,omitempty" bson:"schema"`
+	CommitStrategy  string     `json:"commitStrategy,omitempty" bson:"commit_strategy"`
+	Published       bool       `json:"published,omitempty" bson:"published"`
+	DateCreated     time.Time  `json:"dateCreated,omitempty" bson:"date_created"`
+	DatePublished   *time.Time `json:"datePublished,omitempty" bson:"date_published"`
 }
 
 type MessageProcessing struct {

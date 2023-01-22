@@ -43,7 +43,7 @@ var _ = Describe("Write Collection", func() {
 			CommitStrategy:  "",
 			Published:       false,
 			DateCreated:     time.Now(),
-			DatePublished:   time.Now(),
+			DatePublished:   nil,
 		}
 
 		processing := model.MessageProcessing{
@@ -110,7 +110,7 @@ var _ = Describe("Write Collection", func() {
 				CommitStrategy:  "",
 				Published:       false,
 				DateCreated:     time.Now(),
-				DatePublished:   time.Now(),
+				DatePublished:   nil,
 			}
 
 			secondProcessing := model.MessageProcessing{
@@ -170,7 +170,7 @@ var _ = Describe("Write Collection", func() {
 				CommitStrategy:  "",
 				Published:       false,
 				DateCreated:     time.Now(),
-				DatePublished:   time.Now(),
+				DatePublished:   nil,
 			}
 
 			commitProcessing := model.MessageProcessing{
