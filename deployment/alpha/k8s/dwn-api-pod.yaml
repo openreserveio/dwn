@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dwn_api
+spec:
+  containers:
+    - name: dwn_api
+      image: ghcr.io/openreserveio/collsvc:latest
+      ports:
+        - containerPort: 8080
+      env:
+        - name: "DWN_API.LISTENPORT"
+          value: "8080"
+        - name: "DWN_COLLSVC.EXTERNALADDRESS"
+          value: "collsvc"
+        - name: "DWN_COLLSVC.EXTERNALPORT"
+          value: "9001"
+        - name: "TEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+          value: "http://otelcol:4318/v1/traces"
+    - name: dwn_api_otelcoll
+      image: otel/opentelemetry-collector-contrib:0.61.0
+      ports:
+        - containerPort: 4317
+        - containerPort: 4318
+        - containerPort: 9464
+        - containerPort: 8888

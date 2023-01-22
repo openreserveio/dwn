@@ -27,5 +27,8 @@ deployment/opentelemetry-demo
 build
 
 # Terraform
+.terraform.tfstate.lock.info
 .terraform.lock.hcl
 .terraform
+terraform.tfstate
+terraform.tfstate.backup
