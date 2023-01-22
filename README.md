@@ -33,6 +33,7 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 ### To be scheduled:
 
 - [ ] Support [DID Registration](https://identity.foundation/did-registration/)
+- [ ] Automated release to alpha.openreserve.io open testing channel
 
 
 # Documentation
