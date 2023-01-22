@@ -5,10 +5,15 @@ import (
 	"encoding/json"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 )
 
-func CollectionsCommit(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func CollectionsCommit(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "CollectionsCommit")
+	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
 
@@ -21,7 +26,7 @@ func CollectionsCommit(collSvcClient services.CollectionServiceClient, message *
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
-	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
+	findCollResp, err := collSvcClient.FindCollection(ctx, &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
@@ -64,7 +69,7 @@ func CollectionsCommit(collSvcClient services.CollectionServiceClient, message *
 	storeReq := services.StoreCollectionRequest{
 		Message: encodedMsg,
 	}
-	storeResp, err := collSvcClient.StoreCollection(context.Background(), &storeReq)
+	storeResp, err := collSvcClient.StoreCollection(ctx, &storeReq)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj

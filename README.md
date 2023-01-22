@@ -10,7 +10,7 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 
 ## Progress
 
-### For initial v0.1.0 release (2022 Q4)
+### For initial v0.1.0 release (2023 Q1)
 
 - [x] [Initial API layer](https://github.com/openreserveio/dwn/pull/4)
 - [x] [Initial message processing, collections write/read](https://github.com/openreserveio/dwn/pull/9)
@@ -20,8 +20,9 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 - [ ] [Hooks](https://github.com/openreserveio/dwn/issues/28) and [Webhooks](https://github.com/openreserveio/dwn/issues/29), [Events](https://github.com/openreserveio/dwn/issues/12)
 - [ ] [Permissions](https://github.com/openreserveio/dwn/issues/30)
 - [x] Docker-based deployment focus
+- [ ] [Opinionated Client Library](https://github.com/openreserveio/dwn/issues/39)
 
-### For v0.2.0 release (2023 Q1)
+### For v0.2.0 release (2023 Q2)
 
 - [ ] Protocols support
 - [ ] Sync
@@ -32,6 +33,7 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 ### To be scheduled:
 
 - [ ] Support [DID Registration](https://identity.foundation/did-registration/)
+- [ ] Automated release to alpha.openreserve.io open testing channel
 
 
 # Documentation

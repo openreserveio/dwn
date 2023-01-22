@@ -5,10 +5,15 @@ import (
 	"encoding/json"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 )
 
-func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "CollectionsWrite")
+	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
 
@@ -21,11 +26,14 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
-	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
+	childSpan.AddEvent("Looking for existing collection")
+	findCollResp, err := collSvcClient.FindCollection(ctx, &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
 	if err != nil {
+		childSpan.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
 	}
+	childSpan.AddEvent("Looked for existing collection")
 
 	// If no record was found, then we don't need to authorize
 	//var foundCollMessage model.Message
@@ -70,7 +78,7 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 		Document:  []byte(message.Data),
 	}
 
-	validateCollResponse, err := collSvcClient.ValidateCollection(context.Background(), &validateCollRequest)
+	validateCollResponse, err := collSvcClient.ValidateCollection(ctx, &validateCollRequest)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
@@ -86,7 +94,7 @@ func CollectionsWrite(collSvcClient services.CollectionServiceClient, message *m
 	storeReq := services.StoreCollectionRequest{
 		Message: encodedMsg,
 	}
-	storeResp, err := collSvcClient.StoreCollection(context.Background(), &storeReq)
+	storeResp, err := collSvcClient.StoreCollection(ctx, &storeReq)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj

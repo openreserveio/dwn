@@ -1,13 +1,14 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api/collections"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
-	"time"
 )
 
 type FeatureRouter struct {
@@ -26,34 +27,25 @@ func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, maxTime
 
 }
 
-func (fr *FeatureRouter) Route(requestObject *model.RequestObject) (interface{}, error) {
+func (fr *FeatureRouter) Route(ctx context.Context, requestObject *model.RequestObject) (interface{}, error) {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "Route Operation")
+	defer childSpan.End()
 
 	// Setup Response Object
 	responseObject := model.ResponseObject{}
 	responseObject.Replies = make([]model.MessageResultObject, len(requestObject.Messages))
 
-	// Setup chan to receive responses
-	procChan := make(chan *MessageProcResult)
-
 	// Process Messages and append responses to responseObject
-	// We can probably parallel these message processors
 	for idx, message := range requestObject.Messages {
+
 		log.Info("Processing message %d", idx)
-		go fr.processMessage(idx, procChan, &message)
-	}
-
-	// Listen for all responses to come back, wrap the result objects into the response object and respond
-	for i := 0; i < len(requestObject.Messages); i++ {
-
-		// Use a maximum timeout for all the message processors
-		select {
-		case res := <-procChan:
-			log.Info("Received message response %d", res.Index)
-			responseObject.Replies[res.Index] = *res.MessageResult
-		case <-time.After(15 * time.Second):
-			// Generic Timeout error for remaining response objects
-			fr.genericTimeouts(&responseObject)
+		res, err := fr.processMessage(ctx, idx, &message)
+		if err != nil {
+			return nil, err
 		}
+		responseObject.Replies[idx] = *res.MessageResult
 
 	}
 
@@ -69,20 +61,24 @@ type MessageProcResult struct {
 }
 
 // idx is for ordering, MessageProcResult wraps the messageresult object and the index for the responseobject
-func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResult, message *model.Message) {
+func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *model.Message) (*MessageProcResult, error) {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "processMessage")
+	defer childSpan.End()
 
 	// Support Simple Test Messages
 	if message.RecordID == "TEST" && message.Data == "TEST" {
 
 		// This is a test message
-		procComm <- &MessageProcResult{
+		procComm := &MessageProcResult{
 			Index: idx,
 			MessageResult: &model.MessageResultObject{
 				Status:  model.ResponseStatus{Code: http.StatusOK},
 				Entries: nil,
 			},
 		}
-		return
+		return procComm, nil
 
 	}
 
@@ -92,18 +88,23 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 	switch message.Descriptor.Method {
 
 	case model.METHOD_COLLECTIONS_QUERY:
-		messageResult = collections.CollectionsQuery(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Query")
+		messageResult = collections.CollectionsQuery(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_WRITE:
-		messageResult = collections.CollectionsWrite(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Write")
+		messageResult = collections.CollectionsWrite(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_COMMIT:
-		messageResult = collections.CollectionsCommit(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Commit")
+		messageResult = collections.CollectionsCommit(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_COLLECTIONS_DELETE:
-		messageResult = collections.CollectionsDelete(fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Collections Delete")
+		messageResult = collections.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
 
 	default:
+		childSpan.AddEvent("Bad Method")
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
 
 	}
@@ -113,7 +114,7 @@ func (fr *FeatureRouter) processMessage(idx int, procComm chan *MessageProcResul
 		Index:         idx,
 		MessageResult: &messageResult,
 	}
-	procComm <- &procResult
+	return &procResult, nil
 
 }
 

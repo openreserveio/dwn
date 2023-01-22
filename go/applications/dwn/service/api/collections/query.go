@@ -5,28 +5,33 @@ import (
 	"fmt"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 )
 
-func CollectionsQuery(collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func CollectionsQuery(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "CollectionsQuery")
+	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
 
 	// First, make sure authorizations are valid and correct for this message
 	if !model.VerifyAuthorization(message) {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Unable to verify authorization(s)."}
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Unable to verify authorization(s)."}
 		return messageResultObj
 	}
 
 	// Next, find the schema and make sure it has been registered
-	schemaUri := message.Descriptor.Schema
+	schemaUri := message.Descriptor.Filter.Schema
 	if schemaUri == "" {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a CollectionsWrite"}
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a CollectionsQuery"}
 		return messageResultObj
 	}
 
 	// Is this for a specific record, or all records since context?
-	if message.RecordID == "" {
+	if message.Descriptor.Filter.RecordID == "" {
 		// TODO:  For now we are only going to allow single message access
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "TODO:  For now we are only going to allow single message access"}
 		return messageResultObj
@@ -35,12 +40,12 @@ func CollectionsQuery(collSvcClient services.CollectionServiceClient, message *m
 	// Get the collection item
 	req := services.FindCollectionRequest{
 		QueryType:    services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI,
-		RecordId:     message.RecordID,
-		SchemaURI:    message.Descriptor.Schema,
+		RecordId:     message.Descriptor.Filter.RecordID,
+		SchemaURI:    message.Descriptor.Filter.Schema,
 		RequestorDID: message.Processing.AuthorDID,
 	}
 
-	findCollResponse, err := collSvcClient.FindCollection(context.Background(), &req)
+	findCollResponse, err := collSvcClient.FindCollection(ctx, &req)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj

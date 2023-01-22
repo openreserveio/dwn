@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -42,6 +43,10 @@ func CreateCollectionDocumentDBStore(connectionUri string) (*CollectionDocumentD
 
 func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.CollectionRecord, initialEntry *storage.MessageEntry) error {
 
+	// tracing
+	_, sp := observability.Tracer.Start(context.Background(), "CreateCollectionRecord")
+	defer sp.End()
+
 	initialEntry.RecordID = record.RecordID
 	initialEntry.MessageEntryID = uuid.NewString()
 	_, err := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).InsertOne(context.Background(), initialEntry)
@@ -64,6 +69,10 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 
 func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
 
+	// tracing
+	_, sp := observability.Tracer.Start(context.Background(), "SaveCollectionRecord")
+	defer sp.End()
+
 	_, err := store.DB.Collection(COLLECTION_RECORD).ReplaceOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, record.RecordID}}, record)
 	if err != nil {
 		return err
@@ -73,6 +82,10 @@ func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.Col
 }
 
 func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
+
+	// tracing
+	_, sp := observability.Tracer.Start(context.Background(), "AddCollectionMessageEntry")
+	defer sp.End()
 
 	// Get Record
 	if entry.Descriptor.ParentID == "" {
@@ -94,6 +107,10 @@ func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage
 
 func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID string) *storage.MessageEntry {
 
+	// tracing
+	_, sp := observability.Tracer.Start(context.Background(), "GetMessageEntryByID")
+	defer sp.End()
+
 	res := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).FindOne(context.Background(), bson.D{{COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME, messageEntryID}})
 	if res.Err() != nil {
 		log.Error("Error getting message entry by ID:  %v", res.Err())
@@ -111,6 +128,10 @@ func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID strin
 }
 
 func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *storage.CollectionRecord {
+
+	// tracing
+	_, sp := observability.Tracer.Start(context.Background(), "GetCollectionRecord")
+	defer sp.End()
 
 	res := store.DB.Collection(COLLECTION_RECORD).FindOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, recordId}})
 	if res.Err() != nil {

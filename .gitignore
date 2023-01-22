@@ -20,4 +20,5 @@
 # Mac Shit
 .DS_Store
 
-
+# open telemetry demo
+deployment/opentelemetry-demo

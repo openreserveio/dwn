@@ -8,6 +8,8 @@ import (
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"google.golang.org/grpc"
 	"net/http"
 )
@@ -36,10 +38,15 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	collSvcClient := services.NewCollectionServiceClient(clientConn)
 	fr, err := CreateFeatureRouter(collSvcClient, 15)
+
+	// Configure Tracing
+	ginEngine := gin.Default()
+	ginEngine.Use(otelgin.Middleware("DWN_API_SERVICE"))
+
 	apiService := APIService{
 		ListenAddress: apiServiceOptions.Address,
 		ListenPort:    apiServiceOptions.Port,
-		Gin:           gin.Default(),
+		Gin:           ginEngine,
 		CollSvcClient: &collSvcClient,
 		Router:        fr,
 	}
@@ -57,24 +64,36 @@ func (apiService APIService) Run() error {
 
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "DWNRequest")
+	defer childSpan.End()
+
+	childSpan.AddEvent("Parsing Request Object")
 	ro, err := apiService.GetRequestObject(ctx)
 	if err != nil {
 		log.Error("Error while parsing request object:  %v", err)
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	childSpan.AddEvent("Request Object Parsed")
 
-	responseObject, err := apiService.Router.Route(ro)
+	childSpan.AddEvent("Routing Request")
+	responseObject, err := apiService.Router.Route(ctx, ro)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	childSpan.AddEvent("Request routed with response")
 
 	ctx.JSON(200, &responseObject)
 
 }
 
 func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestObject, error) {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "GetRequestObject")
+	defer childSpan.End()
 
 	var request model.RequestObject
 	err := ctx.BindJSON(&request)
@@ -88,7 +107,13 @@ func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestO
 
 func (apiService APIService) HandleFeatureRequest(ctx *gin.Context) {
 
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "HandleFeatureRequest")
+	defer childSpan.End()
+
+	childSpan.AddEvent("Current Feature Detection!")
 	ctx.JSON(http.StatusOK, model.CurrentFeatureDetection)
+
 	return
 
 }

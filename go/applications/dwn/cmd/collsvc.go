@@ -4,6 +4,7 @@ import (
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -15,13 +16,18 @@ var collsvcCmd = &cobra.Command{
 	Long:  `Backend gRPC Service for managing collections, schemas, and schema definitions`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		log.Info("Observability")
+		ctx := cmd.Context()
+		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "Collection Service")
+		defer sd(ctx)
+
 		log.Info("Starting DWN Backend CollectionService")
 		config, err := configuration.Config()
 		if err != nil {
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
 		}
-		log.Error("Stopping API Service:  %v", collsvc.Start(config))
+		log.Error("Stopping API Service:  %v", collsvc.Start(ctx, config))
 
 	},
 }
