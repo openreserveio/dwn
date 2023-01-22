@@ -9,7 +9,6 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
-	"time"
 )
 
 type FeatureRouter struct {
@@ -38,28 +37,15 @@ func (fr *FeatureRouter) Route(ctx context.Context, requestObject *model.Request
 	responseObject := model.ResponseObject{}
 	responseObject.Replies = make([]model.MessageResultObject, len(requestObject.Messages))
 
-	// Setup chan to receive responses
-	procChan := make(chan *MessageProcResult)
-
 	// Process Messages and append responses to responseObject
-	// We can probably parallel these message processors
 	for idx, message := range requestObject.Messages {
+
 		log.Info("Processing message %d", idx)
-		go fr.processMessage(ctx, idx, procChan, &message)
-	}
-
-	// Listen for all responses to come back, wrap the result objects into the response object and respond
-	for i := 0; i < len(requestObject.Messages); i++ {
-
-		// Use a maximum timeout for all the message processors
-		select {
-		case res := <-procChan:
-			log.Info("Received message response %d", res.Index)
-			responseObject.Replies[res.Index] = *res.MessageResult
-		case <-time.After(15 * time.Second):
-			// Generic Timeout error for remaining response objects
-			fr.genericTimeouts(&responseObject)
+		res, err := fr.processMessage(ctx, idx, &message)
+		if err != nil {
+			return nil, err
 		}
+		responseObject.Replies[idx] = *res.MessageResult
 
 	}
 
@@ -75,7 +61,7 @@ type MessageProcResult struct {
 }
 
 // idx is for ordering, MessageProcResult wraps the messageresult object and the index for the responseobject
-func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, procComm chan *MessageProcResult, message *model.Message) {
+func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *model.Message) (*MessageProcResult, error) {
 
 	// Instrumentation
 	_, childSpan := observability.Tracer.Start(ctx, "processMessage")
@@ -85,14 +71,14 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, procComm c
 	if message.RecordID == "TEST" && message.Data == "TEST" {
 
 		// This is a test message
-		procComm <- &MessageProcResult{
+		procComm := &MessageProcResult{
 			Index: idx,
 			MessageResult: &model.MessageResultObject{
 				Status:  model.ResponseStatus{Code: http.StatusOK},
 				Entries: nil,
 			},
 		}
-		return
+		return procComm, nil
 
 	}
 
@@ -128,7 +114,7 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, procComm c
 		Index:         idx,
 		MessageResult: &messageResult,
 	}
-	procComm <- &procResult
+	return &procResult, nil
 
 }
 

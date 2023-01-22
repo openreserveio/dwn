@@ -27,7 +27,7 @@ func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServ
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
 	childSpan.AddEvent("Looking for existing collection")
-	findCollResp, err := collSvcClient.FindCollection(context.Background(), &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
+	findCollResp, err := collSvcClient.FindCollection(ctx, &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
 	if err != nil {
 		childSpan.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
@@ -78,7 +78,7 @@ func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServ
 		Document:  []byte(message.Data),
 	}
 
-	validateCollResponse, err := collSvcClient.ValidateCollection(context.Background(), &validateCollRequest)
+	validateCollResponse, err := collSvcClient.ValidateCollection(ctx, &validateCollRequest)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
@@ -94,7 +94,7 @@ func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServ
 	storeReq := services.StoreCollectionRequest{
 		Message: encodedMsg,
 	}
-	storeResp, err := collSvcClient.StoreCollection(context.Background(), &storeReq)
+	storeResp, err := collSvcClient.StoreCollection(ctx, &storeReq)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj

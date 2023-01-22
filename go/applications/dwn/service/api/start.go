@@ -1,12 +1,13 @@
 package api
 
 import (
+	"context"
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/framework"
 	"github.com/openreserveio/dwn/go/log"
 )
 
-func Start(config configuration.Configuration) error {
+func Start(ctx context.Context, config configuration.Configuration) error {
 
 	apiServiceOptions := framework.ServiceOptions{
 		Address:    config.GetAPIListenAddress(),

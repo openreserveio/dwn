@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -92,6 +91,10 @@ func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
 func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestObject, error) {
 
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "GetRequestObject")
+	defer childSpan.End()
+
 	var request model.RequestObject
 	err := ctx.BindJSON(&request)
 	if err != nil {
@@ -105,7 +108,7 @@ func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestO
 func (apiService APIService) HandleFeatureRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(context.Background(), "HandleFeatureRequest")
+	_, childSpan := observability.Tracer.Start(ctx, "HandleFeatureRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Current Feature Detection!")

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api"
 	"github.com/openreserveio/dwn/go/log"
@@ -18,7 +17,9 @@ var apiCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Info("Observability")
-		observability.InitProviderWithJaegerExporter(context.Background(), "API Service")
+		ctx := cmd.Context()
+		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "API Service")
+		defer sd(ctx)
 
 		log.Info("Starting DWN APIs")
 		config, err := configuration.Config()
@@ -26,7 +27,7 @@ var apiCmd = &cobra.Command{
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
 		}
-		log.Error("Stopping API Service:  %v", api.Start(config))
+		log.Error("Stopping API Service:  %v", api.Start(ctx, config))
 
 	},
 }

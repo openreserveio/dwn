@@ -45,7 +45,7 @@ func CollectionsQuery(ctx context.Context, collSvcClient services.CollectionServ
 		RequestorDID: message.Processing.AuthorDID,
 	}
 
-	findCollResponse, err := collSvcClient.FindCollection(context.Background(), &req)
+	findCollResponse, err := collSvcClient.FindCollection(ctx, &req)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj

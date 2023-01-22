@@ -1,6 +1,7 @@
 package collsvc
 
 import (
+	"context"
 	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/generated/services"
@@ -10,7 +11,7 @@ import (
 	"os"
 )
 
-func Start(config configuration.Configuration) error {
+func Start(ctx context.Context, config configuration.Configuration) error {
 
 	// Start Collection Service
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.GetCollectionServiceListenAddress(), config.GetCollectionServiceListenPort()))

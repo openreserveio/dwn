@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/openreserveio/dwn/go/log"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -40,9 +39,7 @@ func newResource(ctx context.Context, serviceName string) *resource.Resource {
 		resource.WithProcess(),
 		resource.WithTelemetrySDK(),
 		resource.WithHost(),
-		resource.WithAttributes(semconv.ServiceNameKey.String(serviceName),
-			attribute.String("environment", os.Getenv("GO_ENV")),
-		),
+		resource.WithAttributes(semconv.ServiceNameKey.String(serviceName)),
 	)
 	if err != nil {
 		log.Fatal("%s: %v", "Failed to create resource", err)

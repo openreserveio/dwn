@@ -26,6 +26,6 @@ func main() {
 	}
 	defer sd(ctx)
 
-	cmd.Execute()
+	cmd.Execute(ctx)
 
 }
