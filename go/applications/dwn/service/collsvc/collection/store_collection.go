@@ -28,10 +28,10 @@ type StoreCollectionResult struct {
 	Error    error
 }
 
-func StoreCollection(collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
+func StoreCollection(ctx context.Context, collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "Store_Collection")
+	_, sp := observability.Tracer.Start(ctx, "Store_Collection")
 	defer sp.End()
 
 	// Need to implement this message process flow per spec:
@@ -40,7 +40,7 @@ func StoreCollection(collectionStore storage.CollectionStore, collectionMessage 
 	switch collectionMessage.Descriptor.Method {
 
 	case model.METHOD_COLLECTIONS_WRITE:
-		err := collectionsWrite(collectionStore, collectionMessage)
+		err := collectionsWrite(ctx, collectionStore, collectionMessage)
 		if err != nil {
 			result.Status = "ERROR"
 			result.Error = err
@@ -50,7 +50,7 @@ func StoreCollection(collectionStore storage.CollectionStore, collectionMessage 
 		result.RecordID = collectionMessage.RecordID
 
 	case model.METHOD_COLLECTIONS_COMMIT:
-		err := collectionsCommit(collectionStore, collectionMessage)
+		err := collectionsCommit(ctx, collectionStore, collectionMessage)
 		if err != nil {
 			result.Status = "ERROR"
 			result.Error = err
@@ -69,7 +69,11 @@ func StoreCollection(collectionStore storage.CollectionStore, collectionMessage 
 	return &result, nil
 }
 
-func collectionsCommit(collectionsStore storage.CollectionStore, collectionsCommitMessage *model.Message) error {
+func collectionsCommit(ctx context.Context, collectionsStore storage.CollectionStore, collectionsCommitMessage *model.Message) error {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "Commit_Collection")
+	defer sp.End()
 
 	// Retrieve the currently active CollectionsWrite entry for the recordId specified in the inbound CollectionsCommit
 	// message. If there is no currently active CollectionsWrite entry, discard the inbound message and cease processing.
@@ -123,7 +127,11 @@ func collectionsCommit(collectionsStore storage.CollectionStore, collectionsComm
 
 }
 
-func collectionsWrite(collectionStore storage.CollectionStore, collectionsWriteMessage *model.Message) error {
+func collectionsWrite(ctx context.Context, collectionStore storage.CollectionStore, collectionsWriteMessage *model.Message) error {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "Write_Collection")
+	defer sp.End()
 
 	/*
 			Generate the message’s Entry ID by performing the Record ID Generation Process.

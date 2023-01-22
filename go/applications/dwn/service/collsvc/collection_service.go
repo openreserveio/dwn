@@ -37,7 +37,7 @@ func CreateCollectionService(collectionStoreConnectionURI string) (*CollectionSe
 func (c CollectionService) StoreCollection(ctx context.Context, request *services.StoreCollectionRequest) (*services.StoreCollectionResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "StoreCollection")
+	_, sp := observability.Tracer.Start(ctx, "StoreCollection")
 	defer sp.End()
 
 	response := services.StoreCollectionResponse{}
@@ -52,7 +52,7 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_COMMIT ||
 		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_DELETE {
 
-		result, err := collection.StoreCollection(c.CollectionStore, &collectionMessage)
+		result, err := collection.StoreCollection(ctx, c.CollectionStore, &collectionMessage)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
@@ -77,12 +77,16 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 
 func (c CollectionService) FindCollection(ctx context.Context, request *services.FindCollectionRequest) (*services.FindCollectionResponse, error) {
 
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "FindCollection")
+	defer sp.End()
+
 	response := services.FindCollectionResponse{}
 
 	// TODO: We are only doing single record finds right now
 	if request.QueryType == services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI {
 
-		result, err := collection.FindCollectionBySchemaAndRecordID(c.CollectionStore, request.SchemaURI, request.RecordId)
+		result, err := collection.FindCollectionBySchemaAndRecordID(ctx, c.CollectionStore, request.SchemaURI, request.RecordId)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil

@@ -1,6 +1,10 @@
 package collection
 
-import "github.com/openreserveio/dwn/go/storage"
+import (
+	"context"
+	"github.com/openreserveio/dwn/go/observability"
+	"github.com/openreserveio/dwn/go/storage"
+)
 
 type FindCollectionResult struct {
 	Status                string
@@ -11,7 +15,11 @@ type FindCollectionResult struct {
 	LatestCheckpointEntry *storage.MessageEntry
 }
 
-func FindCollectionBySchemaAndRecordID(collectionStore storage.CollectionStore, schemaUri string, recordId string) (*FindCollectionResult, error) {
+func FindCollectionBySchemaAndRecordID(ctx context.Context, collectionStore storage.CollectionStore, schemaUri string, recordId string) (*FindCollectionResult, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "FindCollectionBySchemaAndRecordID")
+	defer sp.End()
 
 	collRecord := collectionStore.GetCollectionRecord(recordId)
 	if collRecord == nil {
