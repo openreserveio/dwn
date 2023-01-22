@@ -25,3 +25,7 @@ deployment/opentelemetry-demo
 
 # Build Dir
 build
+
+# Terraform
+.terraform.lock.hcl
+.terraform
