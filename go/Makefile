@@ -1,4 +1,4 @@
-SEMVER := 0.0.6-alpha
+SEMVER := 0.0.7-alpha
 
 generate-protobuf:
 	protoc --proto_path=../servicedef --go_out=generated/services/ --go_opt=paths=source_relative --go-grpc_out=generated/services/ --go-grpc_opt=paths=source_relative ../servicedef/backend_services.proto
@@ -40,10 +40,11 @@ push-docker-github-packages: tag-docker-github-packages
 	docker push ghcr.io/openreserveio/keysvc:latest
 
 build-release-executables:
-	cd applications/dwn && GOOS=darwin GOARCH=arm64 go build -o dwn-darwin-arm64-$(SEMVER) .
-	cd applications/dwn && GOOS=darwin GOARCH=amd64 go build -o dwn-darwin-amd64-$(SEMVER) .
-	cd applications/dwn && GOOS=linux GOARCH=amd64 go build -o dwn-linux-amd64-$(SEMVER) .
-	cd applications/dwn && GOOS=linux GOARCH=arm64 go build -o dwn-linux-arm64-$(SEMVER) .
-	cd applications/dwn && GOOS=linux GOARCH=386 go build -o dwn-linux-386-$(SEMVER) .
-	cd applications/dwn && GOOS=windows GOARCH=amd64 go build -o dwn-windows-amd64-$(SEMVER) .
-	cd applications/dwn && GOOS=windows GOARCH=386 go build -o dwn-windows-386-$(SEMVER) .
+	mkdir -p build/release
+	cd applications/dwn && GOOS=darwin GOARCH=arm64 go build -o ../../build/release/dwn-darwin-arm64-$(SEMVER) .
+	cd applications/dwn && GOOS=darwin GOARCH=amd64 go build -o ../../build/release/dwn-darwin-amd64-$(SEMVER) .
+	cd applications/dwn && GOOS=linux GOARCH=amd64 go build -o ../../build/release/dwn-linux-amd64-$(SEMVER) .
+	cd applications/dwn && GOOS=linux GOARCH=arm64 go build -o ../../build/release/dwn-linux-arm64-$(SEMVER) .
+	cd applications/dwn && GOOS=linux GOARCH=386 go build -o ../../build/release/dwn-linux-386-$(SEMVER) .
+	cd applications/dwn && GOOS=windows GOARCH=amd64 go build -o ../../build/release/dwn-windows-amd64-$(SEMVER) .
+	cd applications/dwn && GOOS=windows GOARCH=386 go build -o ../../build/release/dwn-windows-386-$(SEMVER) .

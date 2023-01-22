@@ -22,3 +22,6 @@
 
 # open telemetry demo
 deployment/opentelemetry-demo
+
+# Build Dir
+build
