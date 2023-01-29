@@ -14,10 +14,14 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/integration-tests/testutils"
 	"net/http"
+	"os"
 	"time"
 )
 
 var _ = Describe("Write Collection", func() {
+
+	DWN_HOST := os.Getenv("DWN_API_HOST")
+	DWN_PORT := os.Getenv("DWN_API_PORT")
 
 	Describe("Writing a brand new collection item", func() {
 
@@ -75,7 +79,7 @@ var _ = Describe("Write Collection", func() {
 			res, err := resty.New().R().
 				SetBody(ro).
 				SetHeader("Content-Type", "application/json").
-				Post("http://localhost:8080/")
+				Post(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
@@ -140,7 +144,7 @@ var _ = Describe("Write Collection", func() {
 			res, err := resty.New().R().
 				SetBody(ro).
 				SetHeader("Content-Type", "application/json").
-				Post("http://localhost:8080/")
+				Post(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
@@ -202,7 +206,7 @@ var _ = Describe("Write Collection", func() {
 			res, err := resty.New().R().
 				SetBody(ro).
 				SetHeader("Content-Type", "application/json").
-				Post("http://localhost:8080/")
+				Post(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())

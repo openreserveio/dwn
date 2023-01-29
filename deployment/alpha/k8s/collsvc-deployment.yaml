@@ -22,11 +22,12 @@ spec:
         image: ghcr.io/openreserveio/collsvc:latest
         ports:
           - containerPort: 9001
+            name: dwncollsvc-port
         env:
           - name: "DWN_COLLSVC.LISTENPORT"
             value: "9001"
           - name: "DWN_COLLSVC.DOCDBCONNECTIONURI"
-            value: "mongodb://openreserveuser:openreservepass@docdb:27017"
+            value: "mongodb://openreserveuser:openreservepass@mongo-service:27017"
           - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
             value: "http://localhost:4318/v1/traces"
           - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
