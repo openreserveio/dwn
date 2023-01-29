@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collsvc-deployment
+  labels:
+    app: dwn
+    component: collsvc_deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: collsvc
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: collsvc
+    spec:
+      containers:
+      - name: dwn-collsvc
+        image: ghcr.io/openreserveio/collsvc:latest
+        ports:
+          - containerPort: 9001
+        env:
+          - name: "DWN_COLLSVC.LISTENPORT"
+            value: "9001"
+          - name: "DWN_COLLSVC.DOCDBCONNECTIONURI"
+            value: "mongodb://openreserveuser:openreservepass@docdb:27017"
+          - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+            value: "http://localhost:4318/v1/traces"
+          - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
+            value: "http://otelcol:4318/v1/metrics"
+      - name: dwn-collsvc-otelcoll
+        image: otel/opentelemetry-collector-contrib:0.61.0
+        ports:
+          - containerPort: 4317
+          - containerPort: 4318
+          - containerPort: 9464
+          - containerPort: 8888

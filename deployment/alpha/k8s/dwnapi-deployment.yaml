@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dwnapi-deployment
+  labels:
+    app: dwn
+    component: dwnapi_deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: dwn-api
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: collsvc
+    spec:
+  containers:
+    - name: dwn-api
+      image: ghcr.io/openreserveio/api:latest
+      ports:
+        - containerPort: 8080
+      env:
+        - name: "DWN_API.LISTENPORT"
+          value: "8080"
+        - name: "DWN_COLLSVC.EXTERNALADDRESS"
+          value: "collsvc"
+        - name: "DWN_COLLSVC.EXTERNALPORT"
+          value: "9001"
+        - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+            value: "http://localhost:4318/v1/traces"
+        - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
+          value: "http://otelcol:4318/v1/metrics"
+    - name: dwn-api-otelcoll
+      image: otel/opentelemetry-collector-contrib:0.61.0
+      ports:
+        - containerPort: 4317
+        - containerPort: 4318
+        - containerPort: 9464
+        - containerPort: 8888
