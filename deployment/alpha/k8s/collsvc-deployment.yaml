@@ -29,13 +29,6 @@ spec:
           - name: "DWN_COLLSVC.DOCDBCONNECTIONURI"
             value: "mongodb://openreserveuser:openreservepass@mongo-service:27017"
           - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
-            value: "http://localhost:4318/v1/traces"
+            value: "http://otellcoll-service:4318/v1/traces"
           - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
-            value: "http://otelcol:4318/v1/metrics"
-      - name: dwn-collsvc-otelcoll
-        image: otel/opentelemetry-collector-contrib:0.61.0
-        ports:
-          - containerPort: 4317
-          - containerPort: 4318
-          - containerPort: 9464
-          - containerPort: 8888
+            value: "http://otellcoll-service:4318/v1/metrics"

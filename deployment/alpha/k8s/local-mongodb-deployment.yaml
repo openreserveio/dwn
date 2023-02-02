@@ -28,10 +28,3 @@ spec:
               value: "openreserveuser"
             - name: "MONGO_INITDB_ROOT_PASSWORD"
               value: "openreservepass"
-        - name: dwn-api-otelcoll
-          image: otel/opentelemetry-collector-contrib:0.61.0
-          ports:
-            - containerPort: 4317
-            - containerPort: 4318
-            - containerPort: 9464
-            - containerPort: 8888
