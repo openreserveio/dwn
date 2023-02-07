@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api/collections"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/api/hooks"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
@@ -105,7 +106,8 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 
 	case model.METHOD_HOOKS_WRITE:
 		childSpan.AddEvent("Start Hooks Write")
-		
+		messageResult = hooks.HooksWrite(ctx, message)
+
 	default:
 		childSpan.AddEvent("Bad Method")
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
