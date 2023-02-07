@@ -21,13 +21,14 @@ type Message struct {
 }
 
 type Descriptor struct {
+
 	// Base Required Fields per https://identity.foundation/decentralized-web-node/spec/#messages
 	Method     string `json:"method" bson:"method"`
 	DataCID    string `json:"dataCid,omitempty" bson:"dataCID"`
 	DataFormat string `json:"dataFormat,omitempty" bson:"dataFormat"`
 
-	// CollectionsQuery per https://identity.foundation/decentralized-web-node/spec/#collectionsquery
-	Filter CollectionsQueryFilter `json:"filter,omitempty"`
+	// CollectionsQuery, HooksWrite per https://identity.foundation/decentralized-web-node/spec/#collectionsquery, https://identity.foundation/decentralized-web-node/spec/#hooks
+	Filter DescriptorFilter `json:"filter,omitempty"`
 
 	// CollectionsWrite, Delete, Commit per https://identity.foundation/decentralized-web-node/spec/#collectionswrite
 	ParentID        string     `json:"parentId,omitempty" bson:"parent_id"`
@@ -38,6 +39,9 @@ type Descriptor struct {
 	Published       bool       `json:"published,omitempty" bson:"published"`
 	DateCreated     time.Time  `json:"dateCreated,omitempty" bson:"date_created"`
 	DatePublished   *time.Time `json:"datePublished,omitempty" bson:"date_published"`
+
+	// HooksWrite per https://identity.foundation/decentralized-web-node/spec/#hooks
+	URI string `json:"uri,omitempty" bson:"uri"`
 }
 
 type MessageProcessing struct {
@@ -56,7 +60,7 @@ type DWNJWSSig struct {
 	Signature string `json:"signature" bson:"signature"`
 }
 
-type CollectionsQueryFilter struct {
+type DescriptorFilter struct {
 	Schema          string `json:"schema,omitempty"`
 	RecordID        string `json:"recordId,omitempty"`
 	ContextID       string `json:"contextId,omitempty"`
