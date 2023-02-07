@@ -103,6 +103,9 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 		childSpan.AddEvent("Start Collections Delete")
 		messageResult = collections.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
 
+	case model.METHOD_HOOKS_WRITE:
+		childSpan.AddEvent("Start Hooks Write")
+		
 	default:
 		childSpan.AddEvent("Bad Method")
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}

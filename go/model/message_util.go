@@ -11,6 +11,8 @@ const (
 	METHOD_COLLECTIONS_WRITE  = "CollectionsWrite"
 	METHOD_COLLECTIONS_COMMIT = "CollectionsCommit"
 	METHOD_COLLECTIONS_DELETE = "CollectionsDelete"
+
+	METHOD_HOOKS_WRITE = "HooksWrite"
 )
 
 func CreateCollectionsWriteMessage(authorDID string, recipientDID string, protocol string, protocolVersion string, schema string, dataFormat string, data []byte) *Message {
