@@ -8,12 +8,18 @@ variable "cluster_name" {
 variable "eks_cluster_domain" {
   type        = string
   description = "Route53 domain for the cluster."
-  default     = "example.com"
+  default     = "alpha.openreserve.io"
+}
+
+variable "internal_domain_prefix" {
+  type = string
+  description = "Internal domain to use in a private hosted zone, prepended on the eks_cluster_domain"
+  default = "internal"
 }
 
 variable "acm_certificate_domain" {
   type        = string
   description = "Route53 certificate domain"
-  default     = "*.example.com"
+  default     = "alpha.openreserve.io"
 }
 

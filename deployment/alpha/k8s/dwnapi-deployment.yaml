@@ -34,3 +34,4 @@ spec:
               value: "http://otellcoll-service:4318/v1/traces"
             - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
               value: "http://otellcoll-service:4318/v1/metrics"
+          imagePullPolicy: Always

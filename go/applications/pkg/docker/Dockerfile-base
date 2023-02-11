@@ -7,6 +7,5 @@ RUN mkdir -p /opt/dwn && \
 COPY . /opt/dwn/src/
 
 RUN cd /opt/dwn/src && go mod download
-RUN cd /opt/dwn/src/applications/dwn && env GOOS=linux go build && go install
+RUN cd /opt/dwn/src/applications/dwn && env GOOS=linux GOARCH=amd64 go build && go install
 RUN rm -Rf /opt/dwn/src
-
