@@ -130,10 +130,29 @@ message GetHooksForCollectionResponse {
    repeated HookDefinition hookDefinitions = 1;
 }
 
+enum CollectionEventType {
+   RECORD_CREATED = 0;
+   RECORD_CHANGED = 1;
+   RECORD_DELETED = 2;
+}
+
+message NotifyHooksOfCollectionEventRequest {
+   string recordId = 1;
+   string protocol = 2;
+   string protocolVersion = 3;
+   string schema = 4;
+   CollectionEventType collectionEventType = 5;
+}
+
+message NotifyHooksOfCollectionEventResponse {
+   CommonStatus status = 1;
+}
+
 
  service HookService {
    rpc RegisterHook(RegisterHookRequest) returns (RegisterHookResponse) {}
    rpc GetHooksForCollection(GetHooksForCollectionRequest) returns (GetHooksForCollectionResponse) {}
+   rpc NotifyHooksOfCollectionEvent(NotifyHooksOfCollectionEventRequest) returns (NotifyHooksOfCollectionEventResponse) {}
  }
 
 

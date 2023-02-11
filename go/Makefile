@@ -7,6 +7,7 @@ generate-protobuf:
 
 generate-mocks: generate-protobuf
 	mockgen -source storage/collection_store.go -destination generated/mocks/collection_store.go -package mocks
+	mockgen -source storage/hook_store.go -destination generated/mocks/hook_store.go -package mocks
 	mockgen -source generated/services/backend_services_grpc.pb.go -destination generated/mocks/backend_services_grpc.pb.go -package mocks
 
 build-docker-base:

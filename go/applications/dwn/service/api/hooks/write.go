@@ -25,6 +25,9 @@ func HooksWrite(ctx context.Context, hookServiceClient services.HookServiceClien
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 
+	// See if there's an existing Hook record and be sure we're authorized
+	// otherwise, create a new one
+
 	return messageResultObj
 
 }

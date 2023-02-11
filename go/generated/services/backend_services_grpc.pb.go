@@ -254,6 +254,7 @@ var CollectionService_ServiceDesc = grpc.ServiceDesc{
 type HookServiceClient interface {
 	RegisterHook(ctx context.Context, in *RegisterHookRequest, opts ...grpc.CallOption) (*RegisterHookResponse, error)
 	GetHooksForCollection(ctx context.Context, in *GetHooksForCollectionRequest, opts ...grpc.CallOption) (*GetHooksForCollectionResponse, error)
+	NotifyHooksOfCollectionEvent(ctx context.Context, in *NotifyHooksOfCollectionEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfCollectionEventResponse, error)
 }
 
 type hookServiceClient struct {
@@ -282,12 +283,22 @@ func (c *hookServiceClient) GetHooksForCollection(ctx context.Context, in *GetHo
 	return out, nil
 }
 
+func (c *hookServiceClient) NotifyHooksOfCollectionEvent(ctx context.Context, in *NotifyHooksOfCollectionEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfCollectionEventResponse, error) {
+	out := new(NotifyHooksOfCollectionEventResponse)
+	err := c.cc.Invoke(ctx, "/services.HookService/NotifyHooksOfCollectionEvent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HookServiceServer is the server API for HookService service.
 // All implementations must embed UnimplementedHookServiceServer
 // for forward compatibility
 type HookServiceServer interface {
 	RegisterHook(context.Context, *RegisterHookRequest) (*RegisterHookResponse, error)
 	GetHooksForCollection(context.Context, *GetHooksForCollectionRequest) (*GetHooksForCollectionResponse, error)
+	NotifyHooksOfCollectionEvent(context.Context, *NotifyHooksOfCollectionEventRequest) (*NotifyHooksOfCollectionEventResponse, error)
 	mustEmbedUnimplementedHookServiceServer()
 }
 
@@ -300,6 +311,9 @@ func (UnimplementedHookServiceServer) RegisterHook(context.Context, *RegisterHoo
 }
 func (UnimplementedHookServiceServer) GetHooksForCollection(context.Context, *GetHooksForCollectionRequest) (*GetHooksForCollectionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHooksForCollection not implemented")
+}
+func (UnimplementedHookServiceServer) NotifyHooksOfCollectionEvent(context.Context, *NotifyHooksOfCollectionEventRequest) (*NotifyHooksOfCollectionEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NotifyHooksOfCollectionEvent not implemented")
 }
 func (UnimplementedHookServiceServer) mustEmbedUnimplementedHookServiceServer() {}
 
@@ -350,6 +364,24 @@ func _HookService_GetHooksForCollection_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HookService_NotifyHooksOfCollectionEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NotifyHooksOfCollectionEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HookServiceServer).NotifyHooksOfCollectionEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.HookService/NotifyHooksOfCollectionEvent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HookServiceServer).NotifyHooksOfCollectionEvent(ctx, req.(*NotifyHooksOfCollectionEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HookService_ServiceDesc is the grpc.ServiceDesc for HookService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -364,6 +396,10 @@ var HookService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetHooksForCollection",
 			Handler:    _HookService_GetHooksForCollection_Handler,
+		},
+		{
+			MethodName: "NotifyHooksOfCollectionEvent",
+			Handler:    _HookService_NotifyHooksOfCollectionEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
