@@ -128,7 +128,7 @@ services:
     image: "openreserveio/collsvc:latest"
     build:
       context: "../../../go"
-      dockerfile: "applications/pkg/Dockerfile-collsvc"
+      dockerfile: "applications/pkg/docker/Dockerfile-collsvc"
       tags:
         - "openreserveio/collsvc"
     ports:
@@ -142,7 +142,7 @@ services:
     image: "openreserveio/api:latest"
     build:
       context: "../../../go"
-      dockerfile: "applications/pkg/Dockerfile-api"
+      dockerfile: "applications/pkg/docker/Dockerfile-api"
       tags:
         - "openreserveio/api"
     ports:

@@ -281,6 +281,169 @@ func (mr *MockUnsafeCollectionServiceServerMockRecorder) mustEmbedUnimplementedC
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedCollectionServiceServer", reflect.TypeOf((*MockUnsafeCollectionServiceServer)(nil).mustEmbedUnimplementedCollectionServiceServer))
 }
 
+// MockHookServiceClient is a mock of HookServiceClient interface.
+type MockHookServiceClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockHookServiceClientMockRecorder
+}
+
+// MockHookServiceClientMockRecorder is the mock recorder for MockHookServiceClient.
+type MockHookServiceClientMockRecorder struct {
+	mock *MockHookServiceClient
+}
+
+// NewMockHookServiceClient creates a new mock instance.
+func NewMockHookServiceClient(ctrl *gomock.Controller) *MockHookServiceClient {
+	mock := &MockHookServiceClient{ctrl: ctrl}
+	mock.recorder = &MockHookServiceClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockHookServiceClient) EXPECT() *MockHookServiceClientMockRecorder {
+	return m.recorder
+}
+
+// GetHooksForCollection mocks base method.
+func (m *MockHookServiceClient) GetHooksForCollection(ctx context.Context, in *services.GetHooksForCollectionRequest, opts ...grpc.CallOption) (*services.GetHooksForCollectionResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetHooksForCollection", varargs...)
+	ret0, _ := ret[0].(*services.GetHooksForCollectionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHooksForCollection indicates an expected call of GetHooksForCollection.
+func (mr *MockHookServiceClientMockRecorder) GetHooksForCollection(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooksForCollection", reflect.TypeOf((*MockHookServiceClient)(nil).GetHooksForCollection), varargs...)
+}
+
+// RegisterHook mocks base method.
+func (m *MockHookServiceClient) RegisterHook(ctx context.Context, in *services.RegisterHookRequest, opts ...grpc.CallOption) (*services.RegisterHookResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RegisterHook", varargs...)
+	ret0, _ := ret[0].(*services.RegisterHookResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegisterHook indicates an expected call of RegisterHook.
+func (mr *MockHookServiceClientMockRecorder) RegisterHook(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterHook", reflect.TypeOf((*MockHookServiceClient)(nil).RegisterHook), varargs...)
+}
+
+// MockHookServiceServer is a mock of HookServiceServer interface.
+type MockHookServiceServer struct {
+	ctrl     *gomock.Controller
+	recorder *MockHookServiceServerMockRecorder
+}
+
+// MockHookServiceServerMockRecorder is the mock recorder for MockHookServiceServer.
+type MockHookServiceServerMockRecorder struct {
+	mock *MockHookServiceServer
+}
+
+// NewMockHookServiceServer creates a new mock instance.
+func NewMockHookServiceServer(ctrl *gomock.Controller) *MockHookServiceServer {
+	mock := &MockHookServiceServer{ctrl: ctrl}
+	mock.recorder = &MockHookServiceServerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockHookServiceServer) EXPECT() *MockHookServiceServerMockRecorder {
+	return m.recorder
+}
+
+// GetHooksForCollection mocks base method.
+func (m *MockHookServiceServer) GetHooksForCollection(arg0 context.Context, arg1 *services.GetHooksForCollectionRequest) (*services.GetHooksForCollectionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHooksForCollection", arg0, arg1)
+	ret0, _ := ret[0].(*services.GetHooksForCollectionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHooksForCollection indicates an expected call of GetHooksForCollection.
+func (mr *MockHookServiceServerMockRecorder) GetHooksForCollection(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooksForCollection", reflect.TypeOf((*MockHookServiceServer)(nil).GetHooksForCollection), arg0, arg1)
+}
+
+// RegisterHook mocks base method.
+func (m *MockHookServiceServer) RegisterHook(arg0 context.Context, arg1 *services.RegisterHookRequest) (*services.RegisterHookResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterHook", arg0, arg1)
+	ret0, _ := ret[0].(*services.RegisterHookResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegisterHook indicates an expected call of RegisterHook.
+func (mr *MockHookServiceServerMockRecorder) RegisterHook(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterHook", reflect.TypeOf((*MockHookServiceServer)(nil).RegisterHook), arg0, arg1)
+}
+
+// mustEmbedUnimplementedHookServiceServer mocks base method.
+func (m *MockHookServiceServer) mustEmbedUnimplementedHookServiceServer() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "mustEmbedUnimplementedHookServiceServer")
+}
+
+// mustEmbedUnimplementedHookServiceServer indicates an expected call of mustEmbedUnimplementedHookServiceServer.
+func (mr *MockHookServiceServerMockRecorder) mustEmbedUnimplementedHookServiceServer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedHookServiceServer", reflect.TypeOf((*MockHookServiceServer)(nil).mustEmbedUnimplementedHookServiceServer))
+}
+
+// MockUnsafeHookServiceServer is a mock of UnsafeHookServiceServer interface.
+type MockUnsafeHookServiceServer struct {
+	ctrl     *gomock.Controller
+	recorder *MockUnsafeHookServiceServerMockRecorder
+}
+
+// MockUnsafeHookServiceServerMockRecorder is the mock recorder for MockUnsafeHookServiceServer.
+type MockUnsafeHookServiceServerMockRecorder struct {
+	mock *MockUnsafeHookServiceServer
+}
+
+// NewMockUnsafeHookServiceServer creates a new mock instance.
+func NewMockUnsafeHookServiceServer(ctrl *gomock.Controller) *MockUnsafeHookServiceServer {
+	mock := &MockUnsafeHookServiceServer{ctrl: ctrl}
+	mock.recorder = &MockUnsafeHookServiceServerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUnsafeHookServiceServer) EXPECT() *MockUnsafeHookServiceServerMockRecorder {
+	return m.recorder
+}
+
+// mustEmbedUnimplementedHookServiceServer mocks base method.
+func (m *MockUnsafeHookServiceServer) mustEmbedUnimplementedHookServiceServer() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "mustEmbedUnimplementedHookServiceServer")
+}
+
+// mustEmbedUnimplementedHookServiceServer indicates an expected call of mustEmbedUnimplementedHookServiceServer.
+func (mr *MockUnsafeHookServiceServerMockRecorder) mustEmbedUnimplementedHookServiceServer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedHookServiceServer", reflect.TypeOf((*MockUnsafeHookServiceServer)(nil).mustEmbedUnimplementedHookServiceServer))
+}
+
 // MockKeyServiceClient is a mock of KeyServiceClient interface.
 type MockKeyServiceClient struct {
 	ctrl     *gomock.Controller

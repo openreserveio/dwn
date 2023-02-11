@@ -94,6 +94,47 @@ message CommonStatus {
 
  }
 
+ /*
+ * HOOK SERVICE
+ */
+message HookDefinition {
+   
+   enum HookChannel {
+      HTTP_CALLBACK = 0;
+      GRPC_CALLBACK = 1;
+   }
+   
+   string hookId = 1;
+   HookChannel hookChannel = 2;
+   string uri = 3;
+
+}
+
+
+message RegisterHookRequest {
+   bytes message = 1;
+}
+
+message RegisterHookResponse {
+   CommonStatus status = 1;
+}
+
+message GetHooksForCollectionRequest {
+   string recordId = 1;
+   string protocol = 2;
+   string protocolVersion = 3;
+   string schema = 4;
+}
+
+message GetHooksForCollectionResponse {
+   repeated HookDefinition hookDefinitions = 1;
+}
+
+
+ service HookService {
+   rpc RegisterHook(RegisterHookRequest) returns (RegisterHookResponse) {}
+   rpc GetHooksForCollection(GetHooksForCollectionRequest) returns (GetHooksForCollectionResponse) {}
+ }
 
 
 /*
