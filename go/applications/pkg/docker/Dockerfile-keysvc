@@ -1,4 +1,4 @@
-FROM openreserveio/base:latest
+FROM --platform=$BUILDPLATFORM ghcr.io/openreserveio/base:latest
 MAINTAINER mzero@openreserve.io
 
 LABEL org.opencontainers.image.source=https://github.com/openreserveio/dwn/docs/operations/keysvc

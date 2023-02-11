@@ -1,4 +1,5 @@
 SEMVER := 0.0.7-alpha
+PLATFORMS := linux/amd64,linux/arm64
 
 generate-protobuf:
 	protoc --proto_path=../servicedef --go_out=generated/services/ --go_opt=paths=source_relative --go-grpc_out=generated/services/ --go-grpc_opt=paths=source_relative ../servicedef/backend_services.proto
@@ -8,17 +9,24 @@ generate-mocks: generate-protobuf
 	mockgen -source storage/collection_store.go -destination generated/mocks/collection_store.go -package mocks
 	mockgen -source generated/services/backend_services_grpc.pb.go -destination generated/mocks/backend_services_grpc.pb.go -package mocks
 
-build-docker-base:
-	docker build -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
+buildx-docker-use:
+	docker buildx create --use
+
+build-docker-base: buildx-docker-use
+	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
+	docker tag openreserveio/base:latest ghcr.io/openreserveio/base:latest
+	docker tag openreserveio/base:latest ghcr.io/openreserveio/base:$(SEMVER)
+	docker push ghcr.io/openreserveio/base:latest
+	docker push ghcr.io/openreserveio/base:$(SEMVER)
 
 build-docker-api: build-docker-base
-	docker build -f applications/pkg/docker/Dockerfile-api -t openreserveio/api .
+	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-api -t openreserveio/api .
 
 build-docker-collsvc: build-docker-base
-	docker build -f applications/pkg/docker/Dockerfile-collsvc -t openreserveio/collsvc .
+	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-collsvc -t openreserveio/collsvc .
 
 build-docker-keysvc: build-docker-base
-	docker build -f applications/pkg/docker/Dockerfile-keysvc -t openreserveio/keysvc .
+	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-keysvc -t openreserveio/keysvc .
 
 build-docker-all: build-docker-base build-docker-api build-docker-collsvc build-docker-keysvc
 
