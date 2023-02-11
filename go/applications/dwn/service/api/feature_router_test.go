@@ -14,13 +14,19 @@ import (
 	"github.com/openreserveio/dwn/go/generated/mocks"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
 var _ = Describe("Feature Router", func() {
 
-	mockController := gomock.NewController(GinkgoT())
+	var mockController *gomock.Controller
+
+	BeforeEach(func() {
+		observability.InitProviderWithJaegerExporter(context.Background(), "UnitTest")
+		mockController = gomock.NewController(GinkgoT())
+	})
 
 	Context("Simple Routing/Reply", func() {
 

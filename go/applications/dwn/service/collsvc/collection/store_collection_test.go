@@ -12,12 +12,18 @@ import (
 	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/generated/mocks"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"time"
 )
 
 var _ = Describe("StoreCollection", func() {
 
-	mockController := gomock.NewController(GinkgoT())
+	var mockController *gomock.Controller
+
+	BeforeEach(func() {
+		observability.InitProviderWithJaegerExporter(context.Background(), "UnitTest")
+		mockController = gomock.NewController(GinkgoT())
+	})
 
 	Context("Storing a new record (without a parent)", func() {
 
