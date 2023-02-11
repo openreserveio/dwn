@@ -1,6 +1,7 @@
 package collection_test
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -44,7 +45,7 @@ var _ = Describe("StoreCollection", func() {
 			collectionStore.EXPECT().GetCollectionRecord(recordId)
 			collectionStore.EXPECT().CreateCollectionRecord(gomock.Any(), gomock.Any()).Return(nil)
 
-			res, err := collection.StoreCollection(collectionStore, message)
+			res, err := collection.StoreCollection(context.Background(), collectionStore, message)
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
 			Expect(res.Status).To(Equal("OK"))
