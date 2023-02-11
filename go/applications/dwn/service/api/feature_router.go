@@ -16,14 +16,16 @@ type FeatureRouter struct {
 	model.FeatureDetection
 	MaximumTimeoutSeconds   int
 	CollectionServiceClient services.CollectionServiceClient
+	HookServiceClient       services.HookServiceClient
 }
 
-func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, maxTimeoutSeconds int) (*FeatureRouter, error) {
+func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, hooksvcClient services.HookServiceClient, maxTimeoutSeconds int) (*FeatureRouter, error) {
 
 	return &FeatureRouter{
 		FeatureDetection:        model.CurrentFeatureDetection,
 		MaximumTimeoutSeconds:   maxTimeoutSeconds,
 		CollectionServiceClient: collsvcClient,
+		HookServiceClient:       hooksvcClient,
 	}, nil
 
 }
@@ -106,7 +108,7 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 
 	case model.METHOD_HOOKS_WRITE:
 		childSpan.AddEvent("Start Hooks Write")
-		messageResult = hooks.HooksWrite(ctx, message)
+		messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
 
 	default:
 		childSpan.AddEvent("Bad Method")

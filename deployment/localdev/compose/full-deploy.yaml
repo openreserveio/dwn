@@ -124,6 +124,20 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   # DWN Components
+  hooksvc:
+    image: "openreserveio/hooksvc:latest"
+    build:
+      context: "../../../go"
+      dockerfile: "applications/pkg/docker/Dockerfile-hooksvc"
+      tags:
+        - "openreserveio/hooksvc"
+    ports:
+      - "9003:9003"
+    environment:
+      - "DWN_HOOKSVC.DOCDBCONNECTIONURI=mongodb://openreserveuser:openreservepass@docdb:27017"
+      - "DWN_HOOKSVC.LISTENPORT=9003"
+      - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
+      - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
   collsvc:
     image: "openreserveio/collsvc:latest"
     build:
@@ -151,6 +165,8 @@ services:
       - "DWN_API.LISTENPORT=8080"
       - "DWN_COLLSVC.EXTERNALADDRESS=collsvc"
       - "DWN_COLLSVC.EXTERNALPORT=9001"
+      - "DWN_HOOKSVC.EXTERNALADDRESS=hooksvc"
+      - "DWN_HOOKSVC.EXTERNALPORT=9003"
       # - "OPEN_TELEMETRY_COLLECTOR_URL=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       # - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317"

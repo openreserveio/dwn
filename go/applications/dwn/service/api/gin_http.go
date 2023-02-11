@@ -20,24 +20,39 @@ type APIService struct {
 	Gin           *gin.Engine
 	Router        *FeatureRouter
 	CollSvcClient *services.CollectionServiceClient
+	HookSvcClient *services.HookServiceClient
 }
 
-func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOptions *framework.ServiceOptions) (*APIService, error) {
+func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOptions *framework.ServiceOptions, hookSvcOptions *framework.ServiceOptions) (*APIService, error) {
 
 	var err error
-	var clientConn *grpc.ClientConn
+	var collClientConn *grpc.ClientConn
 	if collSvcOptions.SecureFlag {
 		log.Fatal("Secure GRPC not yet supported - use Istio")
 		return nil, errors.New("Secure GRPC not yet supported - use Istio")
 	} else {
-		clientConn, err = grpc.Dial(fmt.Sprintf("%s:%d", collSvcOptions.Address, collSvcOptions.Port), grpc.WithInsecure())
+		collClientConn, err = grpc.Dial(fmt.Sprintf("%s:%d", collSvcOptions.Address, collSvcOptions.Port), grpc.WithInsecure())
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	collSvcClient := services.NewCollectionServiceClient(clientConn)
-	fr, err := CreateFeatureRouter(collSvcClient, 15)
+	collSvcClient := services.NewCollectionServiceClient(collClientConn)
+
+	var hookClientConn *grpc.ClientConn
+	if hookSvcOptions.SecureFlag {
+		log.Fatal("Secure GRPC not yet supported - use Istio")
+		return nil, errors.New("Secure GRPC not yet supported - use Istio")
+	} else {
+		hookClientConn, err = grpc.Dial(fmt.Sprintf("%s:%d", hookSvcOptions.Address, hookSvcOptions.Port), grpc.WithInsecure())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	hookSvcClient := services.NewHookServiceClient(hookClientConn)
+
+	fr, err := CreateFeatureRouter(collSvcClient, hookSvcClient, 15)
 
 	// Configure Tracing
 	ginEngine := gin.Default()

@@ -9,31 +9,26 @@ generate-mocks: generate-protobuf
 	mockgen -source storage/collection_store.go -destination generated/mocks/collection_store.go -package mocks
 	mockgen -source generated/services/backend_services_grpc.pb.go -destination generated/mocks/backend_services_grpc.pb.go -package mocks
 
-buildx-docker-use:
-	docker buildx create --use
-
-build-docker-base: buildx-docker-use
-	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
-	docker tag openreserveio/base:latest ghcr.io/openreserveio/base:latest
-	docker tag openreserveio/base:latest ghcr.io/openreserveio/base:$(SEMVER)
-	docker push ghcr.io/openreserveio/base:latest
-	docker push ghcr.io/openreserveio/base:$(SEMVER)
+build-docker-base:
+	docker build -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
 
 build-docker-api: build-docker-base
-	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-api -t openreserveio/api .
+	docker build -f applications/pkg/docker/Dockerfile-api -t openreserveio/api .
 
 build-docker-collsvc: build-docker-base
-	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-collsvc -t openreserveio/collsvc .
+	docker build -f applications/pkg/docker/Dockerfile-collsvc -t openreserveio/collsvc .
 
 build-docker-keysvc: build-docker-base
-	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-keysvc -t openreserveio/keysvc .
+	docker build -f applications/pkg/docker/Dockerfile-keysvc -t openreserveio/keysvc .
 
 build-docker-hooksvc: build-docker-base
-	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-hooksvc -t openreserveio/hooksvc .
+	docker build -f applications/pkg/docker/Dockerfile-hooksvc -t openreserveio/hooksvc .
 
 build-docker-all: build-docker-base build-docker-api build-docker-collsvc build-docker-keysvc build-docker-hooksvc
 
 tag-docker-github-packages: build-docker-all
+	docker tag openreserveio/base:latest ghcr.io/openreserveio/base:latest
+	docker tag openreserveio/base:latest ghcr.io/openreserveio/base:$(SEMVER)
 	docker tag openreserveio/api:latest ghcr.io/openreserveio/api:latest
 	docker tag openreserveio/api:latest ghcr.io/openreserveio/api:$(SEMVER)
 	docker tag openreserveio/collsvc:latest ghcr.io/openreserveio/collsvc:latest
@@ -44,15 +39,15 @@ tag-docker-github-packages: build-docker-all
 	docker tag openreserveio/hooksvc:latest ghcr.io/openreserveio/hooksvc:$(SEMVER)
 
 
-push-docker-github-packages: tag-docker-github-packages
-	docker push ghcr.io/openreserveio/api:$(SEMVER)
-	docker push ghcr.io/openreserveio/api:latest
-	docker push ghcr.io/openreserveio/collsvc:$(SEMVER)
-	docker push ghcr.io/openreserveio/collsvc:latest
-	docker push ghcr.io/openreserveio/keysvc:$(SEMVER)
-	docker push ghcr.io/openreserveio/keysvc:latest
-	docker push ghcr.io/openreserveio/hooksvc:$(SEMVER)
-	docker push ghcr.io/openreserveio/hooksvc:latest
+push-docker-multiplatform:
+
+	docker buildx create --use
+	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-base -t ghcr.io/openreserveio/base:latest -t ghcr.io/openreserveio/base:$(SEMVER) .
+	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-api -t ghcr.io/openreserveio/api:latest -t ghcr.io/openreserveio/api:$(SEMVER) .
+	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-collsvc -t ghcr.io/openreserveio/collsvc:latest -t ghcr.io/openreserveio/collsvc:$(SEMVER) .
+	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-keysvc -t ghcr.io/openreserveio/keysvc:latest -t ghcr.io/openreserveio/keysvc:$(SEMVER) .
+	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-hooksvc -t ghcr.io/openreserveio/hooksvc:latest -t ghcr.io/openreserveio/hooksvc:$(SEMVER) .
+
 
 build-release-executables:
 	mkdir -p build/release
