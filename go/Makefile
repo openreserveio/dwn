@@ -28,7 +28,10 @@ build-docker-collsvc: build-docker-base
 build-docker-keysvc: build-docker-base
 	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-keysvc -t openreserveio/keysvc .
 
-build-docker-all: build-docker-base build-docker-api build-docker-collsvc build-docker-keysvc
+build-docker-hooksvc: build-docker-base
+	docker buildx build --platform=$(PLATFORMS) -f applications/pkg/docker/Dockerfile-hooksvc -t openreserveio/hooksvc .
+
+build-docker-all: build-docker-base build-docker-api build-docker-collsvc build-docker-keysvc build-docker-hooksvc
 
 tag-docker-github-packages: build-docker-all
 	docker tag openreserveio/api:latest ghcr.io/openreserveio/api:latest
@@ -37,6 +40,8 @@ tag-docker-github-packages: build-docker-all
 	docker tag openreserveio/collsvc:latest ghcr.io/openreserveio/collsvc:$(SEMVER)
 	docker tag openreserveio/keysvc:latest ghcr.io/openreserveio/keysvc:latest
 	docker tag openreserveio/keysvc:latest ghcr.io/openreserveio/keysvc:$(SEMVER)
+	docker tag openreserveio/hooksvc:latest ghcr.io/openreserveio/hooksvc:latest
+	docker tag openreserveio/hooksvc:latest ghcr.io/openreserveio/hooksvc:$(SEMVER)
 
 
 push-docker-github-packages: tag-docker-github-packages
@@ -46,6 +51,8 @@ push-docker-github-packages: tag-docker-github-packages
 	docker push ghcr.io/openreserveio/collsvc:latest
 	docker push ghcr.io/openreserveio/keysvc:$(SEMVER)
 	docker push ghcr.io/openreserveio/keysvc:latest
+	docker push ghcr.io/openreserveio/hooksvc:$(SEMVER)
+	docker push ghcr.io/openreserveio/hooksvc:latest
 
 build-release-executables:
 	mkdir -p build/release
