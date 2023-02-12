@@ -5,6 +5,7 @@ import (
 	"github.com/openreserveio/dwn/go/framework/events"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
+	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
 )
@@ -49,7 +50,12 @@ func (hookService HookService) GetHooksForCollection(ctx context.Context, reques
 	panic("implement me")
 }
 
-func (hookService HookService) NotifyHooksOfCollectionEvent(ctx context.Context, in *services.NotifyHooksOfCollectionEventRequest) (*services.NotifyHooksOfCollectionEventResponse, error) {
+func (hookService HookService) NotifyHooksOfCollectionEvent(ctx context.Context, request *services.NotifyHooksOfCollectionEventRequest) (*services.NotifyHooksOfCollectionEventResponse, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "NotifyHooksOfCollectionEvent")
+	defer sp.End()
+
 	//TODO implement me
 	panic("implement me")
 }

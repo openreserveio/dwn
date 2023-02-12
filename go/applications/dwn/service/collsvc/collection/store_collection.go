@@ -31,7 +31,7 @@ type StoreCollectionResult struct {
 func StoreCollection(ctx context.Context, collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "Store_Collection")
+	_, sp := observability.Tracer.Start(ctx, "StoreCollection")
 	defer sp.End()
 
 	// Need to implement this message process flow per spec:
