@@ -49,3 +49,16 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 * [Developer Documentation](docs/developer/README.md)
 * [Operations Documentation](docs/operations/README.md)
 
+# Project Resources
+
+| Resource                                                                                   | Description                                                                   |
+|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| [VISION](https://github.com/openreserveio/dwn/blob/main/doc/VISION.md)               | Outlines the project vision                                                   |
+| [DIPs](docs/dip/README.md)                                                                      | Proposals for improving the DWN components                                       |
+| [VERSIONING](https://github.com/openreserveio/dwn/blob/main/doc/VERSIONING.md)       | Project versioning strategy                                                   |
+| [CODEOWNERS](https://github.com/openreserveio/dwn/blob/main/CODEOWNERS)              | Outlines the project lead(s)                                                  |
+| [CODE_OF_CONDUCT](https://github.com/openreserveio/dwn/blob/main/CODE_OF_CONDUCT.md) | Expected behavior for project contributors, promoting a welcoming environment |
+| [CONTRIBUTING](https://github.com/openreserveio/dwn/blob/main/CONTRIBUTING.md)       | Developer guide to build, test, run, access CI, chat, discuss, file issues    |
+| [GOVERNANCE](https://github.com/openreserveio/dwn/blob/main/GOVERNANCE.md)           | Project governance                                                            |
+| [SECURITY](https://github.com/openreserveio/dwn/blob/main/SECURITY.md)               | Vulnerability and bug reporting                                               |
+| [LICENSE](https://github.com/openreserveio/dwn/blob/main/LICENSE)                    | Apache License, Version 2.0                                                   |
