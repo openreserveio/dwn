@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -13,22 +14,29 @@ import (
 	"github.com/openreserveio/dwn/go/generated/mocks"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
+	"github.com/openreserveio/dwn/go/observability"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
 var _ = Describe("Feature Router", func() {
 
-	mockController := gomock.NewController(GinkgoT())
+	var mockController *gomock.Controller
+
+	BeforeEach(func() {
+		observability.InitProviderWithJaegerExporter(context.Background(), "UnitTest")
+		mockController = gomock.NewController(GinkgoT())
+	})
 
 	Context("Simple Routing/Reply", func() {
 
 		var err error
 		var router *api.FeatureRouter
 		mockCollSvcClient := mocks.NewMockCollectionServiceClient(mockController)
+		mockHookSvcClient := mocks.NewMockHookServiceClient(mockController)
 
 		It("Should create a feature router instance", func() {
-			router, err = api.CreateFeatureRouter(mockCollSvcClient, 15)
+			router, err = api.CreateFeatureRouter(mockCollSvcClient, mockHookSvcClient, 15)
 			Expect(err).To(BeNil())
 			Expect(router).ToNot(BeNil())
 		})
@@ -54,7 +62,7 @@ var _ = Describe("Feature Router", func() {
 				},
 			}
 
-			resp, err := router.Route(&ro)
+			resp, err := router.Route(context.Background(), &ro)
 
 			Expect(err).To(BeNil())
 			Expect(resp).ToNot(BeNil())
@@ -111,7 +119,7 @@ var _ = Describe("Feature Router", func() {
 				},
 			}
 
-			resp, err := router.Route(&ro)
+			resp, err := router.Route(context.Background(), &ro)
 
 			Expect(err).To(BeNil())
 			Expect(resp).ToNot(BeNil())
@@ -128,9 +136,10 @@ var _ = Describe("Feature Router", func() {
 		var err error
 		var router *api.FeatureRouter
 		mockCollSvcClient := mocks.NewMockCollectionServiceClient(mockController)
+		mockHookSvcClient := mocks.NewMockHookServiceClient(mockController)
 
 		It("Should create a feature router instance", func() {
-			router, err = api.CreateFeatureRouter(mockCollSvcClient, 15)
+			router, err = api.CreateFeatureRouter(mockCollSvcClient, mockHookSvcClient, 15)
 			Expect(err).To(BeNil())
 			Expect(router).ToNot(BeNil())
 		})
@@ -157,7 +166,7 @@ var _ = Describe("Feature Router", func() {
 				},
 			}
 
-			resp, err := router.Route(&ro)
+			resp, err := router.Route(context.Background(), &ro)
 			Expect(err).To(BeNil())
 			Expect(resp).ToNot(BeNil())
 
@@ -202,13 +211,13 @@ var _ = Describe("Feature Router", func() {
 			}
 
 			mockStoreResp := services.StoreCollectionResponse{
-				Status:       &services.CommonStatus{Status: services.Status_OK},
-				CollectionId: primitive.NewObjectID().Hex(),
+				Status:   &services.CommonStatus{Status: services.Status_OK},
+				RecordId: primitive.NewObjectID().Hex(),
 			}
 			mockCollSvcClient.EXPECT().ValidateCollection(gomock.Any(), gomock.Any()).Return(&mockValResp, nil)
 			mockCollSvcClient.EXPECT().StoreCollection(gomock.Any(), gomock.Any()).Return(&mockStoreResp, nil)
 
-			resp, err := router.Route(&ro)
+			resp, err := router.Route(context.Background(), &ro)
 			Expect(err).To(BeNil())
 			Expect(resp).ToNot(BeNil())
 

@@ -1,4 +1,4 @@
-FROM golang:latest
+FROM --platform=$BUILDPLATFORM golang:latest
 MAINTAINER mzero@openreserve.io
 
 RUN mkdir -p /opt/dwn && \
@@ -6,7 +6,7 @@ RUN mkdir -p /opt/dwn && \
 
 COPY . /opt/dwn/src/
 
+ARG TARGETOS TARGETARCH
 RUN cd /opt/dwn/src && go mod download
-RUN cd /opt/dwn/src/applications/dwn && go build && go install
+RUN cd /opt/dwn/src/applications/dwn && env GOOS=$TARGETOS GOARCH=$TARGETARCH go build && go install
 RUN rm -Rf /opt/dwn/src
-

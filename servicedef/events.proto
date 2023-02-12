@@ -7,11 +7,19 @@ enum EventType {
     CREATE_RECORD = 0;
     UPDATE_RECORD = 1;
     DELETE_RECORD = 2;
+    NOTIFY_CALLBACK_HTTP = 3;
+    NOTIFY_CALLBACK_GRPC = 4;
+    NOTIFY_CALLBACK_APNS = 5;
+    NOTIFY_CALLBACK_FCM = 6;
 }
 
 message Event {
 
     EventType eventType = 1;
     string recordId = 2;
+    string schema = 3;
+    string protocol = 4;
+    string protocolVersion = 5;
+    map<string,string> eventDiscretionaryData = 6;
 
 }

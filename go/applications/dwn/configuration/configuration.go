@@ -23,6 +23,13 @@ type Configuration interface {
 	GetCollectionServiceExternalAddress() string
 	GetCollectionServiceExternalPort() int
 	GetCollectionServiceDocumentDBURI() string
+
+	// Hook Service
+	GetHookServiceListenAddress() string
+	GetHookServiceListenPort() int
+	GetHookServiceExternalAddress() string
+	GetHookServiceExternalPort() int
+	GetHookServiceDocumentDBURI() string
 }
 
 func Config() (Configuration, error) {

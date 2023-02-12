@@ -1,0 +1,13 @@
+FROM --platform=$BUILDPLATFORM openreserveio/base:latest
+MAINTAINER mzero@openreserve.io
+
+LABEL org.opencontainers.image.source=https://github.com/openreserveio/dwn/docs/operations/hooksvc
+LABEL org.opencontainers.image.description="OpenReserve DWN Hook Service Container Image"
+LABEL org.opencontainers.image.licenses="Apache 2.0"
+
+EXPOSE 9003
+
+VOLUME /etc/dwn
+VOLUME /opt/dwn
+
+CMD ["dwn", "hooksvc"]

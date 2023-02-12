@@ -49,3 +49,16 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 * [Developer Documentation](docs/developer/README.md)
 * [Operations Documentation](docs/operations/README.md)
 
+# Project Resources
+
+| Resource                              | Description                                                                   |
+|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| [VISION](docs/VISION.md)              | Outlines the project vision                                                   |
+| [DIPs](docs/dip/README.md)            | Proposals for improving the DWN components                                    |
+| [VERSIONING](docs/VERSIONING.md)      | Project versioning strategy                                                   |
+| [CODEOWNERS](CODEOWNERS)              | Outlines the project lead(s)                                                  |
+| [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md) | Expected behavior for project contributors, promoting a welcoming environment |
+| [CONTRIBUTING](CONTRIBUTING.md)       | Developer guide to build, test, run, access CI, chat, discuss, file issues    |
+| [GOVERNANCE](GOVERNANCE.md)           | Project governance                                                            |
+| [SECURITY](SECURITY.md)               | Vulnerability and bug reporting                                               |
+| [LICENSE](LICENSE)                    | Apache License, Version 2.0                                                   |

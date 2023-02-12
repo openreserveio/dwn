@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api/collections"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/api/hooks"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
@@ -15,14 +16,16 @@ type FeatureRouter struct {
 	model.FeatureDetection
 	MaximumTimeoutSeconds   int
 	CollectionServiceClient services.CollectionServiceClient
+	HookServiceClient       services.HookServiceClient
 }
 
-func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, maxTimeoutSeconds int) (*FeatureRouter, error) {
+func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, hooksvcClient services.HookServiceClient, maxTimeoutSeconds int) (*FeatureRouter, error) {
 
 	return &FeatureRouter{
 		FeatureDetection:        model.CurrentFeatureDetection,
 		MaximumTimeoutSeconds:   maxTimeoutSeconds,
 		CollectionServiceClient: collsvcClient,
+		HookServiceClient:       hooksvcClient,
 	}, nil
 
 }
@@ -102,6 +105,10 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 	case model.METHOD_COLLECTIONS_DELETE:
 		childSpan.AddEvent("Start Collections Delete")
 		messageResult = collections.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
+
+	case model.METHOD_HOOKS_WRITE:
+		childSpan.AddEvent("Start Hooks Write")
+		messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
 
 	default:
 		childSpan.AddEvent("Bad Method")

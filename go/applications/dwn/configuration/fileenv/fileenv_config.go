@@ -13,6 +13,12 @@ const (
 	KEY_COLLSVC_EXTERNAL_ADDRESS     = "collsvc.externalAddress"
 	KEY_COLLSVC_EXTERNAL_PORT        = "collsvc.externalPort"
 	KEY_COLLSVC_DOCDB_CONNECTION_URI = "collsvc.docdbConnectionURI"
+
+	KEY_HOOKSVC_LISTEN_ADDRESS       = "hooksvc.listenAddress"
+	KEY_HOOKSVC_LISTEN_PORT          = "hooksvc.listenPort"
+	KEY_HOOKSVC_EXTERNAL_ADDRESS     = "hooksvc.externalAddress"
+	KEY_HOOKSVC_EXTERNAL_PORT        = "hooksvc.externalPort"
+	KEY_HOOKSVC_DOCDB_CONNECTION_URI = "hooksvc.docdbConnectionURI"
 )
 
 type FileEnvironmentConfiguration struct {
@@ -60,4 +66,24 @@ func (config FileEnvironmentConfiguration) GetCollectionServiceExternalAddress()
 
 func (config FileEnvironmentConfiguration) GetCollectionServiceExternalPort() int {
 	return viper.GetInt(KEY_COLLSVC_EXTERNAL_PORT)
+}
+
+func (config FileEnvironmentConfiguration) GetHookServiceListenAddress() string {
+	return viper.GetString(KEY_HOOKSVC_LISTEN_ADDRESS)
+}
+
+func (config FileEnvironmentConfiguration) GetHookServiceListenPort() int {
+	return viper.GetInt(KEY_HOOKSVC_LISTEN_PORT)
+}
+
+func (config FileEnvironmentConfiguration) GetHookServiceDocumentDBURI() string {
+	return viper.GetString(KEY_HOOKSVC_DOCDB_CONNECTION_URI)
+}
+
+func (config FileEnvironmentConfiguration) GetHookServiceExternalAddress() string {
+	return viper.GetString(KEY_HOOKSVC_EXTERNAL_ADDRESS)
+}
+
+func (config FileEnvironmentConfiguration) GetHookServiceExternalPort() int {
+	return viper.GetInt(KEY_HOOKSVC_EXTERNAL_PORT)
 }

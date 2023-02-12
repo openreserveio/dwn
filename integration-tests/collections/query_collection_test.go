@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -14,10 +15,14 @@ import (
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/integration-tests/testutils"
 	"net/http"
+	"os"
 	"time"
 )
 
 var _ = Describe("Query For A Collection", func() {
+
+	DWN_HOST := os.Getenv("DWN_API_HOST")
+	DWN_PORT := os.Getenv("DWN_API_PORT")
 
 	authorPrivateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	authorPublicKey := authorPrivateKey.PublicKey
@@ -31,7 +36,7 @@ var _ = Describe("Query For A Collection", func() {
 
 		descriptor := model.Descriptor{
 			Method: model.METHOD_COLLECTIONS_QUERY,
-			Filter: model.CollectionsQueryFilter{
+			Filter: model.DescriptorFilter{
 				RecordID: "DOES NOT EXIST",
 				Schema:   "https://openreserve.io/schemas/test.json",
 			},
@@ -62,7 +67,7 @@ var _ = Describe("Query For A Collection", func() {
 			res, err := resty.New().R().
 				SetBody(ro).
 				SetHeader("Content-Type", "application/json").
-				Post("http://localhost:8080/")
+				Post(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
@@ -133,7 +138,7 @@ var _ = Describe("Query For A Collection", func() {
 			res, err := resty.New().R().
 				SetBody(ro).
 				SetHeader("Content-Type", "application/json").
-				Post("http://localhost:8080/")
+				Post(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
@@ -155,7 +160,7 @@ var _ = Describe("Query For A Collection", func() {
 			// TODO:  THis should be refactored into client lib
 			queryDescriptor := model.Descriptor{
 				Method: model.METHOD_COLLECTIONS_QUERY,
-				Filter: model.CollectionsQueryFilter{
+				Filter: model.DescriptorFilter{
 					RecordID: message.RecordID,
 					Schema:   message.Descriptor.Schema,
 				},
@@ -184,7 +189,7 @@ var _ = Describe("Query For A Collection", func() {
 			res, err := resty.New().R().
 				SetBody(ro).
 				SetHeader("Content-Type", "application/json").
-				Post("http://localhost:8080/")
+				Post(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())

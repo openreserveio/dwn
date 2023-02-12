@@ -21,7 +21,13 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 		SecureFlag: false,
 	}
 
-	apiService, err := CreateAPIService(&apiServiceOptions, &collSvcOptions)
+	hookSvcOptions := framework.ServiceOptions{
+		Address:    config.GetHookServiceExternalAddress(),
+		Port:       config.GetHookServiceExternalPort(),
+		SecureFlag: false,
+	}
+
+	apiService, err := CreateAPIService(&apiServiceOptions, &collSvcOptions, &hookSvcOptions)
 	if err != nil {
 		log.Fatal("Unable to create API Service:  %v", err)
 		return err
