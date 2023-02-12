@@ -49,8 +49,8 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
 		ParentID:        "",
-		Protocol:        "",
-		ProtocolVersion: "",
+		Protocol:        client.Protocol,
+		ProtocolVersion: client.ProtocolVersion,
 		Schema:          schemaUrl,
 		CommitStrategy:  "",
 		Published:       false,
@@ -105,7 +105,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, data []byte, dataOwner *Identity) error {
+func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, data []byte, dataFormat string, dataUpdater *Identity) error {
 
 	return nil
 }
