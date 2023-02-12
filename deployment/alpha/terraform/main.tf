@@ -33,7 +33,7 @@ locals {
   cluster_name = coalesce(var.cluster_name, local.name)
   region       = "us-west-2"
 
-  vpc_cidr = "10.0.0.0/16"
+  vpc_cidr = var.vpc_cidr
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
   tags = {
