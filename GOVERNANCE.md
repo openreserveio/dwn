@@ -1,4 +1,4 @@
-# TBD Open Source Project Governance
+# Open Reserve Open Source Project Governance
 
 <!-- TOC -->
 
