@@ -41,14 +41,15 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 	_, sp := observability.Tracer.Start(ctx, "CreateHookRecord")
 	defer sp.End()
 
-	initialConfiguration.HookRecordID = uuid.NewString()
+	initialConfiguration.ConfigurationEntryID = uuid.NewString()
+	initialConfiguration.HookRecordID = initialConfiguration.RecordID
 	_, err := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).InsertOne(ctx, initialConfiguration)
 	if err != nil {
 		return err
 	}
 
-	hookRecord.InitialHookConfigurationEntryID = initialConfiguration.HookRecordID
-	hookRecord.LatestHookConfigurationEntryID = initialConfiguration.HookRecordID
+	hookRecord.InitialHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
+	hookRecord.LatestHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
 	hookRecord.CreatorDID = initialConfiguration.Processing.AuthorDID
 	_, err = store.DB.Collection(HOOK_RECORD_COLLECTION).InsertOne(ctx, hookRecord)
 	if err != nil {
@@ -59,7 +60,12 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 
 }
 
-func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) {
+func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
 	//TODO implement me
 	panic("implement me")
 }
