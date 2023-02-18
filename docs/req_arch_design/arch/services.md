@@ -21,7 +21,12 @@
 
 * Document DB (mongodb) for storage
 * Queueing system (NATS, ActiveMQ) for events
-* Webhook Service for Events
+* HookService for DWN Hook storage, management, and emitting of events to backend system to deliver hooks
+  * HTTPS WebHook
+  * gRPC Callback
+  * WebSocket Message Send
+  * APNS/FCM iPhone/Android
 * Cache service (?TBD) for caching of signer info, possibly
-* CollectionsService for management of collections, collection schema definitions -> docdb
+* DataRecordService for management of records, data schema definitions -> docdb
 * KeyService for message authentication, message signing, key management -> docdb
+
