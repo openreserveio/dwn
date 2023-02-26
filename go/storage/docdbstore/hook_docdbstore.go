@@ -16,7 +16,8 @@ const (
 	HOOK_RECORD_COLLECTION       = "hook_records"
 	HOOK_CONFIG_ENTRY_COLLECTION = "hook_config_entry"
 
-	HOOK_RECORD_ID_FIELD_NAME = "hook_record_id"
+	HOOK_RECORD_ID_FIELD_NAME       = "hook_record_id"
+	HOOK_CONFIG_ENTRY_ID_FIELD_NAME = "configuration_entry_id"
 )
 
 type HookDocumentDBStore struct {
@@ -37,6 +38,113 @@ func CreateHookDocumentDBStore(connectionUri string) (*HookDocumentDBStore, erro
 	}
 
 	return &dbStore, nil
+
+}
+
+func (store *HookDocumentDBStore) GetHookRecord(ctx context.Context, hookRecordId string) (*storage.HookRecord, *storage.HookConfigurationEntry, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecord")
+	defer sp.End()
+
+	// Get the Hook Record
+	res := store.DB.Collection(HOOK_RECORD_COLLECTION).FindOne(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecordId}})
+	if res.Err() != nil {
+
+		if res.Err() != mongo.ErrNoDocuments {
+			log.Error("Error getting record by ID:  %v", res.Err())
+			return nil, nil, res.Err()
+		}
+
+		log.Debug("No records found")
+		return nil, nil, nil
+
+	}
+
+	var hookRecord storage.HookRecord
+	var latestConfigEntry storage.HookConfigurationEntry
+
+	err := res.Decode(&hookRecord)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get the latest configuration entry
+	resConfig := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).FindOne(ctx, bson.D{{HOOK_CONFIG_ENTRY_ID_FIELD_NAME, hookRecord.LatestHookConfigurationEntryID}})
+	if resConfig.Err() != nil {
+
+		if res.Err() != mongo.ErrNoDocuments {
+			log.Error("Error getting record by ID:  %v", res.Err())
+			return nil, nil, res.Err()
+		}
+
+		log.Debug("No records found - should always be at least 1 config entry!")
+		return nil, nil, nil
+
+	}
+
+	err = resConfig.Decode(&latestConfigEntry)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &hookRecord, &latestConfigEntry, nil
+
+}
+
+func (store *HookDocumentDBStore) GetHookRecordConfigurationEntries(ctx context.Context, hookRecordId string) (*storage.HookRecord, []*storage.HookConfigurationEntry, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecordConfigurationEntries")
+	defer sp.End()
+
+	// Get the Hook Record
+	res := store.DB.Collection(HOOK_RECORD_COLLECTION).FindOne(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecordId}})
+	if res.Err() != nil {
+
+		if res.Err() != mongo.ErrNoDocuments {
+			log.Error("Error getting record by ID:  %v", res.Err())
+			return nil, nil, res.Err()
+		}
+
+		log.Debug("No records found")
+		return nil, nil, nil
+
+	}
+
+	var hookRecord storage.HookRecord
+	var configEntries []*storage.HookConfigurationEntry
+
+	err := res.Decode(&hookRecord)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get all the configuration entries for this hook record
+	cur, err := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).Find(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecordId}})
+	defer cur.Close(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Must be at least one
+	if cur.RemainingBatchLength() == 0 {
+		return nil, nil, nil
+	}
+
+	for cur.Next(ctx) {
+
+		var entry storage.HookConfigurationEntry
+		err = cur.Decode(&entry)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		configEntries = append(configEntries, &entry)
+
+	}
+
+	return &hookRecord, configEntries, nil
 
 }
 

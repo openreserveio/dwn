@@ -8,6 +8,8 @@ import (
 
 // Base interface for storing Hook configuration from the user
 type HookStore interface {
+	GetHookRecord(ctx context.Context, hookRecordId string) (*HookRecord, *HookConfigurationEntry, error)
+	GetHookRecordConfigurationEntries(ctx context.Context, hookRecordId string) (*HookRecord, []*HookConfigurationEntry, error)
 	CreateHookRecord(ctx context.Context, hookRecord *HookRecord, initialConfiguration *HookConfigurationEntry) error
 	UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *HookConfigurationEntry) error
 	DeleteHookRecord(ctx context.Context, hookRecordId string) error

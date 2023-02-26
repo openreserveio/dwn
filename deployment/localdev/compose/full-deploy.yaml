@@ -110,6 +110,7 @@ services:
       - "MONGO_INITDB_ROOT_PASSWORD=openreservepass"
     volumes:
       - "documentdb_data:/data/db"
+  
   localstack:
     image: "localstack/localstack"
     ports:
@@ -122,6 +123,43 @@ services:
     volumes:
       - "localstack_data:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+  
+  redis:
+    image: redis:alpine
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    # This allows for data to not be persisted on new runs
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server --save ''"]
+  
+  
+  # SSI Service Components
+  ssiservice:
+    image: "openreserveio/ssi-service:latest"
+    ports:
+      - "9080:3000"
+    environment:
+      - JAEGER_HTTP_URL=http://jaeger:4317/api/traces
+    depends_on:
+      - jaeger
+      - redis
+    volumes:
+      - ./ssiservice-config.toml:/app/config/config.toml
+
+  ssiservice-swagger:
+    image: "openreserveio/ssi-service-swagger:latest"
+    ports:
+      - "9081:8080"
+    volumes:
+      - ./ssiservice-swagger.yaml:/app/swagger.yaml
+    command: ["serve", "/app/swagger.yaml", "--no-open", "--port", "8080"]
+
+  ssiservice-ui:
+    image: "openreserveio/ssi-service-gui:latest"
+    ports:
+      - "9082:8501"
+    depends_on:
+      - ssiservice
+    
 
   # DWN Components
   hooksvc:
