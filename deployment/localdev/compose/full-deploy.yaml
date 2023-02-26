@@ -133,32 +133,32 @@ services:
   
   
   # SSI Service Components
-  ssiservice:
-    image: "openreserveio/ssi-service:latest"
-    ports:
-      - "9080:3000"
-    environment:
-      - JAEGER_HTTP_URL=http://jaeger:4317/api/traces
-    depends_on:
-      - jaeger
-      - redis
-    volumes:
-      - ./ssiservice-config.toml:/app/config/config.toml
+  # ssiservice:
+  #   image: "openreserveio/ssi-service:latest"
+  #   ports:
+  #     - "9080:3000"
+  #   environment:
+  #     - JAEGER_HTTP_URL=http://jaeger:4317/api/traces
+  #   depends_on:
+  #     - jaeger
+  #     - redis
+  #   volumes:
+  #     - ./ssiservice-config.toml:/app/config/config.toml
 
-  ssiservice-swagger:
-    image: "openreserveio/ssi-service-swagger:latest"
-    ports:
-      - "9081:8080"
-    volumes:
-      - ./ssiservice-swagger.yaml:/app/swagger.yaml
-    command: ["serve", "/app/swagger.yaml", "--no-open", "--port", "8080"]
+  # ssiservice-swagger:
+  #   image: "openreserveio/ssi-service-swagger:latest"
+  #   ports:
+  #     - "9081:8080"
+  #   volumes:
+  #     - ./ssiservice-swagger.yaml:/app/swagger.yaml
+  #   command: ["serve", "/app/swagger.yaml", "--no-open", "--port", "8080"]
 
-  ssiservice-ui:
-    image: "openreserveio/ssi-service-gui:latest"
-    ports:
-      - "9082:8501"
-    depends_on:
-      - ssiservice
+  # ssiservice-ui:
+  #   image: "openreserveio/ssi-service-gui:latest"
+  #   ports:
+  #     - "9082:8501"
+  #   depends_on:
+  #     - ssiservice
     
 
   # DWN Components
