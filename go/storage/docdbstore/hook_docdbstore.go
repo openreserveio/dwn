@@ -3,8 +3,10 @@ package docdbstore
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -12,6 +14,8 @@ import (
 const (
 	HOOK_RECORD_COLLECTION       = "hook_records"
 	HOOK_CONFIG_ENTRY_COLLECTION = "hook_config_entry"
+
+	HOOK_RECORD_ID_FIELD_NAME = "hook_record_id"
 )
 
 type HookDocumentDBStore struct {
@@ -38,7 +42,7 @@ func CreateHookDocumentDBStore(connectionUri string) (*HookDocumentDBStore, erro
 func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookRecord *storage.HookRecord, initialConfiguration *storage.HookConfigurationEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "CreateHookRecord")
+	_, sp := observability.Tracer.Start(ctx, "hook_store.CreateHookRecord")
 	defer sp.End()
 
 	initialConfiguration.ConfigurationEntryID = uuid.NewString()
@@ -61,11 +65,25 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 }
 
 func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) error {
-	//TODO implement me
-	panic("implement me")
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "hook_store.UpdateHookRecord")
+	defer sp.End()
+
+	// Get current setup, error if not found
+	res := store.DB.Collection(HOOK_RECORD_COLLECTION).FindOne(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecordId}})
+	if res.Err() != nil {
+		log.Error("Error getting message entry by ID:  %v", res.Err())
+		return nil
+	}
+
 }
 
 func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "hook_store.DeleteHookRecord")
+	defer sp.End()
+
 	//TODO implement me
 	panic("implement me")
 }
