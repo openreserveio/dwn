@@ -38,15 +38,14 @@ var _ = Describe("Write Collection", func() {
 
 		It("Creates a new entry, then updates it", func() {
 
-			secondBody := []byte("{\"name\":\"test_two\", \"status\":\"APPROVED\"}")
-			secondRecordId, err := dwnClient.SaveData(TEST_SCHEMA, secondBody, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity, &recipientIdentity)
+			body := []byte("{\"name\":\"test_two\", \"status\":\"APPROVED\"}")
+			recordId, err := dwnClient.SaveData(TEST_SCHEMA, body, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity, &recipientIdentity)
 			Expect(err).To(BeNil())
-			Expect(secondRecordId).ToNot(BeEmpty())
+			Expect(recordId).ToNot(BeEmpty())
 
-			secondBodyUpdated := []byte("{\"name\":\"test_two_changed\", \"status\":\"APPROVED_changed\"}")
-			updatedRecordId, err := dwnClient.SaveData(TEST_SCHEMA, secondBodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity, &recipientIdentity)
+			bodyUpdated := []byte("{\"name\":\"test_two_changed\", \"status\":\"APPROVED_changed\"}")
+			err = dwnClient.UpdateData(TEST_SCHEMA, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
 			Expect(err).To(BeNil())
-			Expect(updatedRecordId).ToNot(BeEmpty())
 
 		})
 
