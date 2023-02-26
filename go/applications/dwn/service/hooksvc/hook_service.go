@@ -100,7 +100,57 @@ func (hookService HookService) RegisterHook(ctx context.Context, request *servic
 
 }
 
+func (hookService HookService) UpdateHook(ctx context.Context, request *services.UpdateHookRequest) (*services.UpdateHookResponse, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "UpdateHook")
+	defer sp.End()
+
+	response := services.UpdateHookResponse{}
+
+	var message model.Message
+	err := json.Unmarshal(request.Message, &message)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	// Get the existing hook record, error if not found
+	hookRecord, _, err := hookService.HookStore.GetHookRecord(ctx, message.RecordID)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	if hookRecord == nil {
+		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND, Details: "No hook record ID found to update"}
+		return &response, nil
+	}
+
+	// Create Config Entry
+	configEntry := storage.HookConfigurationEntry{
+		Message:              message,
+		ID:                   primitive.NewObjectID(),
+		ConfigurationEntryID: uuid.NewString(),
+		HookRecordID:         message.RecordID,
+	}
+
+	// Store!
+	err = hookService.HookStore.UpdateHookRecord(ctx, message.RecordID, &configEntry)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+	return &response, nil
+}
+
 func (hookService HookService) GetHooksForCollection(ctx context.Context, request *services.GetHooksForCollectionRequest) (*services.GetHooksForCollectionResponse, error) {
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "GetHooksForCollection")
+	defer sp.End()
+
 	//TODO implement me
 	panic("implement me")
 }
