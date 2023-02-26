@@ -2,6 +2,7 @@ package docdbstore
 
 import (
 	"context"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
@@ -77,13 +78,57 @@ func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookReco
 		return nil
 	}
 
+	var hookRecord storage.HookRecord
+	err := res.Decode(&hookRecord)
+	if err != nil {
+		return err
+	}
+
+	// Give new ID, make sure it points to the hook record
+	updatedConfiguration.ConfigurationEntryID = uuid.NewString()
+	updatedConfiguration.RecordID = hookRecord.HookRecordID
+
+	// Latest hook config should point to this new one
+	hookRecord.LatestHookConfigurationEntryID = updatedConfiguration.ConfigurationEntryID
+
+	// First, insert the new configuration
+	_, err = store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).InsertOne(ctx, updatedConfiguration)
+	if err != nil {
+		return err
+	}
+
+	// Then, update the hook record
+	updateRes, err := store.DB.Collection(HOOK_RECORD_COLLECTION).ReplaceOne(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecord.HookRecordID}}, &hookRecord)
+	if err != nil {
+		return err
+	}
+	if updateRes.ModifiedCount == 0 {
+		return errors.New("Unable to modify the hook record")
+	}
+
+	return nil
 }
 
 func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
+
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "hook_store.DeleteHookRecord")
 	defer sp.End()
 
-	//TODO implement me
-	panic("implement me")
+	// delete hook records
+	_, err := store.DB.Collection(HOOK_RECORD_COLLECTION).DeleteOne(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecordId}})
+	if err != nil {
+		log.Error("Error deleting record by Hook Record ID:  %v", err)
+		return err
+	}
+
+	// Delete Entries BYE
+	_, err = store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).DeleteOne(ctx, bson.D{{HOOK_RECORD_ID_FIELD_NAME, hookRecordId}})
+	if err != nil {
+		log.Error("Error deleting record config entries by Hook Record ID:  %v", err)
+		return err
+	}
+
+	return nil
+
 }
