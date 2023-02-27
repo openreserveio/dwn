@@ -1,3 +1,5 @@
+---
+
 name: Bug Report
 description: File a bug/issue for Decentralized Web Node
 title: "[bug-report] <title>"
@@ -57,3 +59,5 @@ body:
       Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
   validations:
     required: false
+
+---
