@@ -6,7 +6,7 @@ type FeatureDetection struct {
 }
 
 type FeatureInterface struct {
-	Collections RecordsFeatures     `json:"records,omitempty"`
+	Records     RecordsFeatures     `json:"records,omitempty"`
 	Hooks       HooksFeatures       `json:"hooks,omitempty"`
 	Permissions PermissionsFeatures `json:"permissions,omitempty"`
 	Messaging   MessagingFeatures   `json:"messaging,omitempty"`
@@ -38,7 +38,7 @@ type MessagingFeatures struct {
 var CurrentFeatureDetection FeatureDetection = FeatureDetection{
 	Type: "FeatureDetection",
 	Interfaces: FeatureInterface{
-		Collections: RecordsFeatures{
+		Records: RecordsFeatures{
 			RecordsQuery:  true,
 			RecordsWrite:  true,
 			RecordsCommit: true,
