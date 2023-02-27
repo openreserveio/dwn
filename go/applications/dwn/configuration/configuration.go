@@ -30,6 +30,9 @@ type Configuration interface {
 	GetHookServiceExternalAddress() string
 	GetHookServiceExternalPort() int
 	GetHookServiceDocumentDBURI() string
+
+	// Queue Service
+	GetQueueServiceConnectionURI() string
 }
 
 func Config() (Configuration, error) {

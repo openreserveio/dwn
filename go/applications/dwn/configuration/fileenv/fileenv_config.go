@@ -19,6 +19,8 @@ const (
 	KEY_HOOKSVC_EXTERNAL_ADDRESS     = "hooksvc.externalAddress"
 	KEY_HOOKSVC_EXTERNAL_PORT        = "hooksvc.externalPort"
 	KEY_HOOKSVC_DOCDB_CONNECTION_URI = "hooksvc.docdbConnectionURI"
+
+	KEY_QUEUE_SERVICE_CONNECTION_URI = "queueservice.connectionURI"
 )
 
 type FileEnvironmentConfiguration struct {
@@ -86,4 +88,8 @@ func (config FileEnvironmentConfiguration) GetHookServiceExternalAddress() strin
 
 func (config FileEnvironmentConfiguration) GetHookServiceExternalPort() int {
 	return viper.GetInt(KEY_HOOKSVC_EXTERNAL_PORT)
+}
+
+func (config FileEnvironmentConfiguration) GetQueueServiceConnectionURI() string {
+	return viper.GetString(KEY_QUEUE_SERVICE_CONNECTION_URI)
 }

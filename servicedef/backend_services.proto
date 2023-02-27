@@ -119,6 +119,14 @@ message RegisterHookResponse {
    CommonStatus status = 1;
 }
 
+message UpdateHookRequest {
+   bytes message = 1;
+}
+
+message UpdateHookResponse {
+   CommonStatus status = 1;
+}
+
 message GetHooksForCollectionRequest {
    string recordId = 1;
    string protocol = 2;
@@ -151,6 +159,7 @@ message NotifyHooksOfCollectionEventResponse {
 
  service HookService {
    rpc RegisterHook(RegisterHookRequest) returns (RegisterHookResponse) {}
+   rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse) {}
    rpc GetHooksForCollection(GetHooksForCollectionRequest) returns (GetHooksForCollectionResponse) {}
    rpc NotifyHooksOfCollectionEvent(NotifyHooksOfCollectionEventRequest) returns (NotifyHooksOfCollectionEventResponse) {}
  }
