@@ -1,6 +1,6 @@
 # DWN
 
-[![godoc dwn](https://img.shields.io/badge/godoc-dwn-blue)](https://github.com/openreserveio/dwn)
+[![godoc dwn](https://img.shields.io/badge/godoc-dwn-blue)](https://pkg.go.dev/github.com/openreserveio/dwn/go)
 [![go version 1.20.1](https://img.shields.io/badge/go_version-1.20.1-brightgreen)](https://go.dev/)
 [![license Apache 2](https://img.shields.io/badge/license-Apache%202-black)](https://github.com/openreserveio/dwn/blob/main/LICENSE)
 [![issues](https://img.shields.io/github/issues/openreserveio/dwn)](https://github.com/openreserveio/dwn/issues)
