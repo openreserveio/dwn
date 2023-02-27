@@ -1,4 +1,4 @@
-SEMVER := 0.0.7-alpha
+SEMVER := 0.0.8-alpha
 PLATFORMS := linux/amd64,linux/arm64
 
 generate-protobuf:
