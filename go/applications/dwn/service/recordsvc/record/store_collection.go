@@ -1,4 +1,4 @@
-package collection
+package record
 
 import (
 	"context"
@@ -31,7 +31,7 @@ type StoreCollectionResult struct {
 func StoreCollection(ctx context.Context, collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "StoreCollection")
+	_, sp := observability.Tracer.Start(ctx, "StoreRecord")
 	defer sp.End()
 
 	// Need to implement this message process flow per spec:

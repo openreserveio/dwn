@@ -1,9 +1,9 @@
-package collsvc
+package recordsvc
 
 import (
 	"context"
 	"encoding/json"
-	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc/collection"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/recordsvc/record"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
@@ -12,21 +12,21 @@ import (
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
 )
 
-type CollectionService struct {
-	services.UnimplementedCollectionServiceServer
+type RecordService struct {
+	services.UnimplementedRecordServiceServer
 	CollectionStore storage.CollectionStore
 }
 
-func CreateCollectionService(collectionStoreConnectionURI string) (*CollectionService, error) {
+func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error) {
 
 	// Setup Collection Store
-	colLStore, err := docdbstore.CreateCollectionDocumentDBStore(collectionStoreConnectionURI)
+	colLStore, err := docdbstore.CreateCollectionDocumentDBStore(recordStoreConnectionURI)
 	if err != nil {
 		log.Fatal("Unable to connect to collections store:  %v", err)
 		return nil, err
 	}
 
-	collService := CollectionService{
+	collService := RecordService{
 		CollectionStore: colLStore,
 	}
 
@@ -34,13 +34,13 @@ func CreateCollectionService(collectionStoreConnectionURI string) (*CollectionSe
 
 }
 
-func (c CollectionService) StoreCollection(ctx context.Context, request *services.StoreCollectionRequest) (*services.StoreCollectionResponse, error) {
+func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreRecordRequest) (*services.StoreRecordResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "StoreCollection")
+	_, sp := observability.Tracer.Start(ctx, "StoreRecord")
 	defer sp.End()
 
-	response := services.StoreCollectionResponse{}
+	response := services.StoreRecordResponse{}
 	var collectionMessage model.Message
 	err := json.Unmarshal(request.Message, &collectionMessage)
 	if err != nil {
@@ -52,7 +52,7 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_COMMIT ||
 		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_DELETE {
 
-		result, err := collection.StoreCollection(ctx, c.CollectionStore, &collectionMessage)
+		result, err := record.StoreCollection(ctx, c.CollectionStore, &collectionMessage)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
@@ -75,18 +75,18 @@ func (c CollectionService) StoreCollection(ctx context.Context, request *service
 
 }
 
-func (c CollectionService) FindCollection(ctx context.Context, request *services.FindCollectionRequest) (*services.FindCollectionResponse, error) {
+func (c RecordService) FindRecord(ctx context.Context, request *services.FindRecordRequest) (*services.FindRecordResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "FindCollection")
+	_, sp := observability.Tracer.Start(ctx, "FindRecord")
 	defer sp.End()
 
-	response := services.FindCollectionResponse{}
+	response := services.FindRecordResponse{}
 
 	// TODO: We are only doing single record finds right now
-	if request.QueryType == services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI {
+	if request.QueryType == services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI {
 
-		result, err := collection.FindCollectionBySchemaAndRecordID(ctx, c.CollectionStore, request.SchemaURI, request.RecordId)
+		result, err := record.FindCollectionBySchemaAndRecordID(ctx, c.CollectionStore, request.SchemaURI, request.RecordId)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
@@ -102,7 +102,7 @@ func (c CollectionService) FindCollection(ctx context.Context, request *services
 			response.IsPublished = result.LatestEntry.Descriptor.Published
 
 			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)
-			response.CollectionItem = latestEntryJsonBytes
+			response.RecordItem = latestEntryJsonBytes
 
 			return &response, nil
 
@@ -122,25 +122,25 @@ func (c CollectionService) FindCollection(ctx context.Context, request *services
 
 }
 
-func (c CollectionService) CreateSchema(ctx context.Context, request *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {
+func (c RecordService) CreateSchema(ctx context.Context, request *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (c CollectionService) ValidateCollection(ctx context.Context, request *services.ValidateCollectionRequest) (*services.ValidateCollectionResponse, error) {
+func (c RecordService) ValidateRecord(ctx context.Context, request *services.ValidateRecordRequest) (*services.ValidateRecordResponse, error) {
 
-	return &services.ValidateCollectionResponse{
+	return &services.ValidateRecordResponse{
 		Status: &services.CommonStatus{Status: services.Status_OK},
 	}, nil
 
 }
 
-func (c CollectionService) InvalidateSchema(ctx context.Context, request *services.InvalidateSchemaRequest) (*services.InvalidateSchemaResponse, error) {
+func (c RecordService) InvalidateSchema(ctx context.Context, request *services.InvalidateSchemaRequest) (*services.InvalidateSchemaResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (c CollectionService) mustEmbedUnimplementedCollectionServiceServer() {
+func (c RecordService) mustEmbedUnimplementedCollectionServiceServer() {
 	//TODO implement me
 	panic("implement me")
 }

@@ -1,4 +1,4 @@
-package collsvc
+package recordsvc
 
 import (
 	"context"
@@ -13,14 +13,14 @@ import (
 
 func Start(ctx context.Context, config configuration.Configuration) error {
 
-	// Start Collection Service
+	// Start Record Service
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.GetCollectionServiceListenAddress(), config.GetCollectionServiceListenPort()))
 	if err != nil {
 		log.Fatal("Unable to listen to address and port:  %v", err)
 		os.Exit(1)
 	}
 
-	collectionService, err := CreateCollectionService(config.GetCollectionServiceDocumentDBURI())
+	recordService, err := CreateRecordService(config.GetCollectionServiceDocumentDBURI())
 	if err != nil {
 		log.Fatal("Unable to start Collection Service:  %v", err)
 		os.Exit(1)
@@ -29,7 +29,7 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 	// GRPC
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	services.RegisterCollectionServiceServer(grpcServer, collectionService)
+	services.RegisterCollectionServiceServer(grpcServer, recordService)
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatal("GRPC Server Failed:  %v", err)

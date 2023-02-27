@@ -1,4 +1,4 @@
-package collection
+package record
 
 import (
 	"context"
