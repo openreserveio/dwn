@@ -8,8 +8,11 @@ import (
 
 // Base interface for storing Hook configuration from the user
 type HookStore interface {
+	GetHookRecord(ctx context.Context, hookRecordId string) (*HookRecord, *HookConfigurationEntry, error)
+	GetHookRecordConfigurationEntries(ctx context.Context, hookRecordId string) (*HookRecord, []*HookConfigurationEntry, error)
 	CreateHookRecord(ctx context.Context, hookRecord *HookRecord, initialConfiguration *HookConfigurationEntry) error
-	UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *HookConfigurationEntry)
+	UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *HookConfigurationEntry) error
+	DeleteHookRecord(ctx context.Context, hookRecordId string) error
 }
 
 type HookRecord struct {
@@ -22,6 +25,7 @@ type HookRecord struct {
 
 type HookConfigurationEntry struct {
 	model.Message
-	ID           primitive.ObjectID `bson:"_id"`
-	HookRecordID string             `bson:"hook_record_id"`
+	ID                   primitive.ObjectID `bson:"_id"`
+	ConfigurationEntryID string             `bson:"configuration_entry_id"`
+	HookRecordID         string             `bson:"hook_record_id"`
 }

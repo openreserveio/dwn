@@ -253,6 +253,7 @@ var CollectionService_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HookServiceClient interface {
 	RegisterHook(ctx context.Context, in *RegisterHookRequest, opts ...grpc.CallOption) (*RegisterHookResponse, error)
+	UpdateHook(ctx context.Context, in *UpdateHookRequest, opts ...grpc.CallOption) (*UpdateHookResponse, error)
 	GetHooksForCollection(ctx context.Context, in *GetHooksForCollectionRequest, opts ...grpc.CallOption) (*GetHooksForCollectionResponse, error)
 	NotifyHooksOfCollectionEvent(ctx context.Context, in *NotifyHooksOfCollectionEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfCollectionEventResponse, error)
 }
@@ -268,6 +269,15 @@ func NewHookServiceClient(cc grpc.ClientConnInterface) HookServiceClient {
 func (c *hookServiceClient) RegisterHook(ctx context.Context, in *RegisterHookRequest, opts ...grpc.CallOption) (*RegisterHookResponse, error) {
 	out := new(RegisterHookResponse)
 	err := c.cc.Invoke(ctx, "/services.HookService/RegisterHook", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hookServiceClient) UpdateHook(ctx context.Context, in *UpdateHookRequest, opts ...grpc.CallOption) (*UpdateHookResponse, error) {
+	out := new(UpdateHookResponse)
+	err := c.cc.Invoke(ctx, "/services.HookService/UpdateHook", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -297,6 +307,7 @@ func (c *hookServiceClient) NotifyHooksOfCollectionEvent(ctx context.Context, in
 // for forward compatibility
 type HookServiceServer interface {
 	RegisterHook(context.Context, *RegisterHookRequest) (*RegisterHookResponse, error)
+	UpdateHook(context.Context, *UpdateHookRequest) (*UpdateHookResponse, error)
 	GetHooksForCollection(context.Context, *GetHooksForCollectionRequest) (*GetHooksForCollectionResponse, error)
 	NotifyHooksOfCollectionEvent(context.Context, *NotifyHooksOfCollectionEventRequest) (*NotifyHooksOfCollectionEventResponse, error)
 	mustEmbedUnimplementedHookServiceServer()
@@ -308,6 +319,9 @@ type UnimplementedHookServiceServer struct {
 
 func (UnimplementedHookServiceServer) RegisterHook(context.Context, *RegisterHookRequest) (*RegisterHookResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterHook not implemented")
+}
+func (UnimplementedHookServiceServer) UpdateHook(context.Context, *UpdateHookRequest) (*UpdateHookResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateHook not implemented")
 }
 func (UnimplementedHookServiceServer) GetHooksForCollection(context.Context, *GetHooksForCollectionRequest) (*GetHooksForCollectionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHooksForCollection not implemented")
@@ -342,6 +356,24 @@ func _HookService_RegisterHook_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HookServiceServer).RegisterHook(ctx, req.(*RegisterHookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HookService_UpdateHook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateHookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HookServiceServer).UpdateHook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/services.HookService/UpdateHook",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HookServiceServer).UpdateHook(ctx, req.(*UpdateHookRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -392,6 +424,10 @@ var HookService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterHook",
 			Handler:    _HookService_RegisterHook_Handler,
+		},
+		{
+			MethodName: "UpdateHook",
+			Handler:    _HookService_UpdateHook_Handler,
 		},
 		{
 			MethodName: "GetHooksForCollection",

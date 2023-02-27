@@ -59,3 +59,19 @@ func (eh *EventHub) RaiseCreateRecordEvent(recordId string) {
 	eh.Publish(CreateRecordEventQueue, encodedEvent)
 
 }
+
+func (eh *EventHub) RaiseNotifyCallbackHTTP(schemaUrl string, recordId string, protocol string, protocolVersion string, callbackUrl string) {
+
+	discData := map[string]string{DISC_DATA_KEY_CALLBACK_URI: callbackUrl}
+	event := events.Event{
+		EventType:              events.EventType_NOTIFY_CALLBACK_HTTP,
+		RecordId:               recordId,
+		Schema:                 schemaUrl,
+		Protocol:               protocol,
+		ProtocolVersion:        protocolVersion,
+		EventDiscretionaryData: discData,
+	}
+	encodedEvent, _ := proto.Marshal(&event)
+	eh.Publish(NotifyCallbackHTTPQueue, encodedEvent)
+
+}
