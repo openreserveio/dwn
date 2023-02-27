@@ -1,3 +1,5 @@
+---
+
 name: Bug Report
 about: Report a potential bug or defect for DWN
 description: File a potential bug or defect for Decentralized Web Node
