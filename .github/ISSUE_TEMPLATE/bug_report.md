@@ -1,6 +1,7 @@
 ---
 
 name: Bug Report
+about: Report a potential bug or defect for DWN
 description: File a potential bug or defect for Decentralized Web Node
 title: "[bug-report] <title>"
 labels: ["potential-bug"]
