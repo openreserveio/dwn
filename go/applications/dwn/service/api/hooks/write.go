@@ -30,13 +30,13 @@ func HooksWrite(ctx context.Context, hookServiceClient services.HookServiceClien
 
 	// See if there's an existing Hook record and be sure we're authorized
 	// otherwise, create a new one
-	getHooksRequest := services.GetHooksForCollectionRequest{
+	getHooksRequest := services.GetHooksForRecordRequest{
 		RecordId:        message.RecordID,
 		Protocol:        message.Descriptor.Protocol,
 		ProtocolVersion: message.Descriptor.ProtocolVersion,
 		Schema:          message.Descriptor.Schema,
 	}
-	getHooksResponse, err := hookServiceClient.GetHooksForCollection(ctx, &getHooksRequest)
+	getHooksResponse, err := hookServiceClient.GetHooksForRecord(ctx, &getHooksRequest)
 	if err != nil {
 		log.Error("Internal Server Error:  %v", err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}

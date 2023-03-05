@@ -146,7 +146,7 @@ func (hookService HookService) UpdateHook(ctx context.Context, request *services
 	return &response, nil
 }
 
-func (hookService HookService) GetHooksForCollection(ctx context.Context, request *services.GetHooksForCollectionRequest) (*services.GetHooksForCollectionResponse, error) {
+func (hookService HookService) GetHooksForCollection(ctx context.Context, request *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "GetHooksForCollection")
 	defer sp.End()
@@ -155,7 +155,7 @@ func (hookService HookService) GetHooksForCollection(ctx context.Context, reques
 	panic("implement me")
 }
 
-func (hookService HookService) NotifyHooksOfCollectionEvent(ctx context.Context, request *services.NotifyHooksOfCollectionEventRequest) (*services.NotifyHooksOfCollectionEventResponse, error) {
+func (hookService HookService) NotifyHooksOfCollectionEvent(ctx context.Context, request *services.NotifyHooksOfRecordEventRequest) (*services.NotifyHooksOfRecordEventResponse, error) {
 
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "NotifyHooksOfCollectionEvent")
