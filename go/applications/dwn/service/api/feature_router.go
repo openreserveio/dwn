@@ -90,19 +90,19 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 	// Route logic based on Method
 	switch message.Descriptor.Method {
 
-	case model.METHOD_COLLECTIONS_QUERY:
+	case model.METHOD_RECORDS_QUERY:
 		childSpan.AddEvent("Start Collections Query")
 		messageResult = collections.CollectionsQuery(ctx, fr.CollectionServiceClient, message)
 
-	case model.METHOD_COLLECTIONS_WRITE:
+	case model.METHOD_RECORDS_WRITE:
 		childSpan.AddEvent("Start Collections Write")
 		messageResult = collections.CollectionsWrite(ctx, fr.CollectionServiceClient, message)
 
-	case model.METHOD_COLLECTIONS_COMMIT:
+	case model.METHOD_RECORDS_COMMIT:
 		childSpan.AddEvent("Start Collections Commit")
 		messageResult = collections.CollectionsCommit(ctx, fr.CollectionServiceClient, message)
 
-	case model.METHOD_COLLECTIONS_DELETE:
+	case model.METHOD_RECORDS_DELETE:
 		childSpan.AddEvent("Start Collections Delete")
 		messageResult = collections.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
 

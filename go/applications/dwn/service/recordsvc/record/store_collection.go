@@ -39,7 +39,7 @@ func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, c
 	result := StoreCollectionResult{}
 	switch collectionMessage.Descriptor.Method {
 
-	case model.METHOD_COLLECTIONS_WRITE:
+	case model.METHOD_RECORDS_WRITE:
 		err := collectionsWrite(ctx, collectionStore, collectionMessage)
 		if err != nil {
 			result.Status = "ERROR"
@@ -49,7 +49,7 @@ func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, c
 		result.Status = "OK"
 		result.RecordID = collectionMessage.RecordID
 
-	case model.METHOD_COLLECTIONS_COMMIT:
+	case model.METHOD_RECORDS_COMMIT:
 		err := collectionsCommit(ctx, collectionStore, collectionMessage)
 		if err != nil {
 			result.Status = "ERROR"
@@ -59,7 +59,7 @@ func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, c
 		result.Status = "OK"
 		result.RecordID = collectionMessage.RecordID
 
-	case model.METHOD_COLLECTIONS_DELETE:
+	case model.METHOD_RECORDS_DELETE:
 
 	default:
 		result.Status = "UNSUPPORTED_METHOD"
@@ -220,7 +220,7 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		// the dateCreated value of the inbound message is greater than the Latest Checkpoint Entry,
 		// store the message as the Latest Entry and cease processing, else discard the inbound message
 		// and cease processing.
-		if latestCheckpointEntry.Descriptor.Method != model.METHOD_COLLECTIONS_WRITE &&
+		if latestCheckpointEntry.Descriptor.Method != model.METHOD_RECORDS_WRITE &&
 			collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 
 			latestEntry := storage.MessageEntry{
@@ -249,7 +249,7 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		//     than the existing entry when the Entry IDs of the two are compared lexicographically.
 		// If all of the following conditions for Step 6 are true, store the inbound message as the Latest Entry
 		// and discard the existing CollectionsWrite entry that was attached to the Latest Checkpoint Entry.
-		if latestCheckpointEntry.Descriptor.Method == model.METHOD_COLLECTIONS_WRITE {
+		if latestCheckpointEntry.Descriptor.Method == model.METHOD_RECORDS_WRITE {
 
 			if latestCheckpointEntry.Descriptor.DateCreated.Equal(collectionsWriteMessage.Descriptor.DateCreated) ||
 				collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {

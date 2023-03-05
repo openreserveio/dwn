@@ -35,7 +35,7 @@ var _ = Describe("Query For A Collection", func() {
 	Describe("Query for a collection that doesn't exist", func() {
 
 		descriptor := model.Descriptor{
-			Method: model.METHOD_COLLECTIONS_QUERY,
+			Method: model.METHOD_RECORDS_QUERY,
 			Filter: model.DescriptorFilter{
 				RecordID: "DOES NOT EXIST",
 				Schema:   "https://openreserve.io/schemas/test.json",
@@ -93,7 +93,7 @@ var _ = Describe("Query For A Collection", func() {
 		bodyEncoded := base64.RawURLEncoding.EncodeToString(body)
 
 		descriptor := model.Descriptor{
-			Method:          model.METHOD_COLLECTIONS_WRITE,
+			Method:          model.METHOD_RECORDS_WRITE,
 			DataCID:         model.CreateDataCID(bodyEncoded),
 			DataFormat:      model.DATA_FORMAT_JSON,
 			ParentID:        "",
@@ -159,7 +159,7 @@ var _ = Describe("Query For A Collection", func() {
 
 			// TODO:  THis should be refactored into client lib
 			queryDescriptor := model.Descriptor{
-				Method: model.METHOD_COLLECTIONS_QUERY,
+				Method: model.METHOD_RECORDS_QUERY,
 				Filter: model.DescriptorFilter{
 					RecordID: message.RecordID,
 					Schema:   message.Descriptor.Schema,

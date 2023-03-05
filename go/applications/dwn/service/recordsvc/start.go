@@ -29,7 +29,7 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 	// GRPC
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	services.RegisterCollectionServiceServer(grpcServer, recordService)
+	services.RegisterRecordServiceServer(grpcServer, recordService)
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatal("GRPC Server Failed:  %v", err)

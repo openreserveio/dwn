@@ -40,7 +40,7 @@ var _ = Describe("StoreRecord", func() {
 			recipientDID, _ := did.CreateKeyDID(&recipientPublicKey)
 
 			body := []byte("{\"name\":\"test\"}")
-			message := model.CreateMessage(authorDID, recipientDID, model.DATA_FORMAT_JSON, body, model.METHOD_COLLECTIONS_WRITE, "", "")
+			message := model.CreateMessage(authorDID, recipientDID, model.DATA_FORMAT_JSON, body, model.METHOD_RECORDS_WRITE, "", "")
 			message.Descriptor.DateCreated = time.Now()
 
 			descriptorCID := model.CreateDescriptorCID(message.Descriptor)

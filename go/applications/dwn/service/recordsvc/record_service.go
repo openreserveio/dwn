@@ -14,7 +14,7 @@ import (
 
 type RecordService struct {
 	services.UnimplementedRecordServiceServer
-	CollectionStore storage.RecordStore
+	RecordStore storage.RecordStore
 }
 
 func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error) {
@@ -27,7 +27,7 @@ func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error
 	}
 
 	collService := RecordService{
-		CollectionStore: colLStore,
+		RecordStore: colLStore,
 	}
 
 	return &collService, nil
@@ -48,11 +48,11 @@ func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreR
 		return &response, nil
 	}
 
-	if collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_WRITE ||
-		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_COMMIT ||
-		collectionMessage.Descriptor.Method == model.METHOD_COLLECTIONS_DELETE {
+	if collectionMessage.Descriptor.Method == model.METHOD_RECORDS_WRITE ||
+		collectionMessage.Descriptor.Method == model.METHOD_RECORDS_COMMIT ||
+		collectionMessage.Descriptor.Method == model.METHOD_RECORDS_DELETE {
 
-		result, err := record.StoreCollection(ctx, c.CollectionStore, &collectionMessage)
+		result, err := record.StoreCollection(ctx, c.RecordStore, &collectionMessage)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
@@ -86,7 +86,7 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 	// TODO: We are only doing single record finds right now
 	if request.QueryType == services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI {
 
-		result, err := record.FindCollectionBySchemaAndRecordID(ctx, c.CollectionStore, request.SchemaURI, request.RecordId)
+		result, err := record.FindCollectionBySchemaAndRecordID(ctx, c.RecordStore, request.SchemaURI, request.RecordId)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil

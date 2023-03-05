@@ -15,7 +15,7 @@ import (
 func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) ([]byte, string, error) {
 
 	queryDescriptor := model.Descriptor{
-		Method: model.METHOD_COLLECTIONS_QUERY,
+		Method: model.METHOD_RECORDS_QUERY,
 		Filter: model.DescriptorFilter{
 			RecordID: recordId,
 			Schema:   schemaUrl,
@@ -74,7 +74,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
 
 	descriptor := model.Descriptor{
-		Method:          model.METHOD_COLLECTIONS_WRITE,
+		Method:          model.METHOD_RECORDS_WRITE,
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
 		ParentID:        "",
@@ -139,7 +139,7 @@ func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, 
 	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
 
 	descriptor := model.Descriptor{
-		Method:          model.METHOD_COLLECTIONS_WRITE,
+		Method:          model.METHOD_RECORDS_WRITE,
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
 		ParentID:        primaryIdentifier,
