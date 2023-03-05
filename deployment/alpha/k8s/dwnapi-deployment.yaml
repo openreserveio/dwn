@@ -26,9 +26,9 @@ spec:
           env:
             - name: "DWN_API.LISTENPORT"
               value: "8080"
-            - name: "DWN_COLLSVC.EXTERNALADDRESS"
-              value: "collsvc-service"
-            - name: "DWN_COLLSVC.EXTERNALPORT"
+            - name: "DWN_RECORDSVC.EXTERNALADDRESS"
+              value: "recordsvc-service"
+            - name: "DWN_RECORDSVC.EXTERNALPORT"
               value: "9001"
             - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
               value: "http://otellcoll-service:4318/v1/traces"
