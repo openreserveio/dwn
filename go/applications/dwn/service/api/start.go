@@ -15,7 +15,7 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 		SecureFlag: false,
 	}
 
-	collSvcOptions := framework.ServiceOptions{
+	recordSvcOptions := framework.ServiceOptions{
 		Address:    config.GetCollectionServiceExternalAddress(),
 		Port:       config.GetCollectionServiceExternalPort(),
 		SecureFlag: false,
@@ -27,7 +27,7 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 		SecureFlag: false,
 	}
 
-	apiService, err := CreateAPIService(&apiServiceOptions, &collSvcOptions, &hookSvcOptions)
+	apiService, err := CreateAPIService(&apiServiceOptions, &recordSvcOptions, &hookSvcOptions)
 	if err != nil {
 		log.Fatal("Unable to create API Service:  %v", err)
 		return err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api/hooks"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/api/records"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
@@ -13,18 +14,18 @@ import (
 
 type FeatureRouter struct {
 	model.FeatureDetection
-	MaximumTimeoutSeconds   int
-	CollectionServiceClient services.CollectionServiceClient
-	HookServiceClient       services.HookServiceClient
+	MaximumTimeoutSeconds int
+	RecordServiceClient   services.RecordServiceClient
+	HookServiceClient     services.HookServiceClient
 }
 
-func CreateFeatureRouter(collsvcClient services.CollectionServiceClient, hooksvcClient services.HookServiceClient, maxTimeoutSeconds int) (*FeatureRouter, error) {
+func CreateFeatureRouter(recordSvcClient services.RecordServiceClient, hooksvcClient services.HookServiceClient, maxTimeoutSeconds int) (*FeatureRouter, error) {
 
 	return &FeatureRouter{
-		FeatureDetection:        model.CurrentFeatureDetection,
-		MaximumTimeoutSeconds:   maxTimeoutSeconds,
-		CollectionServiceClient: collsvcClient,
-		HookServiceClient:       hooksvcClient,
+		FeatureDetection:      model.CurrentFeatureDetection,
+		MaximumTimeoutSeconds: maxTimeoutSeconds,
+		RecordServiceClient:   recordSvcClient,
+		HookServiceClient:     hooksvcClient,
 	}, nil
 
 }
@@ -90,20 +91,20 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 	switch message.Descriptor.Method {
 
 	case model.METHOD_RECORDS_QUERY:
-		childSpan.AddEvent("Start Collections Query")
-		messageResult = records.CollectionsQuery(ctx, fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Records Query")
+		messageResult = records.RecordsQuery(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_RECORDS_WRITE:
-		childSpan.AddEvent("Start Collections Write")
-		messageResult = records.CollectionsWrite(ctx, fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Records Write")
+		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_RECORDS_COMMIT:
-		childSpan.AddEvent("Start Collections Commit")
-		messageResult = records.CollectionsCommit(ctx, fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Records Commit")
+		messageResult = records.RecordsCommit(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_RECORDS_DELETE:
-		childSpan.AddEvent("Start Collections Delete")
-		messageResult = records.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
+		childSpan.AddEvent("Start Records Delete")
+		messageResult = records.RecordsDelete(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_HOOKS_WRITE:
 		childSpan.AddEvent("Start Hooks Write")
