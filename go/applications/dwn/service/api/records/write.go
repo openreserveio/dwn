@@ -1,4 +1,4 @@
-package collections
+package records
 
 import (
 	"context"
@@ -9,10 +9,10 @@ import (
 	"net/http"
 )
 
-func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "CollectionsWrite")
+	_, childSpan := observability.Tracer.Start(ctx, "RecordsWrite")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
@@ -27,7 +27,7 @@ func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServ
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
 	childSpan.AddEvent("Looking for existing collection")
-	findCollResp, err := collSvcClient.FindCollection(ctx, &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
+	findCollResp, err := recordSvcClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
 	if err != nil {
 		childSpan.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
@@ -68,17 +68,17 @@ func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServ
 	// Next, find the schema and make sure it has been registered
 	schemaUri := message.Descriptor.Schema
 	if schemaUri == "" {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a CollectionsWrite"}
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a RecordsWrite"}
 		return messageResultObj
 	}
 
 	// Validate given collection data validates against given schema
-	validateCollRequest := services.ValidateCollectionRequest{
+	validateCollRequest := services.ValidateRecordRequest{
 		SchemaURI: schemaUri,
 		Document:  []byte(message.Data),
 	}
 
-	validateCollResponse, err := collSvcClient.ValidateCollection(ctx, &validateCollRequest)
+	validateCollResponse, err := recordSvcClient.ValidateRecord(ctx, &validateCollRequest)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
@@ -91,10 +91,10 @@ func CollectionsWrite(ctx context.Context, collSvcClient services.CollectionServ
 
 	// Store and process the message if it passes schema validation!
 	encodedMsg, _ := json.Marshal(message)
-	storeReq := services.StoreCollectionRequest{
+	storeReq := services.StoreRecordRequest{
 		Message: encodedMsg,
 	}
-	storeResp, err := collSvcClient.StoreCollection(ctx, &storeReq)
+	storeResp, err := recordSvcClient.StoreRecord(ctx, &storeReq)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj

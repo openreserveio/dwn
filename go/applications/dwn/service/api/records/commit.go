@@ -1,4 +1,4 @@
-package collections
+package records
 
 import (
 	"context"
@@ -9,10 +9,10 @@ import (
 	"net/http"
 )
 
-func CollectionsCommit(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func RecordsCommit(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "CollectionsCommit")
+	_, childSpan := observability.Tracer.Start(ctx, "RecordsCommit")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
@@ -26,7 +26,7 @@ func CollectionsCommit(ctx context.Context, collSvcClient services.CollectionSer
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record
-	findCollResp, err := collSvcClient.FindCollection(ctx, &services.FindCollectionRequest{QueryType: services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
+	findCollResp, err := collSvcClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
@@ -66,10 +66,10 @@ func CollectionsCommit(ctx context.Context, collSvcClient services.CollectionSer
 
 	// Store and process the message if it is authorized!
 	encodedMsg, _ := json.Marshal(message)
-	storeReq := services.StoreCollectionRequest{
+	storeReq := services.StoreRecordRequest{
 		Message: encodedMsg,
 	}
-	storeResp, err := collSvcClient.StoreCollection(ctx, &storeReq)
+	storeResp, err := collSvcClient.StoreRecord(ctx, &storeReq)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj

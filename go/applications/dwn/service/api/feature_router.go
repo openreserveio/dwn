@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/openreserveio/dwn/go/applications/dwn/service/api/collections"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/api/hooks"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
@@ -92,19 +91,19 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 
 	case model.METHOD_RECORDS_QUERY:
 		childSpan.AddEvent("Start Collections Query")
-		messageResult = collections.CollectionsQuery(ctx, fr.CollectionServiceClient, message)
+		messageResult = records.CollectionsQuery(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_RECORDS_WRITE:
 		childSpan.AddEvent("Start Collections Write")
-		messageResult = collections.CollectionsWrite(ctx, fr.CollectionServiceClient, message)
+		messageResult = records.CollectionsWrite(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_RECORDS_COMMIT:
 		childSpan.AddEvent("Start Collections Commit")
-		messageResult = collections.CollectionsCommit(ctx, fr.CollectionServiceClient, message)
+		messageResult = records.CollectionsCommit(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_RECORDS_DELETE:
 		childSpan.AddEvent("Start Collections Delete")
-		messageResult = collections.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
+		messageResult = records.CollectionsDelete(ctx, fr.CollectionServiceClient, message)
 
 	case model.METHOD_HOOKS_WRITE:
 		childSpan.AddEvent("Start Hooks Write")
