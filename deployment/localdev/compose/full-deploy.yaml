@@ -176,18 +176,18 @@ services:
       - "DWN_HOOKSVC.LISTENPORT=9003"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
-  collsvc:
-    image: "openreserveio/collsvc:latest"
+  recordsvc:
+    image: "openreserveio/recordsvc:latest"
     build:
       context: "../../../go"
-      dockerfile: "applications/pkg/docker/Dockerfile-collsvc"
+      dockerfile: "applications/pkg/docker/Dockerfile-recordsvc"
       tags:
-        - "openreserveio/collsvc"
+        - "openreserveio/recordsvc"
     ports:
       - "9001:9001"
     environment:
-      - "DWN_COLLSVC.DOCDBCONNECTIONURI=mongodb://openreserveuser:openreservepass@docdb:27017"
-      - "DWN_COLLSVC.LISTENPORT=9001"
+      - "DWN_RECORDSVC.DOCDBCONNECTIONURI=mongodb://openreserveuser:openreservepass@docdb:27017"
+      - "DWN_RECORDSVC.LISTENPORT=9001"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
   api:
@@ -201,8 +201,8 @@ services:
       - "8080:8080"
     environment:
       - "DWN_API.LISTENPORT=8080"
-      - "DWN_COLLSVC.EXTERNALADDRESS=collsvc"
-      - "DWN_COLLSVC.EXTERNALPORT=9001"
+      - "DWN_RECORDSVC.EXTERNALADDRESS=recordsvc"
+      - "DWN_RECORDSVC.EXTERNALPORT=9001"
       - "DWN_HOOKSVC.EXTERNALADDRESS=hooksvc"
       - "DWN_HOOKSVC.EXTERNALPORT=9003"
       # - "OPEN_TELEMETRY_COLLECTOR_URL=http://otelcol:4318/v1/traces"
