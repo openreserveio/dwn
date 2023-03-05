@@ -28,7 +28,7 @@ type StoreCollectionResult struct {
 	Error    error
 }
 
-func StoreCollection(ctx context.Context, collectionStore storage.CollectionStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
+func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
 
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "StoreRecord")
@@ -69,7 +69,7 @@ func StoreCollection(ctx context.Context, collectionStore storage.CollectionStor
 	return &result, nil
 }
 
-func collectionsCommit(ctx context.Context, collectionsStore storage.CollectionStore, collectionsCommitMessage *model.Message) error {
+func collectionsCommit(ctx context.Context, collectionsStore storage.RecordStore, collectionsCommitMessage *model.Message) error {
 
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "Commit_Collection")
@@ -127,7 +127,7 @@ func collectionsCommit(ctx context.Context, collectionsStore storage.CollectionS
 
 }
 
-func collectionsWrite(ctx context.Context, collectionStore storage.CollectionStore, collectionsWriteMessage *model.Message) error {
+func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, collectionsWriteMessage *model.Message) error {
 
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "Write_Collection")
@@ -159,7 +159,7 @@ func collectionsWrite(ctx context.Context, collectionStore storage.CollectionSto
 			return errors.New(ERR_DUPLICATE_INITIAL_ENTRY)
 		}
 
-		record := storage.CollectionRecord{
+		record := storage.Record{
 			ID:         primitive.NewObjectID(),
 			RecordID:   collectionsWriteMessage.RecordID,
 			CreatorDID: collectionsWriteMessage.Processing.AuthorDID,

@@ -14,13 +14,13 @@ import (
 
 type RecordService struct {
 	services.UnimplementedRecordServiceServer
-	CollectionStore storage.CollectionStore
+	CollectionStore storage.RecordStore
 }
 
 func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error) {
 
 	// Setup Collection Store
-	colLStore, err := docdbstore.CreateCollectionDocumentDBStore(recordStoreConnectionURI)
+	colLStore, err := docdbstore.CreateRecordDocumentDBStore(recordStoreConnectionURI)
 	if err != nil {
 		log.Fatal("Unable to connect to collections store:  %v", err)
 		return nil, err

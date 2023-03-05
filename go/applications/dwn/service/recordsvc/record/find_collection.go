@@ -9,13 +9,13 @@ import (
 type FindCollectionResult struct {
 	Status                string
 	Error                 error
-	Record                *storage.CollectionRecord
+	Record                *storage.Record
 	InitialEntry          *storage.MessageEntry
 	LatestEntry           *storage.MessageEntry
 	LatestCheckpointEntry *storage.MessageEntry
 }
 
-func FindCollectionBySchemaAndRecordID(ctx context.Context, collectionStore storage.CollectionStore, schemaUri string, recordId string) (*FindCollectionResult, error) {
+func FindCollectionBySchemaAndRecordID(ctx context.Context, collectionStore storage.RecordStore, schemaUri string, recordId string) (*FindCollectionResult, error) {
 
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "FindCollectionBySchemaAndRecordID")

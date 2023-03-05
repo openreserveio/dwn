@@ -11,7 +11,7 @@ import (
 	storage "github.com/openreserveio/dwn/go/storage"
 )
 
-// MockCollectionStore is a mock of CollectionStore interface.
+// MockCollectionStore is a mock of RecordStore interface.
 type MockCollectionStore struct {
 	ctrl     *gomock.Controller
 	recorder *MockCollectionStoreMockRecorder
@@ -49,7 +49,7 @@ func (mr *MockCollectionStoreMockRecorder) AddCollectionMessageEntry(entry inter
 }
 
 // CreateCollectionRecord mocks base method.
-func (m *MockCollectionStore) CreateCollectionRecord(record *storage.CollectionRecord, initialEntry *storage.MessageEntry) error {
+func (m *MockCollectionStore) CreateCollectionRecord(record *storage.Record, initialEntry *storage.MessageEntry) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCollectionRecord", record, initialEntry)
 	ret0, _ := ret[0].(error)
@@ -91,10 +91,10 @@ func (mr *MockCollectionStoreMockRecorder) DeleteCollectionMessageEntryByID(mess
 }
 
 // GetCollectionRecord mocks base method.
-func (m *MockCollectionStore) GetCollectionRecord(recordId string) *storage.CollectionRecord {
+func (m *MockCollectionStore) GetCollectionRecord(recordId string) *storage.Record {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCollectionRecord", recordId)
-	ret0, _ := ret[0].(*storage.CollectionRecord)
+	ret0, _ := ret[0].(*storage.Record)
 	return ret0
 }
 
@@ -119,7 +119,7 @@ func (mr *MockCollectionStoreMockRecorder) GetMessageEntryByID(messageEntryID in
 }
 
 // SaveCollectionRecord mocks base method.
-func (m *MockCollectionStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
+func (m *MockCollectionStore) SaveCollectionRecord(record *storage.Record) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveCollectionRecord", record)
 	ret0, _ := ret[0].(error)
