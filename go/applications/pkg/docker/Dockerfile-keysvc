@@ -1,9 +1,20 @@
-FROM --platform=$BUILDPLATFORM openreserveio/base:latest
+FROM --platform=$BUILDPLATFORM golang:latest
 MAINTAINER mzero@openreserve.io
 
 LABEL org.opencontainers.image.source=https://github.com/openreserveio/dwn/docs/operations/keysvc
 LABEL org.opencontainers.image.description="OpenReserve DWN Key Service Container Image"
 LABEL org.opencontainers.image.licenses="Apache 2.0"
+
+RUN mkdir -p /opt/dwn && \
+    mkdir -p /etc/dwn/src
+
+COPY . /opt/dwn/src/
+
+ARG TARGETOS TARGETARCH
+RUN cd /opt/dwn/src && go mod download
+RUN cd /opt/dwn/src/applications/dwn && env GOOS=$TARGETOS GOARCH=$TARGETARCH go build && go install
+RUN rm -Rf /opt/dwn/src
+
 
 EXPOSE 9002
 
