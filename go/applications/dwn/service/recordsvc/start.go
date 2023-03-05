@@ -14,13 +14,13 @@ import (
 func Start(ctx context.Context, config configuration.Configuration) error {
 
 	// Start Record Service
-	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.GetCollectionServiceListenAddress(), config.GetCollectionServiceListenPort()))
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.GetRecordServiceListenAddress(), config.GetRecordServiceListenPort()))
 	if err != nil {
 		log.Fatal("Unable to listen to address and port:  %v", err)
 		os.Exit(1)
 	}
 
-	recordService, err := CreateRecordService(config.GetCollectionServiceDocumentDBURI())
+	recordService, err := CreateRecordService(config.GetRecordServiceDocumentDBURI())
 	if err != nil {
 		log.Fatal("Unable to start Collection Service:  %v", err)
 		os.Exit(1)

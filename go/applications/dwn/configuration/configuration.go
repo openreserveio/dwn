@@ -17,12 +17,12 @@ type Configuration interface {
 	GetAPIListenAddress() string
 	GetAPIListenPort() int
 
-	// Collection Service
-	GetCollectionServiceListenAddress() string
-	GetCollectionServiceListenPort() int
-	GetCollectionServiceExternalAddress() string
-	GetCollectionServiceExternalPort() int
-	GetCollectionServiceDocumentDBURI() string
+	// Record Service
+	GetRecordServiceListenAddress() string
+	GetRecordServiceListenPort() int
+	GetRecordServiceExternalAddress() string
+	GetRecordServiceExternalPort() int
+	GetRecordServiceDocumentDBURI() string
 
 	// Hook Service
 	GetHookServiceListenAddress() string

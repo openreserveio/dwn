@@ -16,8 +16,8 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 	}
 
 	recordSvcOptions := framework.ServiceOptions{
-		Address:    config.GetCollectionServiceExternalAddress(),
-		Port:       config.GetCollectionServiceExternalPort(),
+		Address:    config.GetRecordServiceExternalAddress(),
+		Port:       config.GetRecordServiceExternalPort(),
 		SecureFlag: false,
 	}
 
