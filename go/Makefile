@@ -9,9 +9,7 @@ generate-mocks: generate-protobuf
 	mockgen -source storage/record_store.go -destination generated/mocks/record_store.go -package mocks
 	mockgen -source storage/hook_store.go -destination generated/mocks/hook_store.go -package mocks
 	mockgen -source generated/services/backend_services_grpc.pb.go -destination generated/mocks/backend_services_grpc.pb.go -package mocks
-
-build-docker-base:
-	docker build -f applications/pkg/docker/Dockerfile-base -t openreserveio/base .
+	mockgen -source generated/events/events.pb.go -destination generated/mocks/events.pb.go -package mocks
 
 build-docker-api:
 	docker build -f applications/pkg/docker/Dockerfile-api -t openreserveio/api .
