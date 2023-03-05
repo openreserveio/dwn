@@ -56,7 +56,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	// Configure Tracing
 	ginEngine := gin.Default()
-	ginEngine.Use(otelgin.Middleware("DWN_API_SERVICE"))
+	ginEngine.Use(otelgin.Middleware("dwn-api"))
 
 	apiService := APIService{
 		ListenAddress:   apiServiceOptions.Address,
@@ -80,7 +80,7 @@ func (apiService APIService) Run() error {
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "DWNRequest")
+	_, childSpan := observability.Tracer.Start(ctx, "HandleDWNRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Parsing Request Object")
