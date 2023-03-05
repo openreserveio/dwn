@@ -6,7 +6,7 @@ import (
 	"github.com/openreserveio/dwn/go/storage"
 )
 
-type FindCollectionResult struct {
+type FindRecordResult struct {
 	Status                string
 	Error                 error
 	Record                *storage.Record
@@ -15,18 +15,18 @@ type FindCollectionResult struct {
 	LatestCheckpointEntry *storage.MessageEntry
 }
 
-func FindCollectionBySchemaAndRecordID(ctx context.Context, collectionStore storage.RecordStore, schemaUri string, recordId string) (*FindCollectionResult, error) {
+func FindRecordBySchemaAndRecordID(ctx context.Context, collectionStore storage.RecordStore, schemaUri string, recordId string) (*FindRecordResult, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "FindCollectionBySchemaAndRecordID")
+	_, sp := observability.Tracer.Start(ctx, "FindRecordBySchemaAndRecordID")
 	defer sp.End()
 
-	collRecord := collectionStore.GetCollectionRecord(recordId)
+	collRecord := collectionStore.GetRecord(recordId)
 	if collRecord == nil {
-		return &FindCollectionResult{Status: "NOT_FOUND"}, nil
+		return &FindRecordResult{Status: "NOT_FOUND"}, nil
 	}
 
-	return &FindCollectionResult{
+	return &FindRecordResult{
 		Status:                "OK",
 		Error:                 nil,
 		Record:                collRecord,

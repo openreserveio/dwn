@@ -27,7 +27,7 @@ var _ = Describe("StoreRecord", func() {
 
 	Context("Storing a new record (without a parent)", func() {
 
-		collectionStore := mocks.NewMockCollectionStore(mockController)
+		recordStore := mocks.NewMockRecordStore(mockController)
 
 		It("Should have tried to store the record with an Initial Entry", func() {
 
@@ -48,10 +48,10 @@ var _ = Describe("StoreRecord", func() {
 			recordId := model.CreateRecordCID(descriptorCID, processingCID)
 			message.RecordID = recordId
 
-			collectionStore.EXPECT().GetCollectionRecord(recordId)
-			collectionStore.EXPECT().CreateCollectionRecord(gomock.Any(), gomock.Any()).Return(nil)
+			recordStore.EXPECT().GetRecord(recordId)
+			recordStore.EXPECT().CreateRecord(gomock.Any(), gomock.Any()).Return(nil)
 
-			res, err := record.StoreCollection(context.Background(), collectionStore, message)
+			res, err := record.StoreRecord(context.Background(), recordStore, message)
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
 			Expect(res.Status).To(Equal("OK"))

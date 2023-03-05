@@ -22,13 +22,13 @@ const (
 	ERR_COMMIT_MESSAGE_CREATE_DATE_BEFORE_WRITE = "Commit message's created date is before the latest write message."
 )
 
-type StoreCollectionResult struct {
+type StoreRecordResult struct {
 	Status   string
 	RecordID string
 	Error    error
 }
 
-func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, collectionMessage *model.Message) (*StoreCollectionResult, error) {
+func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) (*StoreRecordResult, error) {
 
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "StoreRecord")
@@ -36,28 +36,28 @@ func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, c
 
 	// Need to implement this message process flow per spec:
 	// https://identity.foundation/decentralized-web-node/spec/#retained-message-processing
-	result := StoreCollectionResult{}
-	switch collectionMessage.Descriptor.Method {
+	result := StoreRecordResult{}
+	switch recordMessage.Descriptor.Method {
 
 	case model.METHOD_RECORDS_WRITE:
-		err := collectionsWrite(ctx, collectionStore, collectionMessage)
+		err := recordWrite(ctx, recordStore, recordMessage)
 		if err != nil {
 			result.Status = "ERROR"
 			result.Error = err
 			return &result, nil
 		}
 		result.Status = "OK"
-		result.RecordID = collectionMessage.RecordID
+		result.RecordID = recordMessage.RecordID
 
 	case model.METHOD_RECORDS_COMMIT:
-		err := collectionsCommit(ctx, collectionStore, collectionMessage)
+		err := recordCommit(ctx, recordStore, recordMessage)
 		if err != nil {
 			result.Status = "ERROR"
 			result.Error = err
 			return &result, nil
 		}
 		result.Status = "OK"
-		result.RecordID = collectionMessage.RecordID
+		result.RecordID = recordMessage.RecordID
 
 	case model.METHOD_RECORDS_DELETE:
 
@@ -69,20 +69,20 @@ func StoreCollection(ctx context.Context, collectionStore storage.RecordStore, c
 	return &result, nil
 }
 
-func collectionsCommit(ctx context.Context, collectionsStore storage.RecordStore, collectionsCommitMessage *model.Message) error {
+func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCommitMessage *model.Message) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "Commit_Collection")
+	_, sp := observability.Tracer.Start(ctx, "recordCommit")
 	defer sp.End()
 
 	// Retrieve the currently active CollectionsWrite entry for the recordId specified in the inbound CollectionsCommit
 	// message. If there is no currently active CollectionsWrite entry, discard the inbound message and cease processing.
-	existingCollRecord := collectionsStore.GetCollectionRecord(collectionsCommitMessage.Descriptor.ParentID)
+	existingCollRecord := recordStore.GetRecord(recordCommitMessage.Descriptor.ParentID)
 	if existingCollRecord == nil {
 		return errors.New(ERR_COMMIT_TO_RECORD_NOT_FOUND)
 	}
 
-	latestCheckpointEntry := collectionsStore.GetMessageEntryByID(existingCollRecord.LatestCheckpointEntryID)
+	latestCheckpointEntry := recordStore.GetMessageEntryByID(existingCollRecord.LatestCheckpointEntryID)
 	if latestCheckpointEntry == nil {
 		return errors.New(ERR_COMMIT_TO_RECORD_CHECKPOINT_ENTRY_NOT_FOUND)
 	}
@@ -91,19 +91,19 @@ func collectionsCommit(ctx context.Context, collectionsStore storage.RecordStore
 	// If any have been mutated, discard the message and cease processing.
 	// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 	// inbound message. If any have been mutated, discard the message and cease processing.
-	initialMessageEntry := collectionsStore.GetMessageEntryByID(existingCollRecord.InitialEntryID)
+	initialMessageEntry := recordStore.GetMessageEntryByID(existingCollRecord.InitialEntryID)
 	if initialMessageEntry == nil {
 		return errors.New("Unable to find an initial entry")
 	}
-	if initialMessageEntry.Descriptor.Protocol != collectionsCommitMessage.Descriptor.Protocol ||
-		initialMessageEntry.Descriptor.ProtocolVersion != collectionsCommitMessage.Descriptor.ProtocolVersion ||
-		initialMessageEntry.Descriptor.Schema != collectionsCommitMessage.Descriptor.Schema {
+	if initialMessageEntry.Descriptor.Protocol != recordCommitMessage.Descriptor.Protocol ||
+		initialMessageEntry.Descriptor.ProtocolVersion != recordCommitMessage.Descriptor.ProtocolVersion ||
+		initialMessageEntry.Descriptor.Schema != recordCommitMessage.Descriptor.Schema {
 		return errors.New("Attempt to mutate an immutable value")
 	}
 
 	// If the currently active CollectionsWrite does not have a commitStrategy value, or the value does not
 	// match the commitStrategy value specified in the inbound message, discard the message and cease processing.
-	if latestCheckpointEntry.Descriptor.CommitStrategy != collectionsCommitMessage.Descriptor.CommitStrategy {
+	if latestCheckpointEntry.Descriptor.CommitStrategy != recordCommitMessage.Descriptor.CommitStrategy {
 		return errors.New(ERR_MISMATCHED_COMMIT_STRATEGY)
 	}
 
@@ -114,23 +114,23 @@ func collectionsCommit(ctx context.Context, collectionsStore storage.RecordStore
 
 	// The inbound message’s entry dateCreated value is less than the dateCreated value of the message in the commit
 	// tree its parentId references, discard the message and cease processing.
-	if collectionsCommitMessage.Descriptor.DateCreated.Before(latestCheckpointEntry.Descriptor.DateCreated) {
+	if recordCommitMessage.Descriptor.DateCreated.Before(latestCheckpointEntry.Descriptor.DateCreated) {
 		return errors.New(ERR_COMMIT_MESSAGE_CREATE_DATE_BEFORE_WRITE)
 	}
 
 	// If all of the above steps are successful, store the message in relation to the record.
 	// I think this means we set the latest checkpoint to the latest entry
 	existingCollRecord.LatestEntryID = existingCollRecord.LatestCheckpointEntryID
-	collectionsStore.SaveCollectionRecord(existingCollRecord)
+	recordStore.SaveRecord(existingCollRecord)
 
 	return nil
 
 }
 
-func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, collectionsWriteMessage *model.Message) error {
+func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "Write_Collection")
+	_, sp := observability.Tracer.Start(ctx, "recordWrite")
 	defer sp.End()
 
 	/*
@@ -140,41 +140,41 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		      and cease any further processing.
 			- ELSE the message may be an overwriting entry for the record; continue processing.
 	*/
-	descriptorId := model.CreateDescriptorCID(collectionsWriteMessage.Descriptor)
-	processingId := model.CreateProcessingCID(collectionsWriteMessage.Processing)
+	descriptorId := model.CreateDescriptorCID(recordMessage.Descriptor)
+	processingId := model.CreateProcessingCID(recordMessage.Processing)
 	entryId := model.CreateRecordCID(descriptorId, processingId)
 
 	//log.Info(" Entry ID: %s", entryId)
-	//log.Info("Record ID: %s", collectionsWriteMessage.RecordID)
+	//log.Info("Record ID: %s", recordMessage.RecordID)
 
 	// TODO:  Come back to this.  This should match
-	// if entryId == collectionsWriteMessage.RecordID {
+	// if entryId == recordMessage.RecordID {
 	// For now:  If there is no parent ID, ASSUME first entry
-	if collectionsWriteMessage.Descriptor.ParentID == "" {
+	if recordMessage.Descriptor.ParentID == "" {
 
 		// This is the first entry of the record.  Create it and return
 		// If there is an existing record id, there's a problem and return an error
-		existingRecord := collectionStore.GetCollectionRecord(entryId)
+		existingRecord := recordStore.GetRecord(entryId)
 		if existingRecord != nil {
 			return errors.New(ERR_DUPLICATE_INITIAL_ENTRY)
 		}
 
 		record := storage.Record{
 			ID:         primitive.NewObjectID(),
-			RecordID:   collectionsWriteMessage.RecordID,
-			CreatorDID: collectionsWriteMessage.Processing.AuthorDID,
-			OwnerDID:   collectionsWriteMessage.Processing.RecipientDID,
-			WriterDIDs: []string{collectionsWriteMessage.Processing.AuthorDID},
-			ReaderDIDs: []string{collectionsWriteMessage.Processing.AuthorDID, collectionsWriteMessage.Processing.RecipientDID},
+			RecordID:   recordMessage.RecordID,
+			CreatorDID: recordMessage.Processing.AuthorDID,
+			OwnerDID:   recordMessage.Processing.RecipientDID,
+			WriterDIDs: []string{recordMessage.Processing.AuthorDID},
+			ReaderDIDs: []string{recordMessage.Processing.AuthorDID, recordMessage.Processing.RecipientDID},
 		}
 
 		entry := storage.MessageEntry{
 			ID:             primitive.NewObjectID(),
 			MessageEntryID: entryId,
-			Message:        *collectionsWriteMessage,
+			Message:        *recordMessage,
 		}
 
-		err := collectionStore.CreateCollectionRecord(&record, &entry)
+		err := recordStore.CreateRecord(&record, &entry)
 		return err
 
 	} else {
@@ -182,24 +182,24 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
-		parentCollRec := collectionStore.GetCollectionRecord(collectionsWriteMessage.Descriptor.ParentID)
+		parentCollRec := recordStore.GetRecord(recordMessage.Descriptor.ParentID)
 		if parentCollRec == nil {
 			// If a message is not the Initial Entry, its descriptor MUST contain a parentId to
 			// determine the entry’s position in the record’s lineage. If a parentId is present
 			// proceed with processing, else discard the record and cease processing.
 			// We dont have the parent.  Reject with err
-			return fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", collectionsWriteMessage.Descriptor.ParentID)
+			return fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", recordMessage.Descriptor.ParentID)
 		}
 
 		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 		// inbound message. If any have been mutated, discard the message and cease processing.
-		initialMessageEntry := collectionStore.GetMessageEntryByID(parentCollRec.InitialEntryID)
+		initialMessageEntry := recordStore.GetMessageEntryByID(parentCollRec.InitialEntryID)
 		if initialMessageEntry == nil {
 			return errors.New("Unable to find an initial entry")
 		}
-		if initialMessageEntry.Descriptor.Protocol != collectionsWriteMessage.Descriptor.Protocol ||
-			initialMessageEntry.Descriptor.ProtocolVersion != collectionsWriteMessage.Descriptor.ProtocolVersion ||
-			initialMessageEntry.Descriptor.Schema != collectionsWriteMessage.Descriptor.Schema {
+		if initialMessageEntry.Descriptor.Protocol != recordMessage.Descriptor.Protocol ||
+			initialMessageEntry.Descriptor.ProtocolVersion != recordMessage.Descriptor.ProtocolVersion ||
+			initialMessageEntry.Descriptor.Schema != recordMessage.Descriptor.Schema {
 			return errors.New(ERR_MUTATE_UMMUTABLE_VALUE)
 		}
 
@@ -207,12 +207,12 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		// and compare the parentId value of the inbound message to the Entry ID of the
 		// Latest Checkpoint Entry derived from running the Record ID Generation Process on it.
 		// If the values match, proceed with processing, if the values do not match discard the message and cease processing.
-		latestCheckpointEntry := collectionStore.GetMessageEntryByID(parentCollRec.LatestCheckpointEntryID)
+		latestCheckpointEntry := recordStore.GetMessageEntryByID(parentCollRec.LatestCheckpointEntryID)
 		if latestCheckpointEntry == nil {
 			return errors.New("Unable to find the latest checkpoint entry")
 		}
 
-		if collectionsWriteMessage.Descriptor.ParentID != latestCheckpointEntry.RecordID {
+		if recordMessage.Descriptor.ParentID != latestCheckpointEntry.RecordID {
 			return errors.New("The parent ID of the inbound message must match the latest checkpoint record ID.")
 		}
 
@@ -221,21 +221,21 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		// store the message as the Latest Entry and cease processing, else discard the inbound message
 		// and cease processing.
 		if latestCheckpointEntry.Descriptor.Method != model.METHOD_RECORDS_WRITE &&
-			collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
+			recordMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 
 			latestEntry := storage.MessageEntry{
 				ID:             primitive.NewObjectID(),
 				MessageEntryID: uuid.NewString(),
-				Message:        *collectionsWriteMessage,
+				Message:        *recordMessage,
 			}
 
-			err := collectionStore.AddCollectionMessageEntry(&latestEntry)
+			err := recordStore.AddMessageEntry(&latestEntry)
 			if err != nil {
 				return err
 			}
 
 			parentCollRec.LatestEntryID = latestEntry.MessageEntryID
-			err = collectionStore.SaveCollectionRecord(parentCollRec)
+			err = recordStore.SaveRecord(parentCollRec)
 			if err != nil {
 				return err
 			}
@@ -251,30 +251,30 @@ func collectionsWrite(ctx context.Context, collectionStore storage.RecordStore, 
 		// and discard the existing CollectionsWrite entry that was attached to the Latest Checkpoint Entry.
 		if latestCheckpointEntry.Descriptor.Method == model.METHOD_RECORDS_WRITE {
 
-			if latestCheckpointEntry.Descriptor.DateCreated.Equal(collectionsWriteMessage.Descriptor.DateCreated) ||
-				collectionsWriteMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
+			if latestCheckpointEntry.Descriptor.DateCreated.Equal(recordMessage.Descriptor.DateCreated) ||
+				recordMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 
 				// TODO:  How to compare lexicographically?  Will come back to this
 
 				latestEntry := storage.MessageEntry{
 					ID:             primitive.NewObjectID(),
 					MessageEntryID: uuid.NewString(),
-					Message:        *collectionsWriteMessage,
+					Message:        *recordMessage,
 				}
 
-				err := collectionStore.AddCollectionMessageEntry(&latestEntry)
+				err := recordStore.AddMessageEntry(&latestEntry)
 				if err != nil {
 					return err
 				}
 
 				// I don't believe ww want to delete the message entry
-				//err = collectionStore.DeleteCollectionMessageEntry(latestCheckpointEntry)
+				//err = recordStore.DeleteCollectionMessageEntry(latestCheckpointEntry)
 				//if err != nil {
 				//	return err
 				//}
 
 				parentCollRec.LatestCheckpointEntryID = latestEntry.MessageEntryID
-				err = collectionStore.SaveCollectionRecord(parentCollRec)
+				err = recordStore.SaveRecord(parentCollRec)
 				if err != nil {
 					return err
 				}

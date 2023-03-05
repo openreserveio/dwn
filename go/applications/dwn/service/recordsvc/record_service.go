@@ -52,7 +52,7 @@ func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreR
 		collectionMessage.Descriptor.Method == model.METHOD_RECORDS_COMMIT ||
 		collectionMessage.Descriptor.Method == model.METHOD_RECORDS_DELETE {
 
-		result, err := record.StoreCollection(ctx, c.RecordStore, &collectionMessage)
+		result, err := record.StoreRecord(ctx, c.RecordStore, &collectionMessage)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
@@ -86,7 +86,7 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 	// TODO: We are only doing single record finds right now
 	if request.QueryType == services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI {
 
-		result, err := record.FindCollectionBySchemaAndRecordID(ctx, c.RecordStore, request.SchemaURI, request.RecordId)
+		result, err := record.FindRecordBySchemaAndRecordID(ctx, c.RecordStore, request.SchemaURI, request.RecordId)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
