@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-// apiCmd represents the auth command
+// recordsvcCmd represents the recordsvcCmd command
 var recordsvcCmd = &cobra.Command{
 	Use:   "recordsvc",
 	Short: "OpenReserve DWN Backend RecordService",
