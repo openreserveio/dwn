@@ -1,4 +1,4 @@
-package collections_test
+package records_test
 
 import (
 	"crypto/ecdsa"
@@ -19,7 +19,7 @@ import (
 	"time"
 )
 
-var _ = Describe("Query For A Collection", func() {
+var _ = Describe("Query For A Record", func() {
 
 	DWN_HOST := os.Getenv("DWN_API_HOST")
 	DWN_PORT := os.Getenv("DWN_API_PORT")
@@ -85,7 +85,7 @@ var _ = Describe("Query For A Collection", func() {
 
 	})
 
-	Describe("Query for a Collection Record that does exist", func() {
+	Describe("Query for a Record that does exist", func() {
 
 		// Need to Create the Collection Record.
 		// TODO:  Refactor using new client lib to abstract this

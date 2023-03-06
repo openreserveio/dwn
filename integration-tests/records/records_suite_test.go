@@ -1,4 +1,4 @@
-package collections_test
+package records_test
 
 import (
 	"testing"
@@ -9,5 +9,5 @@ import (
 
 func TestCollections(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Collections Suite")
+	RunSpecs(t, "Records Suite")
 }
