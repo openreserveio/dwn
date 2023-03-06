@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
+	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
 	"net/http"
 	"time"
@@ -12,12 +13,14 @@ import (
 
 func (client *DWNClient) SaveHook(schemaUri string, dataRecordId string, callbackUri string, requestor *Identity) (string, error) {
 
+	log.Info("Saving hook for schema %s, data record %s, callback %s", schemaUri, dataRecordId, callbackUri)
 	descriptor := model.Descriptor{
 		Method:          model.METHOD_HOOKS_WRITE,
 		ParentID:        "",
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 		Schema:          schemaUri,
+		URI:             callbackUri,
 		Published:       false,
 		DateCreated:     time.Now(),
 		DatePublished:   nil,
@@ -59,6 +62,14 @@ func (client *DWNClient) SaveHook(schemaUri string, dataRecordId string, callbac
 
 	if responseObject.Status.Code != http.StatusOK {
 		return "", errors.New(responseObject.Status.Detail)
+	}
+
+	if len(responseObject.Replies) == 0 {
+		return "", errors.New("No response replies")
+	}
+
+	if len(responseObject.Replies[0].Entries) == 0 {
+		return "", errors.New("No response entries")
 	}
 
 	return string(responseObject.Replies[0].Entries[0].Result), nil

@@ -1,4 +1,4 @@
-package collections
+package records
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"net/http"
 )
 
-func CollectionsDelete(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func RecordsDelete(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "CollectionsDelete")
+	_, childSpan := observability.Tracer.Start(ctx, "RecordsDelete")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject

@@ -15,12 +15,12 @@ import (
 )
 
 type APIService struct {
-	ListenAddress string
-	ListenPort    int
-	Gin           *gin.Engine
-	Router        *FeatureRouter
-	CollSvcClient *services.CollectionServiceClient
-	HookSvcClient *services.HookServiceClient
+	ListenAddress   string
+	ListenPort      int
+	Gin             *gin.Engine
+	Router          *FeatureRouter
+	RecordSvcClient *services.RecordServiceClient
+	HookSvcClient   *services.HookServiceClient
 }
 
 func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOptions *framework.ServiceOptions, hookSvcOptions *framework.ServiceOptions) (*APIService, error) {
@@ -37,7 +37,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 		}
 	}
 
-	collSvcClient := services.NewCollectionServiceClient(collClientConn)
+	collSvcClient := services.NewRecordServiceClient(collClientConn)
 
 	var hookClientConn *grpc.ClientConn
 	if hookSvcOptions.SecureFlag {
@@ -56,14 +56,14 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	// Configure Tracing
 	ginEngine := gin.Default()
-	ginEngine.Use(otelgin.Middleware("DWN_API_SERVICE"))
+	ginEngine.Use(otelgin.Middleware("dwn-api"))
 
 	apiService := APIService{
-		ListenAddress: apiServiceOptions.Address,
-		ListenPort:    apiServiceOptions.Port,
-		Gin:           ginEngine,
-		CollSvcClient: &collSvcClient,
-		Router:        fr,
+		ListenAddress:   apiServiceOptions.Address,
+		ListenPort:      apiServiceOptions.Port,
+		Gin:             ginEngine,
+		RecordSvcClient: &collSvcClient,
+		Router:          fr,
 	}
 
 	apiService.Gin.GET("/", apiService.HandleFeatureRequest)
@@ -80,7 +80,7 @@ func (apiService APIService) Run() error {
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "DWNRequest")
+	_, childSpan := observability.Tracer.Start(ctx, "HandleDWNRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Parsing Request Object")

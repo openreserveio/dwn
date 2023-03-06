@@ -6,17 +6,17 @@ type FeatureDetection struct {
 }
 
 type FeatureInterface struct {
-	Collections CollectionsFeatures `json:"collections,omitempty"`
+	Records     RecordsFeatures     `json:"records,omitempty"`
 	Hooks       HooksFeatures       `json:"hooks,omitempty"`
 	Permissions PermissionsFeatures `json:"permissions,omitempty"`
 	Messaging   MessagingFeatures   `json:"messaging,omitempty"`
 }
 
-type CollectionsFeatures struct {
-	CollectionsQuery  bool `json:"CollectionsQuery"`
-	CollectionsWrite  bool `json:"CollectionsWrite"`
-	CollectionsCommit bool `json:"CollectionsCommit"`
-	CollectionsDelete bool `json:"CollectionsDelete"`
+type RecordsFeatures struct {
+	RecordsQuery  bool `json:"RecordsQuery"`
+	RecordsWrite  bool `json:"RecordsWrite"`
+	RecordsCommit bool `json:"RecordsCommit"`
+	RecordsDelete bool `json:"RecordsDelete"`
 }
 
 type HooksFeatures struct {
@@ -38,11 +38,11 @@ type MessagingFeatures struct {
 var CurrentFeatureDetection FeatureDetection = FeatureDetection{
 	Type: "FeatureDetection",
 	Interfaces: FeatureInterface{
-		Collections: CollectionsFeatures{
-			CollectionsQuery:  true,
-			CollectionsWrite:  true,
-			CollectionsCommit: true,
-			CollectionsDelete: true,
+		Records: RecordsFeatures{
+			RecordsQuery:  true,
+			RecordsWrite:  true,
+			RecordsCommit: true,
+			RecordsDelete: true,
 		},
 		Hooks: HooksFeatures{
 			HooksQuery:  true,

@@ -49,10 +49,58 @@ func (mr *MockHookStoreMockRecorder) CreateHookRecord(ctx, hookRecord, initialCo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHookRecord", reflect.TypeOf((*MockHookStore)(nil).CreateHookRecord), ctx, hookRecord, initialConfiguration)
 }
 
-// UpdateHookRecord mocks base method.
-func (m *MockHookStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) {
+// DeleteHookRecord mocks base method.
+func (m *MockHookStore) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateHookRecord", ctx, hookRecordId, updatedConfiguration)
+	ret := m.ctrl.Call(m, "DeleteHookRecord", ctx, hookRecordId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteHookRecord indicates an expected call of DeleteHookRecord.
+func (mr *MockHookStoreMockRecorder) DeleteHookRecord(ctx, hookRecordId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHookRecord", reflect.TypeOf((*MockHookStore)(nil).DeleteHookRecord), ctx, hookRecordId)
+}
+
+// GetHookRecord mocks base method.
+func (m *MockHookStore) GetHookRecord(ctx context.Context, hookRecordId string) (*storage.HookRecord, *storage.HookConfigurationEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHookRecord", ctx, hookRecordId)
+	ret0, _ := ret[0].(*storage.HookRecord)
+	ret1, _ := ret[1].(*storage.HookConfigurationEntry)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetHookRecord indicates an expected call of GetHookRecord.
+func (mr *MockHookStoreMockRecorder) GetHookRecord(ctx, hookRecordId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookRecord", reflect.TypeOf((*MockHookStore)(nil).GetHookRecord), ctx, hookRecordId)
+}
+
+// GetHookRecordConfigurationEntries mocks base method.
+func (m *MockHookStore) GetHookRecordConfigurationEntries(ctx context.Context, hookRecordId string) (*storage.HookRecord, []*storage.HookConfigurationEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHookRecordConfigurationEntries", ctx, hookRecordId)
+	ret0, _ := ret[0].(*storage.HookRecord)
+	ret1, _ := ret[1].([]*storage.HookConfigurationEntry)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetHookRecordConfigurationEntries indicates an expected call of GetHookRecordConfigurationEntries.
+func (mr *MockHookStoreMockRecorder) GetHookRecordConfigurationEntries(ctx, hookRecordId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookRecordConfigurationEntries", reflect.TypeOf((*MockHookStore)(nil).GetHookRecordConfigurationEntries), ctx, hookRecordId)
+}
+
+// UpdateHookRecord mocks base method.
+func (m *MockHookStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateHookRecord", ctx, hookRecordId, updatedConfiguration)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdateHookRecord indicates an expected call of UpdateHookRecord.

@@ -8,20 +8,20 @@ import (
 // Base interface for stores for collections
 // Will probably need:
 //   - methods for finding by content in the collection
-type CollectionStore interface {
+type RecordStore interface {
 
 	// Refactored methods here
-	CreateCollectionRecord(record *CollectionRecord, initialEntry *MessageEntry) error
-	SaveCollectionRecord(record *CollectionRecord) error
+	CreateRecord(record *Record, initialEntry *MessageEntry) error
+	SaveRecord(record *Record) error
 
-	AddCollectionMessageEntry(entry *MessageEntry) error
+	AddMessageEntry(entry *MessageEntry) error
 	GetMessageEntryByID(messageEntryID string) *MessageEntry
-	GetCollectionRecord(recordId string) *CollectionRecord
-	DeleteCollectionMessageEntry(entry *MessageEntry) error
-	DeleteCollectionMessageEntryByID(messageEntryId string) error
+	GetRecord(recordId string) *Record
+	DeleteMessageEntry(entry *MessageEntry) error
+	DeleteMessageEntryByID(messageEntryId string) error
 }
 
-type CollectionRecord struct {
+type Record struct {
 	ID                      primitive.ObjectID `bson:"_id"`
 	RecordID                string             `bson:"record_id"`
 	CreatorDID              string             `bson:"creator_did"`

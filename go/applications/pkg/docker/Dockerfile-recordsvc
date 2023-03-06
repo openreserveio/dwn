@@ -1,8 +1,8 @@
 FROM --platform=$BUILDPLATFORM golang:latest
 MAINTAINER mzero@openreserve.io
 
-LABEL org.opencontainers.image.source=https://github.com/openreserveio/dwn/docs/operations/keysvc
-LABEL org.opencontainers.image.description="OpenReserve DWN Key Service Container Image"
+LABEL org.opencontainers.image.source=https://github.com/openreserveio/dwn/docs/operations/recordsvc
+LABEL org.opencontainers.image.description="OpenReserve DWN Record Service Container Image"
 LABEL org.opencontainers.image.licenses="Apache 2.0"
 
 RUN mkdir -p /opt/dwn && \
@@ -16,9 +16,9 @@ RUN cd /opt/dwn/src/applications/dwn && env GOOS=$TARGETOS GOARCH=$TARGETARCH go
 RUN rm -Rf /opt/dwn/src
 
 
-EXPOSE 9002
+EXPOSE 9001
 
 VOLUME /etc/dwn
 VOLUME /opt/dwn
 
-CMD ["dwn", "keysvc"]
+CMD ["dwn", "recordsvc"]

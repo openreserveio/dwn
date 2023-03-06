@@ -13,31 +13,31 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// MockCollectionServiceClient is a mock of CollectionServiceClient interface.
-type MockCollectionServiceClient struct {
+// MockRecordServiceClient is a mock of RecordServiceClient interface.
+type MockRecordServiceClient struct {
 	ctrl     *gomock.Controller
-	recorder *MockCollectionServiceClientMockRecorder
+	recorder *MockRecordServiceClientMockRecorder
 }
 
-// MockCollectionServiceClientMockRecorder is the mock recorder for MockCollectionServiceClient.
-type MockCollectionServiceClientMockRecorder struct {
-	mock *MockCollectionServiceClient
+// MockRecordServiceClientMockRecorder is the mock recorder for MockRecordServiceClient.
+type MockRecordServiceClientMockRecorder struct {
+	mock *MockRecordServiceClient
 }
 
-// NewMockCollectionServiceClient creates a new mock instance.
-func NewMockCollectionServiceClient(ctrl *gomock.Controller) *MockCollectionServiceClient {
-	mock := &MockCollectionServiceClient{ctrl: ctrl}
-	mock.recorder = &MockCollectionServiceClientMockRecorder{mock}
+// NewMockRecordServiceClient creates a new mock instance.
+func NewMockRecordServiceClient(ctrl *gomock.Controller) *MockRecordServiceClient {
+	mock := &MockRecordServiceClient{ctrl: ctrl}
+	mock.recorder = &MockRecordServiceClientMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockCollectionServiceClient) EXPECT() *MockCollectionServiceClientMockRecorder {
+func (m *MockRecordServiceClient) EXPECT() *MockRecordServiceClientMockRecorder {
 	return m.recorder
 }
 
 // CreateSchema mocks base method.
-func (m *MockCollectionServiceClient) CreateSchema(ctx context.Context, in *services.CreateSchemaRequest, opts ...grpc.CallOption) (*services.CreateSchemaResponse, error) {
+func (m *MockRecordServiceClient) CreateSchema(ctx context.Context, in *services.CreateSchemaRequest, opts ...grpc.CallOption) (*services.CreateSchemaResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
@@ -50,34 +50,34 @@ func (m *MockCollectionServiceClient) CreateSchema(ctx context.Context, in *serv
 }
 
 // CreateSchema indicates an expected call of CreateSchema.
-func (mr *MockCollectionServiceClientMockRecorder) CreateSchema(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRecordServiceClientMockRecorder) CreateSchema(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSchema", reflect.TypeOf((*MockCollectionServiceClient)(nil).CreateSchema), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSchema", reflect.TypeOf((*MockRecordServiceClient)(nil).CreateSchema), varargs...)
 }
 
-// FindCollection mocks base method.
-func (m *MockCollectionServiceClient) FindCollection(ctx context.Context, in *services.FindCollectionRequest, opts ...grpc.CallOption) (*services.FindCollectionResponse, error) {
+// FindRecord mocks base method.
+func (m *MockRecordServiceClient) FindRecord(ctx context.Context, in *services.FindRecordRequest, opts ...grpc.CallOption) (*services.FindRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "FindCollection", varargs...)
-	ret0, _ := ret[0].(*services.FindCollectionResponse)
+	ret := m.ctrl.Call(m, "FindRecord", varargs...)
+	ret0, _ := ret[0].(*services.FindRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindCollection indicates an expected call of FindCollection.
-func (mr *MockCollectionServiceClientMockRecorder) FindCollection(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// FindRecord indicates an expected call of FindRecord.
+func (mr *MockRecordServiceClientMockRecorder) FindRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCollection", reflect.TypeOf((*MockCollectionServiceClient)(nil).FindCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindRecord", reflect.TypeOf((*MockRecordServiceClient)(nil).FindRecord), varargs...)
 }
 
 // InvalidateSchema mocks base method.
-func (m *MockCollectionServiceClient) InvalidateSchema(ctx context.Context, in *services.InvalidateSchemaRequest, opts ...grpc.CallOption) (*services.InvalidateSchemaResponse, error) {
+func (m *MockRecordServiceClient) InvalidateSchema(ctx context.Context, in *services.InvalidateSchemaRequest, opts ...grpc.CallOption) (*services.InvalidateSchemaResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
@@ -90,77 +90,77 @@ func (m *MockCollectionServiceClient) InvalidateSchema(ctx context.Context, in *
 }
 
 // InvalidateSchema indicates an expected call of InvalidateSchema.
-func (mr *MockCollectionServiceClientMockRecorder) InvalidateSchema(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRecordServiceClientMockRecorder) InvalidateSchema(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSchema", reflect.TypeOf((*MockCollectionServiceClient)(nil).InvalidateSchema), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSchema", reflect.TypeOf((*MockRecordServiceClient)(nil).InvalidateSchema), varargs...)
 }
 
-// StoreCollection mocks base method.
-func (m *MockCollectionServiceClient) StoreCollection(ctx context.Context, in *services.StoreCollectionRequest, opts ...grpc.CallOption) (*services.StoreCollectionResponse, error) {
+// StoreRecord mocks base method.
+func (m *MockRecordServiceClient) StoreRecord(ctx context.Context, in *services.StoreRecordRequest, opts ...grpc.CallOption) (*services.StoreRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "StoreCollection", varargs...)
-	ret0, _ := ret[0].(*services.StoreCollectionResponse)
+	ret := m.ctrl.Call(m, "StoreRecord", varargs...)
+	ret0, _ := ret[0].(*services.StoreRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StoreCollection indicates an expected call of StoreCollection.
-func (mr *MockCollectionServiceClientMockRecorder) StoreCollection(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// StoreRecord indicates an expected call of StoreRecord.
+func (mr *MockRecordServiceClientMockRecorder) StoreRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreCollection", reflect.TypeOf((*MockCollectionServiceClient)(nil).StoreCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRecord", reflect.TypeOf((*MockRecordServiceClient)(nil).StoreRecord), varargs...)
 }
 
-// ValidateCollection mocks base method.
-func (m *MockCollectionServiceClient) ValidateCollection(ctx context.Context, in *services.ValidateCollectionRequest, opts ...grpc.CallOption) (*services.ValidateCollectionResponse, error) {
+// ValidateRecord mocks base method.
+func (m *MockRecordServiceClient) ValidateRecord(ctx context.Context, in *services.ValidateRecordRequest, opts ...grpc.CallOption) (*services.ValidateRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "ValidateCollection", varargs...)
-	ret0, _ := ret[0].(*services.ValidateCollectionResponse)
+	ret := m.ctrl.Call(m, "ValidateRecord", varargs...)
+	ret0, _ := ret[0].(*services.ValidateRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ValidateCollection indicates an expected call of ValidateCollection.
-func (mr *MockCollectionServiceClientMockRecorder) ValidateCollection(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// ValidateRecord indicates an expected call of ValidateRecord.
+func (mr *MockRecordServiceClientMockRecorder) ValidateRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateCollection", reflect.TypeOf((*MockCollectionServiceClient)(nil).ValidateCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRecord", reflect.TypeOf((*MockRecordServiceClient)(nil).ValidateRecord), varargs...)
 }
 
-// MockCollectionServiceServer is a mock of CollectionServiceServer interface.
-type MockCollectionServiceServer struct {
+// MockRecordServiceServer is a mock of RecordServiceServer interface.
+type MockRecordServiceServer struct {
 	ctrl     *gomock.Controller
-	recorder *MockCollectionServiceServerMockRecorder
+	recorder *MockRecordServiceServerMockRecorder
 }
 
-// MockCollectionServiceServerMockRecorder is the mock recorder for MockCollectionServiceServer.
-type MockCollectionServiceServerMockRecorder struct {
-	mock *MockCollectionServiceServer
+// MockRecordServiceServerMockRecorder is the mock recorder for MockRecordServiceServer.
+type MockRecordServiceServerMockRecorder struct {
+	mock *MockRecordServiceServer
 }
 
-// NewMockCollectionServiceServer creates a new mock instance.
-func NewMockCollectionServiceServer(ctrl *gomock.Controller) *MockCollectionServiceServer {
-	mock := &MockCollectionServiceServer{ctrl: ctrl}
-	mock.recorder = &MockCollectionServiceServerMockRecorder{mock}
+// NewMockRecordServiceServer creates a new mock instance.
+func NewMockRecordServiceServer(ctrl *gomock.Controller) *MockRecordServiceServer {
+	mock := &MockRecordServiceServer{ctrl: ctrl}
+	mock.recorder = &MockRecordServiceServerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockCollectionServiceServer) EXPECT() *MockCollectionServiceServerMockRecorder {
+func (m *MockRecordServiceServer) EXPECT() *MockRecordServiceServerMockRecorder {
 	return m.recorder
 }
 
 // CreateSchema mocks base method.
-func (m *MockCollectionServiceServer) CreateSchema(arg0 context.Context, arg1 *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {
+func (m *MockRecordServiceServer) CreateSchema(arg0 context.Context, arg1 *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSchema", arg0, arg1)
 	ret0, _ := ret[0].(*services.CreateSchemaResponse)
@@ -169,28 +169,28 @@ func (m *MockCollectionServiceServer) CreateSchema(arg0 context.Context, arg1 *s
 }
 
 // CreateSchema indicates an expected call of CreateSchema.
-func (mr *MockCollectionServiceServerMockRecorder) CreateSchema(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRecordServiceServerMockRecorder) CreateSchema(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSchema", reflect.TypeOf((*MockCollectionServiceServer)(nil).CreateSchema), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSchema", reflect.TypeOf((*MockRecordServiceServer)(nil).CreateSchema), arg0, arg1)
 }
 
-// FindCollection mocks base method.
-func (m *MockCollectionServiceServer) FindCollection(arg0 context.Context, arg1 *services.FindCollectionRequest) (*services.FindCollectionResponse, error) {
+// FindRecord mocks base method.
+func (m *MockRecordServiceServer) FindRecord(arg0 context.Context, arg1 *services.FindRecordRequest) (*services.FindRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindCollection", arg0, arg1)
-	ret0, _ := ret[0].(*services.FindCollectionResponse)
+	ret := m.ctrl.Call(m, "FindRecord", arg0, arg1)
+	ret0, _ := ret[0].(*services.FindRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindCollection indicates an expected call of FindCollection.
-func (mr *MockCollectionServiceServerMockRecorder) FindCollection(arg0, arg1 interface{}) *gomock.Call {
+// FindRecord indicates an expected call of FindRecord.
+func (mr *MockRecordServiceServerMockRecorder) FindRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCollection", reflect.TypeOf((*MockCollectionServiceServer)(nil).FindCollection), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindRecord", reflect.TypeOf((*MockRecordServiceServer)(nil).FindRecord), arg0, arg1)
 }
 
 // InvalidateSchema mocks base method.
-func (m *MockCollectionServiceServer) InvalidateSchema(arg0 context.Context, arg1 *services.InvalidateSchemaRequest) (*services.InvalidateSchemaResponse, error) {
+func (m *MockRecordServiceServer) InvalidateSchema(arg0 context.Context, arg1 *services.InvalidateSchemaRequest) (*services.InvalidateSchemaResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvalidateSchema", arg0, arg1)
 	ret0, _ := ret[0].(*services.InvalidateSchemaResponse)
@@ -199,86 +199,86 @@ func (m *MockCollectionServiceServer) InvalidateSchema(arg0 context.Context, arg
 }
 
 // InvalidateSchema indicates an expected call of InvalidateSchema.
-func (mr *MockCollectionServiceServerMockRecorder) InvalidateSchema(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRecordServiceServerMockRecorder) InvalidateSchema(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSchema", reflect.TypeOf((*MockCollectionServiceServer)(nil).InvalidateSchema), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSchema", reflect.TypeOf((*MockRecordServiceServer)(nil).InvalidateSchema), arg0, arg1)
 }
 
-// StoreCollection mocks base method.
-func (m *MockCollectionServiceServer) StoreCollection(arg0 context.Context, arg1 *services.StoreCollectionRequest) (*services.StoreCollectionResponse, error) {
+// StoreRecord mocks base method.
+func (m *MockRecordServiceServer) StoreRecord(arg0 context.Context, arg1 *services.StoreRecordRequest) (*services.StoreRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreCollection", arg0, arg1)
-	ret0, _ := ret[0].(*services.StoreCollectionResponse)
+	ret := m.ctrl.Call(m, "StoreRecord", arg0, arg1)
+	ret0, _ := ret[0].(*services.StoreRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StoreCollection indicates an expected call of StoreCollection.
-func (mr *MockCollectionServiceServerMockRecorder) StoreCollection(arg0, arg1 interface{}) *gomock.Call {
+// StoreRecord indicates an expected call of StoreRecord.
+func (mr *MockRecordServiceServerMockRecorder) StoreRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreCollection", reflect.TypeOf((*MockCollectionServiceServer)(nil).StoreCollection), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRecord", reflect.TypeOf((*MockRecordServiceServer)(nil).StoreRecord), arg0, arg1)
 }
 
-// ValidateCollection mocks base method.
-func (m *MockCollectionServiceServer) ValidateCollection(arg0 context.Context, arg1 *services.ValidateCollectionRequest) (*services.ValidateCollectionResponse, error) {
+// ValidateRecord mocks base method.
+func (m *MockRecordServiceServer) ValidateRecord(arg0 context.Context, arg1 *services.ValidateRecordRequest) (*services.ValidateRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateCollection", arg0, arg1)
-	ret0, _ := ret[0].(*services.ValidateCollectionResponse)
+	ret := m.ctrl.Call(m, "ValidateRecord", arg0, arg1)
+	ret0, _ := ret[0].(*services.ValidateRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ValidateCollection indicates an expected call of ValidateCollection.
-func (mr *MockCollectionServiceServerMockRecorder) ValidateCollection(arg0, arg1 interface{}) *gomock.Call {
+// ValidateRecord indicates an expected call of ValidateRecord.
+func (mr *MockRecordServiceServerMockRecorder) ValidateRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateCollection", reflect.TypeOf((*MockCollectionServiceServer)(nil).ValidateCollection), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRecord", reflect.TypeOf((*MockRecordServiceServer)(nil).ValidateRecord), arg0, arg1)
 }
 
-// mustEmbedUnimplementedCollectionServiceServer mocks base method.
-func (m *MockCollectionServiceServer) mustEmbedUnimplementedCollectionServiceServer() {
+// mustEmbedUnimplementedRecordServiceServer mocks base method.
+func (m *MockRecordServiceServer) mustEmbedUnimplementedRecordServiceServer() {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "mustEmbedUnimplementedCollectionServiceServer")
+	m.ctrl.Call(m, "mustEmbedUnimplementedRecordServiceServer")
 }
 
-// mustEmbedUnimplementedCollectionServiceServer indicates an expected call of mustEmbedUnimplementedCollectionServiceServer.
-func (mr *MockCollectionServiceServerMockRecorder) mustEmbedUnimplementedCollectionServiceServer() *gomock.Call {
+// mustEmbedUnimplementedRecordServiceServer indicates an expected call of mustEmbedUnimplementedRecordServiceServer.
+func (mr *MockRecordServiceServerMockRecorder) mustEmbedUnimplementedRecordServiceServer() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedCollectionServiceServer", reflect.TypeOf((*MockCollectionServiceServer)(nil).mustEmbedUnimplementedCollectionServiceServer))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedRecordServiceServer", reflect.TypeOf((*MockRecordServiceServer)(nil).mustEmbedUnimplementedRecordServiceServer))
 }
 
-// MockUnsafeCollectionServiceServer is a mock of UnsafeCollectionServiceServer interface.
-type MockUnsafeCollectionServiceServer struct {
+// MockUnsafeRecordServiceServer is a mock of UnsafeRecordServiceServer interface.
+type MockUnsafeRecordServiceServer struct {
 	ctrl     *gomock.Controller
-	recorder *MockUnsafeCollectionServiceServerMockRecorder
+	recorder *MockUnsafeRecordServiceServerMockRecorder
 }
 
-// MockUnsafeCollectionServiceServerMockRecorder is the mock recorder for MockUnsafeCollectionServiceServer.
-type MockUnsafeCollectionServiceServerMockRecorder struct {
-	mock *MockUnsafeCollectionServiceServer
+// MockUnsafeRecordServiceServerMockRecorder is the mock recorder for MockUnsafeRecordServiceServer.
+type MockUnsafeRecordServiceServerMockRecorder struct {
+	mock *MockUnsafeRecordServiceServer
 }
 
-// NewMockUnsafeCollectionServiceServer creates a new mock instance.
-func NewMockUnsafeCollectionServiceServer(ctrl *gomock.Controller) *MockUnsafeCollectionServiceServer {
-	mock := &MockUnsafeCollectionServiceServer{ctrl: ctrl}
-	mock.recorder = &MockUnsafeCollectionServiceServerMockRecorder{mock}
+// NewMockUnsafeRecordServiceServer creates a new mock instance.
+func NewMockUnsafeRecordServiceServer(ctrl *gomock.Controller) *MockUnsafeRecordServiceServer {
+	mock := &MockUnsafeRecordServiceServer{ctrl: ctrl}
+	mock.recorder = &MockUnsafeRecordServiceServerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockUnsafeCollectionServiceServer) EXPECT() *MockUnsafeCollectionServiceServerMockRecorder {
+func (m *MockUnsafeRecordServiceServer) EXPECT() *MockUnsafeRecordServiceServerMockRecorder {
 	return m.recorder
 }
 
-// mustEmbedUnimplementedCollectionServiceServer mocks base method.
-func (m *MockUnsafeCollectionServiceServer) mustEmbedUnimplementedCollectionServiceServer() {
+// mustEmbedUnimplementedRecordServiceServer mocks base method.
+func (m *MockUnsafeRecordServiceServer) mustEmbedUnimplementedRecordServiceServer() {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "mustEmbedUnimplementedCollectionServiceServer")
+	m.ctrl.Call(m, "mustEmbedUnimplementedRecordServiceServer")
 }
 
-// mustEmbedUnimplementedCollectionServiceServer indicates an expected call of mustEmbedUnimplementedCollectionServiceServer.
-func (mr *MockUnsafeCollectionServiceServerMockRecorder) mustEmbedUnimplementedCollectionServiceServer() *gomock.Call {
+// mustEmbedUnimplementedRecordServiceServer indicates an expected call of mustEmbedUnimplementedRecordServiceServer.
+func (mr *MockUnsafeRecordServiceServerMockRecorder) mustEmbedUnimplementedRecordServiceServer() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedCollectionServiceServer", reflect.TypeOf((*MockUnsafeCollectionServiceServer)(nil).mustEmbedUnimplementedCollectionServiceServer))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedRecordServiceServer", reflect.TypeOf((*MockUnsafeRecordServiceServer)(nil).mustEmbedUnimplementedRecordServiceServer))
 }
 
 // MockHookServiceClient is a mock of HookServiceClient interface.
@@ -304,44 +304,44 @@ func (m *MockHookServiceClient) EXPECT() *MockHookServiceClientMockRecorder {
 	return m.recorder
 }
 
-// GetHooksForCollection mocks base method.
-func (m *MockHookServiceClient) GetHooksForCollection(ctx context.Context, in *services.GetHooksForCollectionRequest, opts ...grpc.CallOption) (*services.GetHooksForCollectionResponse, error) {
+// GetHooksForRecord mocks base method.
+func (m *MockHookServiceClient) GetHooksForRecord(ctx context.Context, in *services.GetHooksForRecordRequest, opts ...grpc.CallOption) (*services.GetHooksForRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "GetHooksForCollection", varargs...)
-	ret0, _ := ret[0].(*services.GetHooksForCollectionResponse)
+	ret := m.ctrl.Call(m, "GetHooksForRecord", varargs...)
+	ret0, _ := ret[0].(*services.GetHooksForRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetHooksForCollection indicates an expected call of GetHooksForCollection.
-func (mr *MockHookServiceClientMockRecorder) GetHooksForCollection(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// GetHooksForRecord indicates an expected call of GetHooksForRecord.
+func (mr *MockHookServiceClientMockRecorder) GetHooksForRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooksForCollection", reflect.TypeOf((*MockHookServiceClient)(nil).GetHooksForCollection), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooksForRecord", reflect.TypeOf((*MockHookServiceClient)(nil).GetHooksForRecord), varargs...)
 }
 
-// NotifyHooksOfCollectionEvent mocks base method.
-func (m *MockHookServiceClient) NotifyHooksOfCollectionEvent(ctx context.Context, in *services.NotifyHooksOfCollectionEventRequest, opts ...grpc.CallOption) (*services.NotifyHooksOfCollectionEventResponse, error) {
+// NotifyHooksOfRecordEvent mocks base method.
+func (m *MockHookServiceClient) NotifyHooksOfRecordEvent(ctx context.Context, in *services.NotifyHooksOfRecordEventRequest, opts ...grpc.CallOption) (*services.NotifyHooksOfRecordEventResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "NotifyHooksOfCollectionEvent", varargs...)
-	ret0, _ := ret[0].(*services.NotifyHooksOfCollectionEventResponse)
+	ret := m.ctrl.Call(m, "NotifyHooksOfRecordEvent", varargs...)
+	ret0, _ := ret[0].(*services.NotifyHooksOfRecordEventResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NotifyHooksOfCollectionEvent indicates an expected call of NotifyHooksOfCollectionEvent.
-func (mr *MockHookServiceClientMockRecorder) NotifyHooksOfCollectionEvent(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// NotifyHooksOfRecordEvent indicates an expected call of NotifyHooksOfRecordEvent.
+func (mr *MockHookServiceClientMockRecorder) NotifyHooksOfRecordEvent(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyHooksOfCollectionEvent", reflect.TypeOf((*MockHookServiceClient)(nil).NotifyHooksOfCollectionEvent), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyHooksOfRecordEvent", reflect.TypeOf((*MockHookServiceClient)(nil).NotifyHooksOfRecordEvent), varargs...)
 }
 
 // RegisterHook mocks base method.
@@ -362,6 +362,26 @@ func (mr *MockHookServiceClientMockRecorder) RegisterHook(ctx, in interface{}, o
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterHook", reflect.TypeOf((*MockHookServiceClient)(nil).RegisterHook), varargs...)
+}
+
+// UpdateHook mocks base method.
+func (m *MockHookServiceClient) UpdateHook(ctx context.Context, in *services.UpdateHookRequest, opts ...grpc.CallOption) (*services.UpdateHookResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateHook", varargs...)
+	ret0, _ := ret[0].(*services.UpdateHookResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateHook indicates an expected call of UpdateHook.
+func (mr *MockHookServiceClientMockRecorder) UpdateHook(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateHook", reflect.TypeOf((*MockHookServiceClient)(nil).UpdateHook), varargs...)
 }
 
 // MockHookServiceServer is a mock of HookServiceServer interface.
@@ -387,34 +407,34 @@ func (m *MockHookServiceServer) EXPECT() *MockHookServiceServerMockRecorder {
 	return m.recorder
 }
 
-// GetHooksForCollection mocks base method.
-func (m *MockHookServiceServer) GetHooksForCollection(arg0 context.Context, arg1 *services.GetHooksForCollectionRequest) (*services.GetHooksForCollectionResponse, error) {
+// GetHooksForRecord mocks base method.
+func (m *MockHookServiceServer) GetHooksForRecord(arg0 context.Context, arg1 *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHooksForCollection", arg0, arg1)
-	ret0, _ := ret[0].(*services.GetHooksForCollectionResponse)
+	ret := m.ctrl.Call(m, "GetHooksForRecord", arg0, arg1)
+	ret0, _ := ret[0].(*services.GetHooksForRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetHooksForCollection indicates an expected call of GetHooksForCollection.
-func (mr *MockHookServiceServerMockRecorder) GetHooksForCollection(arg0, arg1 interface{}) *gomock.Call {
+// GetHooksForRecord indicates an expected call of GetHooksForRecord.
+func (mr *MockHookServiceServerMockRecorder) GetHooksForRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooksForCollection", reflect.TypeOf((*MockHookServiceServer)(nil).GetHooksForCollection), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooksForRecord", reflect.TypeOf((*MockHookServiceServer)(nil).GetHooksForRecord), arg0, arg1)
 }
 
-// NotifyHooksOfCollectionEvent mocks base method.
-func (m *MockHookServiceServer) NotifyHooksOfCollectionEvent(arg0 context.Context, arg1 *services.NotifyHooksOfCollectionEventRequest) (*services.NotifyHooksOfCollectionEventResponse, error) {
+// NotifyHooksOfRecordEvent mocks base method.
+func (m *MockHookServiceServer) NotifyHooksOfRecordEvent(arg0 context.Context, arg1 *services.NotifyHooksOfRecordEventRequest) (*services.NotifyHooksOfRecordEventResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NotifyHooksOfCollectionEvent", arg0, arg1)
-	ret0, _ := ret[0].(*services.NotifyHooksOfCollectionEventResponse)
+	ret := m.ctrl.Call(m, "NotifyHooksOfRecordEvent", arg0, arg1)
+	ret0, _ := ret[0].(*services.NotifyHooksOfRecordEventResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// NotifyHooksOfCollectionEvent indicates an expected call of NotifyHooksOfCollectionEvent.
-func (mr *MockHookServiceServerMockRecorder) NotifyHooksOfCollectionEvent(arg0, arg1 interface{}) *gomock.Call {
+// NotifyHooksOfRecordEvent indicates an expected call of NotifyHooksOfRecordEvent.
+func (mr *MockHookServiceServerMockRecorder) NotifyHooksOfRecordEvent(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyHooksOfCollectionEvent", reflect.TypeOf((*MockHookServiceServer)(nil).NotifyHooksOfCollectionEvent), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyHooksOfRecordEvent", reflect.TypeOf((*MockHookServiceServer)(nil).NotifyHooksOfRecordEvent), arg0, arg1)
 }
 
 // RegisterHook mocks base method.
@@ -430,6 +450,21 @@ func (m *MockHookServiceServer) RegisterHook(arg0 context.Context, arg1 *service
 func (mr *MockHookServiceServerMockRecorder) RegisterHook(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterHook", reflect.TypeOf((*MockHookServiceServer)(nil).RegisterHook), arg0, arg1)
+}
+
+// UpdateHook mocks base method.
+func (m *MockHookServiceServer) UpdateHook(arg0 context.Context, arg1 *services.UpdateHookRequest) (*services.UpdateHookResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateHook", arg0, arg1)
+	ret0, _ := ret[0].(*services.UpdateHookResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateHook indicates an expected call of UpdateHook.
+func (mr *MockHookServiceServerMockRecorder) UpdateHook(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateHook", reflect.TypeOf((*MockHookServiceServer)(nil).UpdateHook), arg0, arg1)
 }
 
 // mustEmbedUnimplementedHookServiceServer mocks base method.

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Open Reserve DWN Community Support
+    url: https://github.com/openreserveio/dwn/discussions
+    about: Please ask and answer questions here.

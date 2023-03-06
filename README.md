@@ -1,6 +1,6 @@
 # DWN
 
-[![godoc dwn](https://img.shields.io/badge/godoc-dwn-blue)](https://github.com/openreserveio/dwn)
+[![godoc dwn](https://img.shields.io/badge/godoc-dwn-blue)](https://pkg.go.dev/github.com/openreserveio/dwn/go)
 [![go version 1.20.1](https://img.shields.io/badge/go_version-1.20.1-brightgreen)](https://go.dev/)
 [![license Apache 2](https://img.shields.io/badge/license-Apache%202-black)](https://github.com/openreserveio/dwn/blob/main/LICENSE)
 [![issues](https://img.shields.io/github/issues/openreserveio/dwn)](https://github.com/openreserveio/dwn/issues)
@@ -24,7 +24,7 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 - [x] [RecordWrite](https://github.com/openreserveio/dwn/issues/23), [RecordDelete](https://github.com/openreserveio/dwn/issues/26), [RecordCommit](https://github.com/openreserveio/dwn/issues/25) Message Chains
 - [x] [RecordQuery with filters](https://github.com/openreserveio/dwn/issues/27)
 - [ ] [Public Alpha Deployment](https://github.com/openreserveio/dwn/issues/41)
-- [ ] [Opinionated Client Library](https://github.com/openreserveio/dwn/issues/39)
+- [x] [Opinionated Client Library](https://github.com/openreserveio/dwn/issues/39)
 - [ ] [Hooks](https://github.com/openreserveio/dwn/issues/28) and [Webhooks](https://github.com/openreserveio/dwn/issues/29), [Events](https://github.com/openreserveio/dwn/issues/12)
 - [ ] [Permissions](https://github.com/openreserveio/dwn/issues/30)
 - [x] Docker-based deployment focus

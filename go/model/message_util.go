@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	METHOD_COLLECTIONS_QUERY  = "CollectionsQuery"
-	METHOD_COLLECTIONS_WRITE  = "CollectionsWrite"
-	METHOD_COLLECTIONS_COMMIT = "CollectionsCommit"
-	METHOD_COLLECTIONS_DELETE = "CollectionsDelete"
+	METHOD_RECORDS_QUERY  = "RecordsQuery"
+	METHOD_RECORDS_WRITE  = "RecordsWrite"
+	METHOD_RECORDS_COMMIT = "RecordsCommit"
+	METHOD_RECORDS_DELETE = "RecordsDelete"
 
 	METHOD_HOOKS_WRITE = "HooksWrite"
 )
 
-func CreateCollectionsWriteMessage(authorDID string, recipientDID string, protocol string, protocolVersion string, schema string, dataFormat string, data []byte) *Message {
+func CreateRecordsWriteMessage(authorDID string, recipientDID string, protocol string, protocolVersion string, schema string, dataFormat string, data []byte) *Message {
 
 	// If there is data, base64 encode it in string form
 	var encodedData string = ""
@@ -32,7 +32,7 @@ func CreateCollectionsWriteMessage(authorDID string, recipientDID string, protoc
 	// Descriptor
 	var messageDescriptorCID string = ""
 	messageDesc := Descriptor{
-		Method:          METHOD_COLLECTIONS_WRITE,
+		Method:          METHOD_RECORDS_WRITE,
 		DataCID:         dataCID,
 		DataFormat:      dataFormat,
 		ParentID:        "",

@@ -12,7 +12,7 @@ enum Status {
 }
 
 enum QueryType {
-    SINGLE_COLLECTION_BY_ID_SCHEMA_URI = 0;
+    SINGLE_RECORD_BY_ID_SCHEMA_URI = 0;
 
 
 }
@@ -24,22 +24,22 @@ message CommonStatus {
 
 
  /*
-  * COLLECTION SERVICE
+  * RECORD SERVICE
   */
 
- message StoreCollectionRequest {
+ message StoreRecordRequest {
 
    bytes message = 1;
 
  }
 
- message StoreCollectionResponse {
+ message StoreRecordResponse {
     CommonStatus status = 1;
     string recordId = 2;
     string ownerDID = 3;
  }
 
- message FindCollectionRequest {
+ message FindRecordRequest {
 
     QueryType queryType = 1;
     string recordId = 2;
@@ -48,13 +48,13 @@ message CommonStatus {
 
  }
 
- message FindCollectionResponse {
+ message FindRecordResponse {
     CommonStatus status = 1;
     string schemaURI = 2;
     repeated string writers = 3;
     repeated string readers = 4;
     bool isPublished = 5;
-    bytes collectionItem = 6;
+    bytes recordItem = 6;
  }
 
 
@@ -66,12 +66,12 @@ message CommonStatus {
     CommonStatus status = 1;
  }
 
- message ValidateCollectionRequest {
+ message ValidateRecordRequest {
     string schemaURI = 1;
     bytes document = 2;
  }
 
- message ValidateCollectionResponse {
+ message ValidateRecordResponse {
     CommonStatus status = 1;
  }
 
@@ -83,13 +83,13 @@ message CommonStatus {
     CommonStatus status = 1;
  }
 
- service CollectionService {
+ service RecordService {
 
-    rpc StoreCollection(StoreCollectionRequest) returns (StoreCollectionResponse) {}
-    rpc FindCollection(FindCollectionRequest) returns (FindCollectionResponse) {}
+    rpc StoreRecord(StoreRecordRequest) returns (StoreRecordResponse) {}
+    rpc FindRecord(FindRecordRequest) returns (FindRecordResponse) {}
 
     rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse) {}
-    rpc ValidateCollection(ValidateCollectionRequest) returns (ValidateCollectionResponse) {}
+    rpc ValidateRecord(ValidateRecordRequest) returns (ValidateRecordResponse) {}
     rpc InvalidateSchema(InvalidateSchemaRequest) returns (InvalidateSchemaResponse) {}
 
  }
@@ -127,32 +127,33 @@ message UpdateHookResponse {
    CommonStatus status = 1;
 }
 
-message GetHooksForCollectionRequest {
+message GetHooksForRecordRequest {
    string recordId = 1;
    string protocol = 2;
    string protocolVersion = 3;
    string schema = 4;
 }
 
-message GetHooksForCollectionResponse {
-   repeated HookDefinition hookDefinitions = 1;
+message GetHooksForRecordResponse {
+   CommonStatus status = 1;
+   repeated HookDefinition hookDefinitions = 2;
 }
 
-enum CollectionEventType {
+enum RecordEventType {
    RECORD_CREATED = 0;
    RECORD_CHANGED = 1;
    RECORD_DELETED = 2;
 }
 
-message NotifyHooksOfCollectionEventRequest {
+message NotifyHooksOfRecordEventRequest {
    string recordId = 1;
    string protocol = 2;
    string protocolVersion = 3;
    string schema = 4;
-   CollectionEventType collectionEventType = 5;
+   RecordEventType recordEventType = 5;
 }
 
-message NotifyHooksOfCollectionEventResponse {
+message NotifyHooksOfRecordEventResponse {
    CommonStatus status = 1;
 }
 
@@ -160,8 +161,8 @@ message NotifyHooksOfCollectionEventResponse {
  service HookService {
    rpc RegisterHook(RegisterHookRequest) returns (RegisterHookResponse) {}
    rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse) {}
-   rpc GetHooksForCollection(GetHooksForCollectionRequest) returns (GetHooksForCollectionResponse) {}
-   rpc NotifyHooksOfCollectionEvent(NotifyHooksOfCollectionEventRequest) returns (NotifyHooksOfCollectionEventResponse) {}
+   rpc GetHooksForRecord(GetHooksForRecordRequest) returns (GetHooksForRecordResponse) {}
+   rpc NotifyHooksOfRecordEvent(NotifyHooksOfRecordEventRequest) returns (NotifyHooksOfRecordEventResponse) {}
  }
 
 

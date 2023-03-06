@@ -8,11 +8,11 @@ const (
 	KEY_API_LISTEN_ADDRESS = "api.listenAddress"
 	KEY_API_LISTEN_PORT    = "api.listenPort"
 
-	KEY_COLLSVC_LISTEN_ADDRESS       = "collsvc.listenAddress"
-	KEY_COLLSVC_LISTEN_PORT          = "collsvc.listenPort"
-	KEY_COLLSVC_EXTERNAL_ADDRESS     = "collsvc.externalAddress"
-	KEY_COLLSVC_EXTERNAL_PORT        = "collsvc.externalPort"
-	KEY_COLLSVC_DOCDB_CONNECTION_URI = "collsvc.docdbConnectionURI"
+	KEY_RECORDSVC_LISTEN_ADDRESS       = "recordsvc.listenAddress"
+	KEY_RECORDSVC_LISTEN_PORT          = "recordsvc.listenPort"
+	KEY_RECORDSVC_EXTERNAL_ADDRESS     = "recordsvc.externalAddress"
+	KEY_RECORDSVC_EXTERNAL_PORT        = "recordsvc.externalPort"
+	KEY_RECORDSVC_DOCDB_CONNECTION_URI = "recordsvc.docdbConnectionURI"
 
 	KEY_HOOKSVC_LISTEN_ADDRESS       = "hooksvc.listenAddress"
 	KEY_HOOKSVC_LISTEN_PORT          = "hooksvc.listenPort"
@@ -50,24 +50,24 @@ func (config FileEnvironmentConfiguration) GetAPIListenPort() int {
 	return viper.GetInt(KEY_API_LISTEN_PORT)
 }
 
-func (config FileEnvironmentConfiguration) GetCollectionServiceListenAddress() string {
-	return viper.GetString(KEY_COLLSVC_LISTEN_ADDRESS)
+func (config FileEnvironmentConfiguration) GetRecordServiceListenAddress() string {
+	return viper.GetString(KEY_RECORDSVC_LISTEN_ADDRESS)
 }
 
-func (config FileEnvironmentConfiguration) GetCollectionServiceListenPort() int {
-	return viper.GetInt(KEY_COLLSVC_LISTEN_PORT)
+func (config FileEnvironmentConfiguration) GetRecordServiceListenPort() int {
+	return viper.GetInt(KEY_RECORDSVC_LISTEN_PORT)
 }
 
-func (config FileEnvironmentConfiguration) GetCollectionServiceDocumentDBURI() string {
-	return viper.GetString(KEY_COLLSVC_DOCDB_CONNECTION_URI)
+func (config FileEnvironmentConfiguration) GetRecordServiceDocumentDBURI() string {
+	return viper.GetString(KEY_RECORDSVC_DOCDB_CONNECTION_URI)
 }
 
-func (config FileEnvironmentConfiguration) GetCollectionServiceExternalAddress() string {
-	return viper.GetString(KEY_COLLSVC_EXTERNAL_ADDRESS)
+func (config FileEnvironmentConfiguration) GetRecordServiceExternalAddress() string {
+	return viper.GetString(KEY_RECORDSVC_EXTERNAL_ADDRESS)
 }
 
-func (config FileEnvironmentConfiguration) GetCollectionServiceExternalPort() int {
-	return viper.GetInt(KEY_COLLSVC_EXTERNAL_PORT)
+func (config FileEnvironmentConfiguration) GetRecordServiceExternalPort() int {
+	return viper.GetInt(KEY_RECORDSVC_EXTERNAL_PORT)
 }
 
 func (config FileEnvironmentConfiguration) GetHookServiceListenAddress() string {

@@ -1,4 +1,4 @@
-package collections_test
+package hooks_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCollections(t *testing.T) {
+func TestHooks(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Collections Suite")
+	RunSpecs(t, "Hooks Suite")
 }
