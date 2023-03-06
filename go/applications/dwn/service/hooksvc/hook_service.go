@@ -12,6 +12,7 @@ import (
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"strings"
 )
 
 type HookService struct {
@@ -146,21 +147,58 @@ func (hookService HookService) UpdateHook(ctx context.Context, request *services
 	return &response, nil
 }
 
-func (hookService HookService) GetHooksForCollection(ctx context.Context, request *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
+func (hookService HookService) GetHooksForRecord(ctx context.Context, request *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "GetHooksForCollection")
+	_, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
 	defer sp.End()
 
-	//TODO implement me
-	panic("implement me")
+	response := services.GetHooksForRecordResponse{}
+
+	sp.AddEvent("Get hook from store")
+	if request.RecordId == "" {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Record ID is required"}
+		return &response, nil
+	}
+
+	hookRecord, latestEntry, err := hookService.HookStore.GetHookRecord(ctx, request.RecordId)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	if hookRecord == nil || latestEntry == nil {
+		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND, Details: "No hook record ID found"}
+		return &response, nil
+	}
+
+	hookDef := services.HookDefinition{
+		HookId: hookRecord.HookRecordID,
+		Uri:    latestEntry.Message.Descriptor.URI,
+	}
+	if strings.Contains(hookDef.Uri, "http") {
+		hookDef.HookChannel = services.HookDefinition_HTTP_CALLBACK
+	} else if strings.Contains(hookDef.Uri, "grpc") {
+		hookDef.HookChannel = services.HookDefinition_GRPC_CALLBACK
+	}
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+	response.HookDefinitions = append(response.HookDefinitions, &hookDef)
+
+	return &response, nil
 }
 
-func (hookService HookService) NotifyHooksOfCollectionEvent(ctx context.Context, request *services.NotifyHooksOfRecordEventRequest) (*services.NotifyHooksOfRecordEventResponse, error) {
+func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, request *services.NotifyHooksOfRecordEventRequest) (*services.NotifyHooksOfRecordEventResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "NotifyHooksOfCollectionEvent")
+	_, sp := observability.Tracer.Start(ctx, "NotifyHooksOfRecordEvent")
 	defer sp.End()
 
 	//TODO implement me
-	panic("implement me")
+	log.Info("NotifyHooksOfRecordEvent called")
+	response := services.NotifyHooksOfRecordEventResponse{
+		Status: &services.CommonStatus{Status: services.Status_OK},
+	}
+
+	return &response, nil
+
 }

@@ -135,7 +135,8 @@ message GetHooksForRecordRequest {
 }
 
 message GetHooksForRecordResponse {
-   repeated HookDefinition hookDefinitions = 1;
+   CommonStatus status = 1;
+   repeated HookDefinition hookDefinitions = 2;
 }
 
 enum RecordEventType {

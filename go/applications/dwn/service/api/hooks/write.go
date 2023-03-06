@@ -13,7 +13,7 @@ import (
 func HooksWrite(ctx context.Context, hookServiceClient services.HookServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "CollectionsCommit")
+	_, childSpan := observability.Tracer.Start(ctx, "HooksWrite")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
