@@ -1,4 +1,4 @@
-package collections
+package records
 
 import (
 	"context"
@@ -9,10 +9,10 @@ import (
 	"net/http"
 )
 
-func CollectionsQuery(ctx context.Context, collSvcClient services.CollectionServiceClient, message *model.Message) model.MessageResultObject {
+func RecordsQuery(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "CollectionsQuery")
+	_, childSpan := observability.Tracer.Start(ctx, "RecordsQuery")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
@@ -26,7 +26,7 @@ func CollectionsQuery(ctx context.Context, collSvcClient services.CollectionServ
 	// Next, find the schema and make sure it has been registered
 	schemaUri := message.Descriptor.Filter.Schema
 	if schemaUri == "" {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a CollectionsQuery"}
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Schema URI is required for a RecordsQuery"}
 		return messageResultObj
 	}
 
@@ -38,14 +38,14 @@ func CollectionsQuery(ctx context.Context, collSvcClient services.CollectionServ
 	}
 
 	// Get the collection item
-	req := services.FindCollectionRequest{
-		QueryType:    services.QueryType_SINGLE_COLLECTION_BY_ID_SCHEMA_URI,
+	req := services.FindRecordRequest{
+		QueryType:    services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI,
 		RecordId:     message.Descriptor.Filter.RecordID,
 		SchemaURI:    message.Descriptor.Filter.Schema,
 		RequestorDID: message.Processing.AuthorDID,
 	}
 
-	findCollResponse, err := collSvcClient.FindCollection(ctx, &req)
+	findCollResponse, err := collSvcClient.FindRecord(ctx, &req)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
@@ -55,7 +55,7 @@ func CollectionsQuery(ctx context.Context, collSvcClient services.CollectionServ
 
 	case services.Status_OK:
 		messageResultEntry := model.MessageResultEntry{
-			Result: findCollResponse.CollectionItem,
+			Result: findCollResponse.RecordItem,
 		}
 		messageResultObj.Entries = append(messageResultObj.Entries, messageResultEntry)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusOK}

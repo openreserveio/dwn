@@ -13,6 +13,8 @@ import (
 )
 
 const (
+	RECORD_DATABASE = "dwn_records_db"
+
 	COLLECTION_RECORD        = "records"
 	COLLECTION_MESSAGE_ENTRY = "message_entries"
 
@@ -20,31 +22,31 @@ const (
 	COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME = "message_entry_id"
 )
 
-type CollectionDocumentDBStore struct {
+type RecordDocumentDBStore struct {
 	Client *mongo.Client
 	DB     *mongo.Database
 }
 
-func CreateCollectionDocumentDBStore(connectionUri string) (*CollectionDocumentDBStore, error) {
+func CreateRecordDocumentDBStore(connectionUri string) (*RecordDocumentDBStore, error) {
 
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(connectionUri))
 	if err != nil {
 		return nil, err
 	}
 
-	dbStore := CollectionDocumentDBStore{
+	dbStore := RecordDocumentDBStore{
 		Client: client,
-		DB:     client.Database("dwn_collections_db"),
+		DB:     client.Database(RECORD_DATABASE),
 	}
 
 	return &dbStore, nil
 
 }
 
-func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.CollectionRecord, initialEntry *storage.MessageEntry) error {
+func (store *RecordDocumentDBStore) CreateRecord(record *storage.Record, initialEntry *storage.MessageEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "CreateCollectionRecord")
+	_, sp := observability.Tracer.Start(context.Background(), "CreateRecord")
 	defer sp.End()
 
 	initialEntry.RecordID = record.RecordID
@@ -67,10 +69,10 @@ func (store *CollectionDocumentDBStore) CreateCollectionRecord(record *storage.C
 
 }
 
-func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.CollectionRecord) error {
+func (store *RecordDocumentDBStore) SaveRecord(record *storage.Record) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "SaveCollectionRecord")
+	_, sp := observability.Tracer.Start(context.Background(), "SaveRecord")
 	defer sp.End()
 
 	_, err := store.DB.Collection(COLLECTION_RECORD).ReplaceOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, record.RecordID}}, record)
@@ -81,17 +83,17 @@ func (store *CollectionDocumentDBStore) SaveCollectionRecord(record *storage.Col
 	return nil
 }
 
-func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage.MessageEntry) error {
+func (store *RecordDocumentDBStore) AddMessageEntry(entry *storage.MessageEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "AddCollectionMessageEntry")
+	_, sp := observability.Tracer.Start(context.Background(), "AddMessageEntry")
 	defer sp.End()
 
 	// Get Record
 	if entry.Descriptor.ParentID == "" {
 		return errors.New("Parent ID must be present to add a message entry to a collection")
 	}
-	collectionRecord := store.GetCollectionRecord(entry.Descriptor.ParentID)
+	collectionRecord := store.GetRecord(entry.Descriptor.ParentID)
 	if collectionRecord == nil {
 		return errors.New("No Record Found")
 	}
@@ -105,7 +107,7 @@ func (store *CollectionDocumentDBStore) AddCollectionMessageEntry(entry *storage
 
 }
 
-func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID string) *storage.MessageEntry {
+func (store *RecordDocumentDBStore) GetMessageEntryByID(messageEntryID string) *storage.MessageEntry {
 
 	// tracing
 	_, sp := observability.Tracer.Start(context.Background(), "GetMessageEntryByID")
@@ -127,10 +129,10 @@ func (store *CollectionDocumentDBStore) GetMessageEntryByID(messageEntryID strin
 	return &messageEntry
 }
 
-func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *storage.CollectionRecord {
+func (store *RecordDocumentDBStore) GetRecord(recordId string) *storage.Record {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "GetCollectionRecord")
+	_, sp := observability.Tracer.Start(context.Background(), "GetRecord")
 	defer sp.End()
 
 	res := store.DB.Collection(COLLECTION_RECORD).FindOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, recordId}})
@@ -145,7 +147,7 @@ func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *st
 
 	}
 
-	var collectionRecord storage.CollectionRecord
+	var collectionRecord storage.Record
 	err := res.Decode(&collectionRecord)
 	if err != nil {
 		log.Error("Error decoding result of getting collectionRecord by ID:  %v", err)
@@ -155,11 +157,11 @@ func (store *CollectionDocumentDBStore) GetCollectionRecord(recordId string) *st
 	return &collectionRecord
 }
 
-func (store *CollectionDocumentDBStore) DeleteCollectionMessageEntry(entry *storage.MessageEntry) error {
-	return store.DeleteCollectionMessageEntryByID(entry.MessageEntryID)
+func (store *RecordDocumentDBStore) DeleteMessageEntry(entry *storage.MessageEntry) error {
+	return store.DeleteMessageEntryByID(entry.MessageEntryID)
 }
 
-func (store *CollectionDocumentDBStore) DeleteCollectionMessageEntryByID(messageEntryId string) error {
+func (store *RecordDocumentDBStore) DeleteMessageEntryByID(messageEntryId string) error {
 
 	_, err := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).DeleteOne(context.Background(), bson.D{{COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME, messageEntryId}})
 	if err != nil {

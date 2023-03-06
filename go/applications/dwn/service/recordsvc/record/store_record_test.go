@@ -1,4 +1,4 @@
-package collection_test
+package record_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc/collection"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/recordsvc/record"
 	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/generated/mocks"
 	"github.com/openreserveio/dwn/go/model"
@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var _ = Describe("StoreCollection", func() {
+var _ = Describe("StoreRecord", func() {
 
 	var mockController *gomock.Controller
 
@@ -27,7 +27,7 @@ var _ = Describe("StoreCollection", func() {
 
 	Context("Storing a new record (without a parent)", func() {
 
-		collectionStore := mocks.NewMockCollectionStore(mockController)
+		recordStore := mocks.NewMockRecordStore(mockController)
 
 		It("Should have tried to store the record with an Initial Entry", func() {
 
@@ -40,7 +40,7 @@ var _ = Describe("StoreCollection", func() {
 			recipientDID, _ := did.CreateKeyDID(&recipientPublicKey)
 
 			body := []byte("{\"name\":\"test\"}")
-			message := model.CreateMessage(authorDID, recipientDID, model.DATA_FORMAT_JSON, body, model.METHOD_COLLECTIONS_WRITE, "", "")
+			message := model.CreateMessage(authorDID, recipientDID, model.DATA_FORMAT_JSON, body, model.METHOD_RECORDS_WRITE, "", "")
 			message.Descriptor.DateCreated = time.Now()
 
 			descriptorCID := model.CreateDescriptorCID(message.Descriptor)
@@ -48,10 +48,10 @@ var _ = Describe("StoreCollection", func() {
 			recordId := model.CreateRecordCID(descriptorCID, processingCID)
 			message.RecordID = recordId
 
-			collectionStore.EXPECT().GetCollectionRecord(recordId)
-			collectionStore.EXPECT().CreateCollectionRecord(gomock.Any(), gomock.Any()).Return(nil)
+			recordStore.EXPECT().GetRecord(recordId)
+			recordStore.EXPECT().CreateRecord(gomock.Any(), gomock.Any()).Return(nil)
 
-			res, err := collection.StoreCollection(context.Background(), collectionStore, message)
+			res, err := record.StoreRecord(context.Background(), recordStore, message)
 			Expect(err).To(BeNil())
 			Expect(res).ToNot(BeNil())
 			Expect(res.Status).To(Equal("OK"))
@@ -68,7 +68,7 @@ var _ = Describe("StoreCollection", func() {
 	//	It("Should have saved the collection item", func() {
 	//
 	//		collectionItemId := primitive.NewObjectID().Hex()
-	//		newId, ownerDID, err := collection.StoreCollection(collectionStore, "https://openreserve.io/schemas/test.json", collectionItemId, "", "", "", []byte("1"), "did:test:test1", "did:test:test2")
+	//		newId, ownerDID, err := collection.StoreRecord(collectionStore, "https://openreserve.io/schemas/test.json", collectionItemId, "", "", "", []byte("1"), "did:test:test1", "did:test:test2")
 	//		Expect(err).To(BeNil())
 	//		Expect(newId).ToNot(BeEmpty())
 	//		Expect(newId).To(Equal(collectionItemId))

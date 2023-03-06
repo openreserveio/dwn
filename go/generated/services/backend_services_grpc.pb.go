@@ -18,230 +18,230 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// CollectionServiceClient is the client API for CollectionService service.
+// RecordServiceClient is the client API for RecordService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CollectionServiceClient interface {
-	StoreCollection(ctx context.Context, in *StoreCollectionRequest, opts ...grpc.CallOption) (*StoreCollectionResponse, error)
-	FindCollection(ctx context.Context, in *FindCollectionRequest, opts ...grpc.CallOption) (*FindCollectionResponse, error)
+type RecordServiceClient interface {
+	StoreRecord(ctx context.Context, in *StoreRecordRequest, opts ...grpc.CallOption) (*StoreRecordResponse, error)
+	FindRecord(ctx context.Context, in *FindRecordRequest, opts ...grpc.CallOption) (*FindRecordResponse, error)
 	CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*CreateSchemaResponse, error)
-	ValidateCollection(ctx context.Context, in *ValidateCollectionRequest, opts ...grpc.CallOption) (*ValidateCollectionResponse, error)
+	ValidateRecord(ctx context.Context, in *ValidateRecordRequest, opts ...grpc.CallOption) (*ValidateRecordResponse, error)
 	InvalidateSchema(ctx context.Context, in *InvalidateSchemaRequest, opts ...grpc.CallOption) (*InvalidateSchemaResponse, error)
 }
 
-type collectionServiceClient struct {
+type recordServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCollectionServiceClient(cc grpc.ClientConnInterface) CollectionServiceClient {
-	return &collectionServiceClient{cc}
+func NewRecordServiceClient(cc grpc.ClientConnInterface) RecordServiceClient {
+	return &recordServiceClient{cc}
 }
 
-func (c *collectionServiceClient) StoreCollection(ctx context.Context, in *StoreCollectionRequest, opts ...grpc.CallOption) (*StoreCollectionResponse, error) {
-	out := new(StoreCollectionResponse)
-	err := c.cc.Invoke(ctx, "/services.CollectionService/StoreCollection", in, out, opts...)
+func (c *recordServiceClient) StoreRecord(ctx context.Context, in *StoreRecordRequest, opts ...grpc.CallOption) (*StoreRecordResponse, error) {
+	out := new(StoreRecordResponse)
+	err := c.cc.Invoke(ctx, "/services.RecordService/StoreRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *collectionServiceClient) FindCollection(ctx context.Context, in *FindCollectionRequest, opts ...grpc.CallOption) (*FindCollectionResponse, error) {
-	out := new(FindCollectionResponse)
-	err := c.cc.Invoke(ctx, "/services.CollectionService/FindCollection", in, out, opts...)
+func (c *recordServiceClient) FindRecord(ctx context.Context, in *FindRecordRequest, opts ...grpc.CallOption) (*FindRecordResponse, error) {
+	out := new(FindRecordResponse)
+	err := c.cc.Invoke(ctx, "/services.RecordService/FindRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *collectionServiceClient) CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*CreateSchemaResponse, error) {
+func (c *recordServiceClient) CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*CreateSchemaResponse, error) {
 	out := new(CreateSchemaResponse)
-	err := c.cc.Invoke(ctx, "/services.CollectionService/CreateSchema", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/services.RecordService/CreateSchema", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *collectionServiceClient) ValidateCollection(ctx context.Context, in *ValidateCollectionRequest, opts ...grpc.CallOption) (*ValidateCollectionResponse, error) {
-	out := new(ValidateCollectionResponse)
-	err := c.cc.Invoke(ctx, "/services.CollectionService/ValidateCollection", in, out, opts...)
+func (c *recordServiceClient) ValidateRecord(ctx context.Context, in *ValidateRecordRequest, opts ...grpc.CallOption) (*ValidateRecordResponse, error) {
+	out := new(ValidateRecordResponse)
+	err := c.cc.Invoke(ctx, "/services.RecordService/ValidateRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *collectionServiceClient) InvalidateSchema(ctx context.Context, in *InvalidateSchemaRequest, opts ...grpc.CallOption) (*InvalidateSchemaResponse, error) {
+func (c *recordServiceClient) InvalidateSchema(ctx context.Context, in *InvalidateSchemaRequest, opts ...grpc.CallOption) (*InvalidateSchemaResponse, error) {
 	out := new(InvalidateSchemaResponse)
-	err := c.cc.Invoke(ctx, "/services.CollectionService/InvalidateSchema", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/services.RecordService/InvalidateSchema", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CollectionServiceServer is the server API for CollectionService service.
-// All implementations must embed UnimplementedCollectionServiceServer
+// RecordServiceServer is the server API for RecordService service.
+// All implementations must embed UnimplementedRecordServiceServer
 // for forward compatibility
-type CollectionServiceServer interface {
-	StoreCollection(context.Context, *StoreCollectionRequest) (*StoreCollectionResponse, error)
-	FindCollection(context.Context, *FindCollectionRequest) (*FindCollectionResponse, error)
+type RecordServiceServer interface {
+	StoreRecord(context.Context, *StoreRecordRequest) (*StoreRecordResponse, error)
+	FindRecord(context.Context, *FindRecordRequest) (*FindRecordResponse, error)
 	CreateSchema(context.Context, *CreateSchemaRequest) (*CreateSchemaResponse, error)
-	ValidateCollection(context.Context, *ValidateCollectionRequest) (*ValidateCollectionResponse, error)
+	ValidateRecord(context.Context, *ValidateRecordRequest) (*ValidateRecordResponse, error)
 	InvalidateSchema(context.Context, *InvalidateSchemaRequest) (*InvalidateSchemaResponse, error)
-	mustEmbedUnimplementedCollectionServiceServer()
+	mustEmbedUnimplementedRecordServiceServer()
 }
 
-// UnimplementedCollectionServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedCollectionServiceServer struct {
+// UnimplementedRecordServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedRecordServiceServer struct {
 }
 
-func (UnimplementedCollectionServiceServer) StoreCollection(context.Context, *StoreCollectionRequest) (*StoreCollectionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreCollection not implemented")
+func (UnimplementedRecordServiceServer) StoreRecord(context.Context, *StoreRecordRequest) (*StoreRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreRecord not implemented")
 }
-func (UnimplementedCollectionServiceServer) FindCollection(context.Context, *FindCollectionRequest) (*FindCollectionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FindCollection not implemented")
+func (UnimplementedRecordServiceServer) FindRecord(context.Context, *FindRecordRequest) (*FindRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindRecord not implemented")
 }
-func (UnimplementedCollectionServiceServer) CreateSchema(context.Context, *CreateSchemaRequest) (*CreateSchemaResponse, error) {
+func (UnimplementedRecordServiceServer) CreateSchema(context.Context, *CreateSchemaRequest) (*CreateSchemaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSchema not implemented")
 }
-func (UnimplementedCollectionServiceServer) ValidateCollection(context.Context, *ValidateCollectionRequest) (*ValidateCollectionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ValidateCollection not implemented")
+func (UnimplementedRecordServiceServer) ValidateRecord(context.Context, *ValidateRecordRequest) (*ValidateRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateRecord not implemented")
 }
-func (UnimplementedCollectionServiceServer) InvalidateSchema(context.Context, *InvalidateSchemaRequest) (*InvalidateSchemaResponse, error) {
+func (UnimplementedRecordServiceServer) InvalidateSchema(context.Context, *InvalidateSchemaRequest) (*InvalidateSchemaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvalidateSchema not implemented")
 }
-func (UnimplementedCollectionServiceServer) mustEmbedUnimplementedCollectionServiceServer() {}
+func (UnimplementedRecordServiceServer) mustEmbedUnimplementedRecordServiceServer() {}
 
-// UnsafeCollectionServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CollectionServiceServer will
+// UnsafeRecordServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RecordServiceServer will
 // result in compilation errors.
-type UnsafeCollectionServiceServer interface {
-	mustEmbedUnimplementedCollectionServiceServer()
+type UnsafeRecordServiceServer interface {
+	mustEmbedUnimplementedRecordServiceServer()
 }
 
-func RegisterCollectionServiceServer(s grpc.ServiceRegistrar, srv CollectionServiceServer) {
-	s.RegisterService(&CollectionService_ServiceDesc, srv)
+func RegisterRecordServiceServer(s grpc.ServiceRegistrar, srv RecordServiceServer) {
+	s.RegisterService(&RecordService_ServiceDesc, srv)
 }
 
-func _CollectionService_StoreCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreCollectionRequest)
+func _RecordService_StoreRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StoreRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CollectionServiceServer).StoreCollection(ctx, in)
+		return srv.(RecordServiceServer).StoreRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.CollectionService/StoreCollection",
+		FullMethod: "/services.RecordService/StoreRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollectionServiceServer).StoreCollection(ctx, req.(*StoreCollectionRequest))
+		return srv.(RecordServiceServer).StoreRecord(ctx, req.(*StoreRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CollectionService_FindCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FindCollectionRequest)
+func _RecordService_FindRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CollectionServiceServer).FindCollection(ctx, in)
+		return srv.(RecordServiceServer).FindRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.CollectionService/FindCollection",
+		FullMethod: "/services.RecordService/FindRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollectionServiceServer).FindCollection(ctx, req.(*FindCollectionRequest))
+		return srv.(RecordServiceServer).FindRecord(ctx, req.(*FindRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CollectionService_CreateSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RecordService_CreateSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateSchemaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CollectionServiceServer).CreateSchema(ctx, in)
+		return srv.(RecordServiceServer).CreateSchema(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.CollectionService/CreateSchema",
+		FullMethod: "/services.RecordService/CreateSchema",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollectionServiceServer).CreateSchema(ctx, req.(*CreateSchemaRequest))
+		return srv.(RecordServiceServer).CreateSchema(ctx, req.(*CreateSchemaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CollectionService_ValidateCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ValidateCollectionRequest)
+func _RecordService_ValidateRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CollectionServiceServer).ValidateCollection(ctx, in)
+		return srv.(RecordServiceServer).ValidateRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.CollectionService/ValidateCollection",
+		FullMethod: "/services.RecordService/ValidateRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollectionServiceServer).ValidateCollection(ctx, req.(*ValidateCollectionRequest))
+		return srv.(RecordServiceServer).ValidateRecord(ctx, req.(*ValidateRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CollectionService_InvalidateSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _RecordService_InvalidateSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(InvalidateSchemaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CollectionServiceServer).InvalidateSchema(ctx, in)
+		return srv.(RecordServiceServer).InvalidateSchema(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.CollectionService/InvalidateSchema",
+		FullMethod: "/services.RecordService/InvalidateSchema",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollectionServiceServer).InvalidateSchema(ctx, req.(*InvalidateSchemaRequest))
+		return srv.(RecordServiceServer).InvalidateSchema(ctx, req.(*InvalidateSchemaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// CollectionService_ServiceDesc is the grpc.ServiceDesc for CollectionService service.
+// RecordService_ServiceDesc is the grpc.ServiceDesc for RecordService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var CollectionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "services.CollectionService",
-	HandlerType: (*CollectionServiceServer)(nil),
+var RecordService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "services.RecordService",
+	HandlerType: (*RecordServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "StoreCollection",
-			Handler:    _CollectionService_StoreCollection_Handler,
+			MethodName: "StoreRecord",
+			Handler:    _RecordService_StoreRecord_Handler,
 		},
 		{
-			MethodName: "FindCollection",
-			Handler:    _CollectionService_FindCollection_Handler,
+			MethodName: "FindRecord",
+			Handler:    _RecordService_FindRecord_Handler,
 		},
 		{
 			MethodName: "CreateSchema",
-			Handler:    _CollectionService_CreateSchema_Handler,
+			Handler:    _RecordService_CreateSchema_Handler,
 		},
 		{
-			MethodName: "ValidateCollection",
-			Handler:    _CollectionService_ValidateCollection_Handler,
+			MethodName: "ValidateRecord",
+			Handler:    _RecordService_ValidateRecord_Handler,
 		},
 		{
 			MethodName: "InvalidateSchema",
-			Handler:    _CollectionService_InvalidateSchema_Handler,
+			Handler:    _RecordService_InvalidateSchema_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -254,8 +254,8 @@ var CollectionService_ServiceDesc = grpc.ServiceDesc{
 type HookServiceClient interface {
 	RegisterHook(ctx context.Context, in *RegisterHookRequest, opts ...grpc.CallOption) (*RegisterHookResponse, error)
 	UpdateHook(ctx context.Context, in *UpdateHookRequest, opts ...grpc.CallOption) (*UpdateHookResponse, error)
-	GetHooksForCollection(ctx context.Context, in *GetHooksForCollectionRequest, opts ...grpc.CallOption) (*GetHooksForCollectionResponse, error)
-	NotifyHooksOfCollectionEvent(ctx context.Context, in *NotifyHooksOfCollectionEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfCollectionEventResponse, error)
+	GetHooksForRecord(ctx context.Context, in *GetHooksForRecordRequest, opts ...grpc.CallOption) (*GetHooksForRecordResponse, error)
+	NotifyHooksOfRecordEvent(ctx context.Context, in *NotifyHooksOfRecordEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfRecordEventResponse, error)
 }
 
 type hookServiceClient struct {
@@ -284,18 +284,18 @@ func (c *hookServiceClient) UpdateHook(ctx context.Context, in *UpdateHookReques
 	return out, nil
 }
 
-func (c *hookServiceClient) GetHooksForCollection(ctx context.Context, in *GetHooksForCollectionRequest, opts ...grpc.CallOption) (*GetHooksForCollectionResponse, error) {
-	out := new(GetHooksForCollectionResponse)
-	err := c.cc.Invoke(ctx, "/services.HookService/GetHooksForCollection", in, out, opts...)
+func (c *hookServiceClient) GetHooksForRecord(ctx context.Context, in *GetHooksForRecordRequest, opts ...grpc.CallOption) (*GetHooksForRecordResponse, error) {
+	out := new(GetHooksForRecordResponse)
+	err := c.cc.Invoke(ctx, "/services.HookService/GetHooksForRecord", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hookServiceClient) NotifyHooksOfCollectionEvent(ctx context.Context, in *NotifyHooksOfCollectionEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfCollectionEventResponse, error) {
-	out := new(NotifyHooksOfCollectionEventResponse)
-	err := c.cc.Invoke(ctx, "/services.HookService/NotifyHooksOfCollectionEvent", in, out, opts...)
+func (c *hookServiceClient) NotifyHooksOfRecordEvent(ctx context.Context, in *NotifyHooksOfRecordEventRequest, opts ...grpc.CallOption) (*NotifyHooksOfRecordEventResponse, error) {
+	out := new(NotifyHooksOfRecordEventResponse)
+	err := c.cc.Invoke(ctx, "/services.HookService/NotifyHooksOfRecordEvent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -308,8 +308,8 @@ func (c *hookServiceClient) NotifyHooksOfCollectionEvent(ctx context.Context, in
 type HookServiceServer interface {
 	RegisterHook(context.Context, *RegisterHookRequest) (*RegisterHookResponse, error)
 	UpdateHook(context.Context, *UpdateHookRequest) (*UpdateHookResponse, error)
-	GetHooksForCollection(context.Context, *GetHooksForCollectionRequest) (*GetHooksForCollectionResponse, error)
-	NotifyHooksOfCollectionEvent(context.Context, *NotifyHooksOfCollectionEventRequest) (*NotifyHooksOfCollectionEventResponse, error)
+	GetHooksForRecord(context.Context, *GetHooksForRecordRequest) (*GetHooksForRecordResponse, error)
+	NotifyHooksOfRecordEvent(context.Context, *NotifyHooksOfRecordEventRequest) (*NotifyHooksOfRecordEventResponse, error)
 	mustEmbedUnimplementedHookServiceServer()
 }
 
@@ -323,11 +323,11 @@ func (UnimplementedHookServiceServer) RegisterHook(context.Context, *RegisterHoo
 func (UnimplementedHookServiceServer) UpdateHook(context.Context, *UpdateHookRequest) (*UpdateHookResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateHook not implemented")
 }
-func (UnimplementedHookServiceServer) GetHooksForCollection(context.Context, *GetHooksForCollectionRequest) (*GetHooksForCollectionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetHooksForCollection not implemented")
+func (UnimplementedHookServiceServer) GetHooksForRecord(context.Context, *GetHooksForRecordRequest) (*GetHooksForRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHooksForRecord not implemented")
 }
-func (UnimplementedHookServiceServer) NotifyHooksOfCollectionEvent(context.Context, *NotifyHooksOfCollectionEventRequest) (*NotifyHooksOfCollectionEventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NotifyHooksOfCollectionEvent not implemented")
+func (UnimplementedHookServiceServer) NotifyHooksOfRecordEvent(context.Context, *NotifyHooksOfRecordEventRequest) (*NotifyHooksOfRecordEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NotifyHooksOfRecordEvent not implemented")
 }
 func (UnimplementedHookServiceServer) mustEmbedUnimplementedHookServiceServer() {}
 
@@ -378,38 +378,38 @@ func _HookService_UpdateHook_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HookService_GetHooksForCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetHooksForCollectionRequest)
+func _HookService_GetHooksForRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetHooksForRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HookServiceServer).GetHooksForCollection(ctx, in)
+		return srv.(HookServiceServer).GetHooksForRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.HookService/GetHooksForCollection",
+		FullMethod: "/services.HookService/GetHooksForRecord",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HookServiceServer).GetHooksForCollection(ctx, req.(*GetHooksForCollectionRequest))
+		return srv.(HookServiceServer).GetHooksForRecord(ctx, req.(*GetHooksForRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HookService_NotifyHooksOfCollectionEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NotifyHooksOfCollectionEventRequest)
+func _HookService_NotifyHooksOfRecordEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NotifyHooksOfRecordEventRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HookServiceServer).NotifyHooksOfCollectionEvent(ctx, in)
+		return srv.(HookServiceServer).NotifyHooksOfRecordEvent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/services.HookService/NotifyHooksOfCollectionEvent",
+		FullMethod: "/services.HookService/NotifyHooksOfRecordEvent",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HookServiceServer).NotifyHooksOfCollectionEvent(ctx, req.(*NotifyHooksOfCollectionEventRequest))
+		return srv.(HookServiceServer).NotifyHooksOfRecordEvent(ctx, req.(*NotifyHooksOfRecordEventRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -430,12 +430,12 @@ var HookService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _HookService_UpdateHook_Handler,
 		},
 		{
-			MethodName: "GetHooksForCollection",
-			Handler:    _HookService_GetHooksForCollection_Handler,
+			MethodName: "GetHooksForRecord",
+			Handler:    _HookService_GetHooksForRecord_Handler,
 		},
 		{
-			MethodName: "NotifyHooksOfCollectionEvent",
-			Handler:    _HookService_NotifyHooksOfCollectionEvent_Handler,
+			MethodName: "NotifyHooksOfRecordEvent",
+			Handler:    _HookService_NotifyHooksOfRecordEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

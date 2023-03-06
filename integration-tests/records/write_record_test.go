@@ -1,4 +1,4 @@
-package collections_test
+package records_test
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 	"os"
 )
 
-var _ = Describe("Write Collection", func() {
+var _ = Describe("Write Record", func() {
 
 	DWN_HOST := os.Getenv("DWN_API_HOST")
 	DWN_PORT := os.Getenv("DWN_API_PORT")
 	TEST_SCHEMA := "https://openreserve.io/schemas/test.json"
 
-	Describe("Writing a brand new collection item", func() {
+	Describe("Writing a brand new record", func() {
 
 		dwnClient := client.CreateDWNClient(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 

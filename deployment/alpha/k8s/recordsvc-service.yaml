@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: collsvc-service
+  name: recordsvc-service
 spec:
   selector:
-    component: collsvc
+    component: recordsvc
   ports:
     - protocol: TCP
       port: 9001
-      targetPort: dwncollsvc-port
+      targetPort: dwnrecordsvc-port

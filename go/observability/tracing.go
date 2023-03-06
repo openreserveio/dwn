@@ -57,7 +57,7 @@ func exporterToJaeger() (*jaeger.Exporter, error) {
 
 // Maybe this will work?
 func exporterToCollector(ctx context.Context) (tracesdk.SpanExporter, error) {
-	collUrl := os.Getenv("OPEN_TELEMETRY_COLLECTOR_URL")
+	collUrl := os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT")
 	log.Info("Open Telemetry Collector URL:  %s", collUrl)
 
 	client := otlptracehttp.NewClient()

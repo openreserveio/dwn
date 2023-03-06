@@ -1,4 +1,4 @@
-package collection_test
+package record_test
 
 import (
 	"testing"

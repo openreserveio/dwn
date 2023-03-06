@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: collsvc-deployment
+  name: recordsvc-deployment
   labels:
     app: dwn
-    component: collsvc_deployment
+    component: recordsvc_deployment
 spec:
   replicas: 3
   selector:
     matchLabels:
-      component: collsvc
+      component: recordsvc
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        component: collsvc
+        component: recordsvc
     spec:
       containers:
-      - name: dwn-collsvc
-        image: ghcr.io/openreserveio/collsvc:latest
+      - name: dwn-recordsvc
+        image: ghcr.io/openreserveio/recordsvc:latest
         ports:
           - containerPort: 9001
-            name: dwncollsvc-port
+            name: dwnrecordsvc-port
         env:
-          - name: "DWN_COLLSVC.LISTENPORT"
+          - name: "DWN_RECORDSVC.LISTENPORT"
             value: "9001"
-          - name: "DWN_COLLSVC.DOCDBCONNECTIONURI"
+          - name: "DWN_RECORDSVC.DOCDBCONNECTIONURI"
             value: "mongodb://openreserveuser:openreservepass@docdb.internal.alpha.openreserve.io:27017"
           - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
             value: "http://otellcoll-service:4318/v1/traces"

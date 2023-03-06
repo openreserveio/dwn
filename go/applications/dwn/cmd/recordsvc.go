@@ -2,38 +2,38 @@ package cmd
 
 import (
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
-	"github.com/openreserveio/dwn/go/applications/dwn/service/collsvc"
+	"github.com/openreserveio/dwn/go/applications/dwn/service/recordsvc"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
 
-// apiCmd represents the auth command
-var collsvcCmd = &cobra.Command{
-	Use:   "collsvc",
-	Short: "OpenReserve DWN Backend CollectionService",
-	Long:  `Backend gRPC Service for managing collections, schemas, and schema definitions`,
+// recordsvcCmd represents the recordsvcCmd command
+var recordsvcCmd = &cobra.Command{
+	Use:   "recordsvc",
+	Short: "OpenReserve DWN Backend RecordService",
+	Long:  `Backend gRPC Service for managing records, schemas, and schema definitions`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		log.Info("Observability")
 		ctx := cmd.Context()
-		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "Collection Service")
+		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "Record Service")
 		defer sd(ctx)
 
-		log.Info("Starting DWN Backend CollectionService")
+		log.Info("Starting DWN Backend RecordService")
 		config, err := configuration.Config()
 		if err != nil {
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
 		}
-		log.Error("Stopping API Service:  %v", collsvc.Start(ctx, config))
+		log.Error("Stopping Record Service:  %v", recordsvc.Start(ctx, config))
 
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(collsvcCmd)
+	rootCmd.AddCommand(recordsvcCmd)
 
 	// Here you will define your flags and configuration settings.
 
