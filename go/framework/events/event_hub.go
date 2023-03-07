@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/nats-io/nats.go"
 	"github.com/openreserveio/dwn/go/generated/events"
+	"github.com/openreserveio/dwn/go/log"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -55,7 +56,7 @@ func (eh *EventHub) RaiseCreateRecordEvent(recordId string) {
 		EventType: events.EventType_CREATE_RECORD,
 		RecordId:  recordId,
 	}
-	encodedEvent, _ := proto.Marshal(&event)
+	encodedEvent := eh.EncodeEventMessage(event)
 	eh.Publish(CreateRecordEventQueue, encodedEvent)
 
 }
@@ -71,7 +72,25 @@ func (eh *EventHub) RaiseNotifyCallbackHTTP(schemaUrl string, recordId string, p
 		ProtocolVersion:        protocolVersion,
 		EventDiscretionaryData: discData,
 	}
-	encodedEvent, _ := proto.Marshal(&event)
-	eh.Publish(NotifyCallbackHTTPQueue, encodedEvent)
+	encodedEvent := eh.EncodeEventMessage(event)
+	eh.Publish(NotifyCallbackQueue, encodedEvent)
+
+}
+
+func (eh *EventHub) EncodeEventMessage(eventMessage events.Event) []byte {
+	encodedEvent, _ := proto.Marshal(&eventMessage)
+	return encodedEvent
+}
+
+func (eh *EventHub) DecodeEventMessage(encodedMessage []byte) *events.Event {
+
+	var eventMessage events.Event
+	err := proto.Unmarshal(encodedMessage, &eventMessage)
+	if err != nil {
+		log.Error("Error while unmarshalling event message:  %v", err)
+		return nil
+	}
+
+	return &eventMessage
 
 }
