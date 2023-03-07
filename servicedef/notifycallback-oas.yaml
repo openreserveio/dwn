@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Notification Callback Type Definitions
+  description: |-
+    This is a type definition document in Open API Spec format to describe the various JSON object types to expect when you get an HTTP callback notification from the DWN
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: mzero@openreserve.io
+  license:
+    name: Apache 2.0
+    url: https://github.com/openreserveio/dwn/blob/main/LICENSE
+  version: 0.0.8
+paths:
+  /:
+    post:
+      summary: Notify of Record Creation
+      description: This is a sample request for a record creation notify callback
+      operationId: NotifyCallbackRecordCreation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordNotification'
+        required: true
+      responses:
+        '200':
+          description: Notification received
+components:
+  schemas:
+    CreateRecordNotification:
+      type: object
+      properties:
+        recordId:
+          type: string
+          description: The Record ID created in the DWN
+          example: "baccldksjldkfjdlfkjsdifsdoijsldijfsldkfjlsd"
+        schema:
+          type: string
+          description: The schema URI used to describe the record data
+          example: "https://openreserve.io/schemas/test.json"
+        protocol:
+          type: string
+          description: The DWN Protocol this message is following
+          example: "https://openreserve.io/protocols/test.json"
+        protocolVersion:
+          type: string
+          description: The version of the DWN Protocol this message is following
+          example: "1.0.0"
+    

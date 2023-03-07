@@ -193,12 +193,29 @@ func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, req
 	_, sp := observability.Tracer.Start(ctx, "NotifyHooksOfRecordEvent")
 	defer sp.End()
 
-	//TODO implement me
-	log.Info("NotifyHooksOfRecordEvent called")
-	response := services.NotifyHooksOfRecordEventResponse{
-		Status: &services.CommonStatus{Status: services.Status_OK},
+	response := services.NotifyHooksOfRecordEventResponse{}
+
+	// Get Hooks for Record
+	sp.AddEvent("Get hooks to see if there are notifications to send")
+	if request.RecordId == "" {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Record ID is required for notifications"}
+		return &response, nil
 	}
 
+	hookRecord, latestEntry, err := hookService.HookStore.GetHookRecord(ctx, request.RecordId)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	if hookRecord == nil || latestEntry == nil {
+		response.Status = &services.CommonStatus{Status: services.Status_OK}
+		return &response, nil
+	}
+
+	hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
 	return &response, nil
 
 }

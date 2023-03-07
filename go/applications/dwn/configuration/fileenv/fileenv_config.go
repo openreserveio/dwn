@@ -21,6 +21,8 @@ const (
 	KEY_HOOKSVC_DOCDB_CONNECTION_URI = "hooksvc.docdbConnectionURI"
 
 	KEY_QUEUE_SERVICE_CONNECTION_URI = "queueservice.connectionURI"
+
+	KEY_NOTIFY_CALLBACK_QUEUE_NAME = "queues.notifyCallback"
 )
 
 type FileEnvironmentConfiguration struct {
@@ -92,4 +94,8 @@ func (config FileEnvironmentConfiguration) GetHookServiceExternalPort() int {
 
 func (config FileEnvironmentConfiguration) GetQueueServiceConnectionURI() string {
 	return viper.GetString(KEY_QUEUE_SERVICE_CONNECTION_URI)
+}
+
+func (config FileEnvironmentConfiguration) GetNotifyCallbackQueueName() string {
+	return viper.GetString(KEY_NOTIFY_CALLBACK_QUEUE_NAME)
 }
