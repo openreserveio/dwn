@@ -10,6 +10,21 @@ info:
     name: Apache 2.0
     url: https://github.com/openreserveio/dwn/blob/main/LICENSE
   version: 0.0.8
+paths:
+  /:
+    post:
+      summary: Notify of Record Creation
+      description: This is a sample request for a record creation notify callback
+      operationId: NotifyCallbackRecordCreation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordNotification'
+        required: true
+      responses:
+        '200':
+          description: Notification received
 components:
   schemas:
     CreateRecordNotification:

@@ -8,7 +8,9 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -17,6 +19,24 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 )
+
+// CreateRecordNotification defines model for CreateRecordNotification.
+type CreateRecordNotification struct {
+	// Protocol The DWN Protocol this message is following
+	Protocol *string `json:"protocol,omitempty"`
+
+	// ProtocolVersion The version of the DWN Protocol this message is following
+	ProtocolVersion *string `json:"protocolVersion,omitempty"`
+
+	// RecordId The Record ID created in the DWN
+	RecordId *string `json:"recordId,omitempty"`
+
+	// Schema The schema URI used to describe the record data
+	Schema *string `json:"schema,omitempty"`
+}
+
+// NotifyCallbackRecordCreationJSONRequestBody defines body for NotifyCallbackRecordCreation for application/json ContentType.
+type NotifyCallbackRecordCreationJSONRequestBody = CreateRecordNotification
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -91,6 +111,74 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// NotifyCallbackRecordCreation request with any body
+	NotifyCallbackRecordCreationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	NotifyCallbackRecordCreation(ctx context.Context, body NotifyCallbackRecordCreationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) NotifyCallbackRecordCreationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifyCallbackRecordCreationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) NotifyCallbackRecordCreation(ctx context.Context, body NotifyCallbackRecordCreationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewNotifyCallbackRecordCreationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NewNotifyCallbackRecordCreationRequest calls the generic NotifyCallbackRecordCreation builder with application/json body
+func NewNotifyCallbackRecordCreationRequest(server string, body NotifyCallbackRecordCreationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewNotifyCallbackRecordCreationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewNotifyCallbackRecordCreationRequestWithBody generates requests for NotifyCallbackRecordCreation with any type of body
+func NewNotifyCallbackRecordCreationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
 }
 
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
@@ -136,10 +224,71 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// NotifyCallbackRecordCreation request with any body
+	NotifyCallbackRecordCreationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyCallbackRecordCreationResponse, error)
+
+	NotifyCallbackRecordCreationWithResponse(ctx context.Context, body NotifyCallbackRecordCreationJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyCallbackRecordCreationResponse, error)
+}
+
+type NotifyCallbackRecordCreationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r NotifyCallbackRecordCreationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r NotifyCallbackRecordCreationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// NotifyCallbackRecordCreationWithBodyWithResponse request with arbitrary body returning *NotifyCallbackRecordCreationResponse
+func (c *ClientWithResponses) NotifyCallbackRecordCreationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*NotifyCallbackRecordCreationResponse, error) {
+	rsp, err := c.NotifyCallbackRecordCreationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotifyCallbackRecordCreationResponse(rsp)
+}
+
+func (c *ClientWithResponses) NotifyCallbackRecordCreationWithResponse(ctx context.Context, body NotifyCallbackRecordCreationJSONRequestBody, reqEditors ...RequestEditorFn) (*NotifyCallbackRecordCreationResponse, error) {
+	rsp, err := c.NotifyCallbackRecordCreation(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseNotifyCallbackRecordCreationResponse(rsp)
+}
+
+// ParseNotifyCallbackRecordCreationResponse parses an HTTP response from a NotifyCallbackRecordCreationWithResponse call
+func ParseNotifyCallbackRecordCreationResponse(rsp *http.Response) (*NotifyCallbackRecordCreationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &NotifyCallbackRecordCreationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Notify of Record Creation
+	// (POST /)
+	NotifyCallbackRecordCreation(c *gin.Context)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -150,6 +299,16 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(c *gin.Context)
+
+// NotifyCallbackRecordCreation operation middleware
+func (siw *ServerInterfaceWrapper) NotifyCallbackRecordCreation(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.NotifyCallbackRecordCreation(c)
+}
 
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
@@ -166,18 +325,40 @@ func RegisterHandlers(router *gin.Engine, si ServerInterface) *gin.Engine {
 // RegisterHandlersWithOptions creates http.Handler with additional options
 func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options GinServerOptions) *gin.Engine {
 
+	errorHandler := options.ErrorHandler
+
+	if errorHandler == nil {
+		errorHandler = func(c *gin.Context, err error, statusCode int) {
+			c.JSON(statusCode, gin.H{"msg": err.Error()})
+		}
+	}
+
+	wrapper := ServerInterfaceWrapper{
+		Handler:            si,
+		HandlerMiddlewares: options.Middlewares,
+		ErrorHandler:       errorHandler,
+	}
+
+	router.POST(options.BaseURL+"/", wrapper.NotifyCallbackRecordCreation)
+
 	return router
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/0yQTWsbMRCG/8ow52VlmkvRqSEJNKXYARt61sqz3mlXM0KatZsG//eiTRt808fLM/M+",
-	"bxg1ZRUSq+jfrh2yjIq+vYuFaO1IKfCMHtMfKvpFM0mhSuVMPSteOzxSjYWzsQp6PExcgSsEsNdMcKSR",
-	"hdsfHDUuicSABXaZBO5fnmGfKcKoJQUDU3hnDQQ2EZxDYV0qfNvvtqDDT4q2QmtL0u/c7peJBF51gRMZ",
-	"BIGvh8MLxDDPQ4i/QNR45BjW+WPRtHIff2yxw5kjSaXWUEIi9HifQ5wIPvUb7HAprfNklqt37sQ2LUMf",
-	"NbkbAazueBE3zDq4FFjc9+eHp+3+qVkxKqnuxj2VM0f6h/LO1Us4naj0rG6NOOzQ2OYW2d6u+/C/xKF5",
-	"fPzwWLHDM5X6rnvTb/rPbV5bK2RGj3f9pr/DDnOwqaKXZZ6vfwMAAP//0VjeXOkBAAA=",
+	"H4sIAAAAAAAC/5xUX2/bNhD/Kgduj4bkJS+DnpY5AeZhcILYa59p8mTRpngsj7LjBv7uBSlLdRq3KPpG",
+	"8ai735+7exWKWk8OXWRRvQpWDbYyH2cBZcRnVBT0gqKpjZLRkEsxH8hjiAb5/BVJkU1njayC8f1DsWoQ",
+	"7j8u4On8AmJjGFpklhsEw1CTtXQwbiMmAl9k6y2KSjQxeq7Kkjy6gIxhj4WhcqjDZUSOxZbJiYmIR5/+",
+	"4RhSmtNkhPMBA5/xvke174NANcRfA/lHMS2m1+qHLNlcXy/cCwrze1BZYA3GDRDe5F9Lpaze8dbqXb3V",
+	"tt5tWZuaNZktW222NeeIZX0NRe/kdQx9DP5/nkPHqCES9I/WmKH0DEDLKH/Gl3PT/MiV03hD6y2qKE7p",
+	"yriaEkJFLkoV0xFbaayoRPsZA/31tlCi9S0Zw8khCSk7aKyNMykGmlTXootJ3UePDu6e5rD0qKCm0Mr4",
+	"jvNeBkMdw7/LxwX0IHNSTi/xxafvQ4MOjtTBBiNIB/+sVk+gpLVrqXbgLoYE6kDtha3WKHSMiaGTbdLh",
+	"zkvVINzkHuqCvZB3Y2LTrQtF7aXShkp9cOXa0rpspXHlf/PZw2L5kFSJGFp+rJcY9kYNTlVlyQe52WBI",
+	"JuUnZXLGxGzm5UzDbCCxSjrejzqymIj9MEdiWkyLP1O9BEt6IypxW0yLWzERXsYmL4MybwTieK31Brc4",
+	"dxQE/NQhx2QJyKHr8lgkTFnP46ivyGVDjqXh6gkcB+T9XM3OP4s0hjn536SPQ4+hy6ik9/ZMvMztOi6+",
+	"dPo9YC0q8Vv5dTOOHf7dnZjbOVU0AbWoYugwX7Anx/2WvJlO30vyxoSACs0edR4X7tpWhuPIM22q8+4Y",
+	"SZ5Op9OXAAAA//8YJQHSwgUAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
