@@ -33,6 +33,9 @@ type Configuration interface {
 
 	// Queue Service
 	GetQueueServiceConnectionURI() string
+
+	// Queue Names
+	GetNotifyCallbackQueueName() string
 }
 
 func Config() (Configuration, error) {

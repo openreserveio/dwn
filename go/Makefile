@@ -1,6 +1,10 @@
 SEMVER := 0.0.8-alpha
 PLATFORMS := linux/amd64,linux/arm64
 
+generate-oapi:
+	oapi-codegen -old-config-style -generate gin,types,client,spec -package notifycallback ../servicedef/notifycallback-oas.yaml >generated/oas/notifycallback/notifycallback.go
+
+
 generate-protobuf:
 	protoc --proto_path=../servicedef --go_out=generated/services/ --go_opt=paths=source_relative --go-grpc_out=generated/services/ --go-grpc_opt=paths=source_relative ../servicedef/backend_services.proto
 	protoc --proto_path=../servicedef --go_out=generated/events/ --go_opt=paths=source_relative --go-grpc_out=generated/events/ --go-grpc_opt=paths=source_relative ../servicedef/events.proto
