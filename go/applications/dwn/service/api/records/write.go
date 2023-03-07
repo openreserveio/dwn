@@ -105,6 +105,9 @@ func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceCli
 		return messageResultObj
 	}
 
+	// Notify Others
+	// TODO: Insert notification logic
+
 	existingOrNewId := storeResp.RecordId
 	messageResultObj.Status = model.ResponseStatus{Code: http.StatusOK}
 	messageResultObj.Entries = append(messageResultObj.Entries, model.MessageResultEntry{Result: []byte(existingOrNewId)})

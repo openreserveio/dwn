@@ -1,6 +1,10 @@
 SEMVER := 0.0.8-alpha
 PLATFORMS := linux/amd64,linux/arm64
 
+generate-oapi:
+	oapi-codegen -old-config-style -generate gin,types,client,spec -package notifycallback ../servicedef/notifycallback-oas.yaml >generated/oas/notifycallback/notifycallback.go
+
+
 generate-protobuf:
 	protoc --proto_path=../servicedef --go_out=generated/services/ --go_opt=paths=source_relative --go-grpc_out=generated/services/ --go-grpc_opt=paths=source_relative ../servicedef/backend_services.proto
 	protoc --proto_path=../servicedef --go_out=generated/events/ --go_opt=paths=source_relative --go-grpc_out=generated/events/ --go-grpc_opt=paths=source_relative ../servicedef/events.proto
@@ -23,7 +27,10 @@ build-docker-keysvc:
 build-docker-hooksvc:
 	docker build -f applications/pkg/docker/Dockerfile-hooksvc -t openreserveio/hooksvc .
 
-build-docker-all: build-docker-api build-docker-recordsvc build-docker-keysvc build-docker-hooksvc
+build-docker-notificationsvc:
+	docker build -f applications/pkg/docker/Dockerfile-notificationsvc -t openreserveio/notificationsvc .
+
+build-docker-all: build-docker-api build-docker-recordsvc build-docker-keysvc build-docker-hooksvc build-docker-notificationsvc
 
 tag-docker-github-packages: build-docker-all
 	docker tag openreserveio/api:latest ghcr.io/openreserveio/api:latest
@@ -34,6 +41,8 @@ tag-docker-github-packages: build-docker-all
 	docker tag openreserveio/keysvc:latest ghcr.io/openreserveio/keysvc:$(SEMVER)
 	docker tag openreserveio/hooksvc:latest ghcr.io/openreserveio/hooksvc:latest
 	docker tag openreserveio/hooksvc:latest ghcr.io/openreserveio/hooksvc:$(SEMVER)
+	docker tag openreserveio/notificationsvc:latest ghcr.io/openreserveio/notificationsvc:latest
+	docker tag openreserveio/notificationsvc:latest ghcr.io/openreserveio/notificationsvc:$(SEMVER)
 
 
 push-docker-multiplatform:
@@ -43,6 +52,7 @@ push-docker-multiplatform:
 	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-recordsvc -t ghcr.io/openreserveio/recordsvc:latest -t ghcr.io/openreserveio/recordsvc:$(SEMVER) .
 	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-keysvc -t ghcr.io/openreserveio/keysvc:latest -t ghcr.io/openreserveio/keysvc:$(SEMVER) .
 	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-hooksvc -t ghcr.io/openreserveio/hooksvc:latest -t ghcr.io/openreserveio/hooksvc:$(SEMVER) .
+	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-notificationsvc -t ghcr.io/openreserveio/notificationsvc:latest -t ghcr.io/openreserveio/notificationsvc:$(SEMVER) .
 
 
 build-release-executables:

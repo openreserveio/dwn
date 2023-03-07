@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/nats-io/nats.go"
 	"github.com/openreserveio/dwn/go/generated/events"
+	"github.com/openreserveio/dwn/go/log"
 	"google.golang.org/protobuf/proto"
+	"strings"
 )
 
 type EventHub struct {
@@ -55,23 +57,55 @@ func (eh *EventHub) RaiseCreateRecordEvent(recordId string) {
 		EventType: events.EventType_CREATE_RECORD,
 		RecordId:  recordId,
 	}
-	encodedEvent, _ := proto.Marshal(&event)
+	encodedEvent := eh.EncodeEventMessage(event)
 	eh.Publish(CreateRecordEventQueue, encodedEvent)
 
 }
 
-func (eh *EventHub) RaiseNotifyCallbackHTTP(schemaUrl string, recordId string, protocol string, protocolVersion string, callbackUrl string) {
+func (eh *EventHub) RaiseNotifyCallbackEvent(schemaUrl string, recordId string, protocol string, protocolVersion string, callbackUrl string) {
 
 	discData := map[string]string{DISC_DATA_KEY_CALLBACK_URI: callbackUrl}
+
+	var eventType events.EventType
+	if strings.Contains(callbackUrl, "http") {
+		eventType = events.EventType_NOTIFY_CALLBACK_HTTP
+	} else if strings.Contains(callbackUrl, "grpc") {
+		eventType = events.EventType_NOTIFY_CALLBACK_GRPC
+	} else if strings.Contains(callbackUrl, "apns") {
+		eventType = events.EventType_NOTIFY_CALLBACK_APNS
+	} else if strings.Contains(callbackUrl, "fcm") {
+		eventType = events.EventType_NOTIFY_CALLBACK_FCM
+	} else {
+		eventType = events.EventType_NOTIFY_CALLBACK_HTTP
+	}
+
 	event := events.Event{
-		EventType:              events.EventType_NOTIFY_CALLBACK_HTTP,
+		EventType:              eventType,
 		RecordId:               recordId,
 		Schema:                 schemaUrl,
 		Protocol:               protocol,
 		ProtocolVersion:        protocolVersion,
 		EventDiscretionaryData: discData,
 	}
-	encodedEvent, _ := proto.Marshal(&event)
-	eh.Publish(NotifyCallbackHTTPQueue, encodedEvent)
+	encodedEvent := eh.EncodeEventMessage(event)
+	eh.Publish(NotifyCallbackQueue, encodedEvent)
+
+}
+
+func (eh *EventHub) EncodeEventMessage(eventMessage events.Event) []byte {
+	encodedEvent, _ := proto.Marshal(&eventMessage)
+	return encodedEvent
+}
+
+func (eh *EventHub) DecodeEventMessage(encodedMessage []byte) *events.Event {
+
+	var eventMessage events.Event
+	err := proto.Unmarshal(encodedMessage, &eventMessage)
+	if err != nil {
+		log.Error("Error while unmarshalling event message:  %v", err)
+		return nil
+	}
+
+	return &eventMessage
 
 }
