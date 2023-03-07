@@ -27,6 +27,9 @@
   * WebSocket Message Send
   * APNS/FCM iPhone/Android
 * Cache service (?TBD) for caching of signer info, possibly
-* DataRecordService for management of records, data schema definitions -> docdb
+* RecordService for management of records, data schema definitions -> docdb
 * KeyService for message authentication, message signing, key management -> docdb
+* NotificationService for delivering hook events
+* API Service to export the standard [DWN HTTP interfaces](https://identity.foundation/decentralized-web-node/spec/#interfaces) to clients, as well as support Open Reserve's extensions.
+* Relay Service to assist clients with DWN message relaying (to keep sender IP info confidential, for example)
 
