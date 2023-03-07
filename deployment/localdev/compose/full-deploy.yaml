@@ -162,6 +162,18 @@ services:
     
 
   # DWN Components
+  notificationsvc:
+    image: "openreserveio/notificationsvc:latest"
+    build:
+      context: "../../../go"
+      dockerfile: "applications/pkg/docker/Dockerfile-notificationsvc"
+      tags:
+        - "openreserveio/notificationsvc"
+    environment:
+      - "DWN_QUEUESERVICE.CONNECTIONURI=nats://eventsqueue:4222"
+      - "DWN_QUEUES.NOTIFYCALLBACK=NotifyCallbackQueue"
+      - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
+      - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
   hooksvc:
     image: "openreserveio/hooksvc:latest"
     build:
