@@ -3,13 +3,14 @@ package records
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
 	"net/http"
 )
 
-func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
+func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceClient, hookServiceClient services.HookServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
 	ctx, childSpan := observability.Tracer.Start(ctx, "RecordsWrite")
@@ -105,16 +106,24 @@ func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceCli
 		return messageResultObj
 	}
 
-	// Notify Others
-	// TODO: Insert notification logic
-	notify := services.NotifyHooksOfRecordEventRequest{
-		RecordId:        storeResp.RecordId,
-		Protocol:        message.Descriptor.Protocol,
-		ProtocolVersion: message.Descriptor.ProtocolVersion,
-		Schema:          message.Descriptor.Schema,
-		RecordEventType: services.RecordEventType_RECORD_CHANGED,
+	// Only notify others if this is an initial entry.
+	// otherwise, wait for the commit to do a RECORD_CHANGED or DELETED
+	childSpan.AddEvent(fmt.Sprintf("Is this an initial entry?  %v", storeResp.InitialEntry))
+	if storeResp.InitialEntry {
+
+		// Notify Others
+		childSpan.AddEvent("INITIAL ENTRY.  Notify others of a RECORD_CREATED event!")
+		notify := services.NotifyHooksOfRecordEventRequest{
+			RecordId:        storeResp.RecordId,
+			Protocol:        message.Descriptor.Protocol,
+			ProtocolVersion: message.Descriptor.ProtocolVersion,
+			Schema:          message.Descriptor.Schema,
+			RecordEventType: services.RecordEventType_RECORD_CREATED,
+		}
+		hookServiceClient.NotifyHooksOfRecordEvent(ctx, &notify)
+
 	}
-	
+
 	existingOrNewId := storeResp.RecordId
 	messageResultObj.Status = model.ResponseStatus{Code: http.StatusOK}
 	messageResultObj.Entries = append(messageResultObj.Entries, model.MessageResultEntry{Result: []byte(existingOrNewId)})

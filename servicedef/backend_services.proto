@@ -37,6 +37,7 @@ message CommonStatus {
     CommonStatus status = 1;
     string recordId = 2;
     string ownerDID = 3;
+    bool initialEntry = 4;
  }
 
  message FindRecordRequest {

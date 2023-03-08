@@ -96,7 +96,7 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 
 	case model.METHOD_RECORDS_WRITE:
 		childSpan.AddEvent("Start Records Write")
-		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, message)
+		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, fr.HookServiceClient, message)
 
 	case model.METHOD_RECORDS_COMMIT:
 		childSpan.AddEvent("Start Records Commit")

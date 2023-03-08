@@ -23,9 +23,10 @@ const (
 )
 
 type StoreRecordResult struct {
-	Status   string
-	RecordID string
-	Error    error
+	Status       string
+	RecordID     string
+	InitialEntry bool
+	Error        error
 }
 
 func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) (*StoreRecordResult, error) {
@@ -40,7 +41,7 @@ func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMes
 	switch recordMessage.Descriptor.Method {
 
 	case model.METHOD_RECORDS_WRITE:
-		err := recordWrite(ctx, recordStore, recordMessage)
+		initialEntry, err := recordWrite(ctx, recordStore, recordMessage)
 		if err != nil {
 			result.Status = "ERROR"
 			result.Error = err
@@ -48,6 +49,8 @@ func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMes
 		}
 		result.Status = "OK"
 		result.RecordID = recordMessage.RecordID
+		result.InitialEntry = initialEntry
+		sp.AddEvent(fmt.Sprintf("Initial Entry?  %v", initialEntry))
 
 	case model.METHOD_RECORDS_COMMIT:
 		err := recordCommit(ctx, recordStore, recordMessage)
@@ -58,6 +61,8 @@ func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMes
 		}
 		result.Status = "OK"
 		result.RecordID = recordMessage.RecordID
+		result.InitialEntry = false
+		sp.AddEvent(fmt.Sprintf("Initial Entry?  %v", false))
 
 	case model.METHOD_RECORDS_DELETE:
 
@@ -127,7 +132,7 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 
 }
 
-func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) error {
+func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) (bool, error) {
 
 	// tracing
 	ctx, sp := observability.Tracer.Start(ctx, "recordWrite")
@@ -150,13 +155,17 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 	// TODO:  Come back to this.  This should match
 	// if entryId == recordMessage.RecordID {
 	// For now:  If there is no parent ID, ASSUME first entry
+	sp.AddEvent("Is this the first entry?")
 	if recordMessage.Descriptor.ParentID == "" {
 
+		sp.AddEvent("THIS IS THE FIRST ENTRY")
 		// This is the first entry of the record.  Create it and return
 		// If there is an existing record id, there's a problem and return an error
+		// Let caller know this is an intial entry via boolean
 		existingRecord := recordStore.GetRecord(entryId)
 		if existingRecord != nil {
-			return errors.New(ERR_DUPLICATE_INITIAL_ENTRY)
+			sp.RecordError(errors.New(ERR_DUPLICATE_INITIAL_ENTRY))
+			return false, errors.New(ERR_DUPLICATE_INITIAL_ENTRY)
 		}
 
 		record := storage.Record{
@@ -174,8 +183,16 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 			Message:        *recordMessage,
 		}
 
+		sp.AddEvent("Creating record")
 		err := recordStore.CreateRecord(&record, &entry)
-		return err
+		if err != nil {
+			sp.RecordError(err)
+			return false, err
+		}
+
+		// This was an initial entry!
+		sp.AddEvent("CREATED AN INITIAL ENTRY")
+		return true, nil
 
 	} else {
 
@@ -188,19 +205,19 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 			// determine the entry’s position in the record’s lineage. If a parentId is present
 			// proceed with processing, else discard the record and cease processing.
 			// We dont have the parent.  Reject with err
-			return fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", recordMessage.Descriptor.ParentID)
+			return false, fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", recordMessage.Descriptor.ParentID)
 		}
 
 		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 		// inbound message. If any have been mutated, discard the message and cease processing.
 		initialMessageEntry := recordStore.GetMessageEntryByID(parentCollRec.InitialEntryID)
 		if initialMessageEntry == nil {
-			return errors.New("Unable to find an initial entry")
+			return false, errors.New("Unable to find an initial entry")
 		}
 		if initialMessageEntry.Descriptor.Protocol != recordMessage.Descriptor.Protocol ||
 			initialMessageEntry.Descriptor.ProtocolVersion != recordMessage.Descriptor.ProtocolVersion ||
 			initialMessageEntry.Descriptor.Schema != recordMessage.Descriptor.Schema {
-			return errors.New(ERR_MUTATE_UMMUTABLE_VALUE)
+			return false, errors.New(ERR_MUTATE_UMMUTABLE_VALUE)
 		}
 
 		// Retrieve the Latest Checkpoint Entry, which will be either the Initial Entry or the latest CollectionsDelete,
@@ -209,11 +226,11 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// If the values match, proceed with processing, if the values do not match discard the message and cease processing.
 		latestCheckpointEntry := recordStore.GetMessageEntryByID(parentCollRec.LatestCheckpointEntryID)
 		if latestCheckpointEntry == nil {
-			return errors.New("Unable to find the latest checkpoint entry")
+			return false, errors.New("Unable to find the latest checkpoint entry")
 		}
 
 		if recordMessage.Descriptor.ParentID != latestCheckpointEntry.RecordID {
-			return errors.New("The parent ID of the inbound message must match the latest checkpoint record ID.")
+			return false, errors.New("The parent ID of the inbound message must match the latest checkpoint record ID.")
 		}
 
 		// If an existing CollectionsWrite entry linked to the Latest Checkpoint Entry IS NOT present and
@@ -231,13 +248,13 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 
 			err := recordStore.AddMessageEntry(&latestEntry)
 			if err != nil {
-				return err
+				return false, err
 			}
 
 			parentCollRec.LatestEntryID = latestEntry.MessageEntryID
 			err = recordStore.SaveRecord(parentCollRec)
 			if err != nil {
-				return err
+				return false, err
 			}
 
 		}
@@ -264,7 +281,7 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 
 				err := recordStore.AddMessageEntry(&latestEntry)
 				if err != nil {
-					return err
+					return false, err
 				}
 
 				// I don't believe ww want to delete the message entry
@@ -276,7 +293,7 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 				parentCollRec.LatestCheckpointEntryID = latestEntry.MessageEntryID
 				err = recordStore.SaveRecord(parentCollRec)
 				if err != nil {
-					return err
+					return false, err
 				}
 
 			}
@@ -284,6 +301,6 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		}
 	}
 
-	return nil
+	return false, nil
 
 }

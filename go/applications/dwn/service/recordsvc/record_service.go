@@ -68,6 +68,7 @@ func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreR
 
 		response.Status = &services.CommonStatus{Status: services.Status_OK}
 		response.RecordId = result.RecordID
+		response.InitialEntry = result.InitialEntry
 
 	}
 
