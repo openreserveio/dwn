@@ -3,6 +3,7 @@ package docdbstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
@@ -249,6 +250,7 @@ func (store *HookDocumentDBStore) FindHookRecordsForDataRecord(ctx context.Conte
 	defer sp.End()
 
 	// set up filter for mongodb
+	sp.AddEvent(fmt.Sprintf("Setting Up Filter for Data Record ID:  %s", dataRecordId))
 	filter := bson.D{{"filter_data_record_id", dataRecordId}}
 	findCur, err := store.DB.Collection(HOOK_RECORD_COLLECTION).Find(ctx, filter)
 	if err != nil {
@@ -260,18 +262,22 @@ func (store *HookDocumentDBStore) FindHookRecordsForDataRecord(ctx context.Conte
 
 		if findCur.Err() != mongo.ErrNoDocuments {
 			log.Error("Error finding hook records by data record ID:  %v", findCur.Err())
+			sp.RecordError(findCur.Err())
 			return nil, findCur.Err()
 		}
 
 		log.Debug("No records found")
+		sp.AddEvent("No Hook Records Found, returning nil,nil")
 		return nil, nil
 
 	}
 
+	sp.AddEvent("We have hook records!")
 	res := make(map[*storage.HookRecord]*storage.HookConfigurationEntry)
 	for findCur.Next(ctx) {
 		var hookRecord storage.HookRecord
 		findCur.Decode(&hookRecord)
+		sp.AddEvent(fmt.Sprintf("Found Hook Record:  %s", hookRecord.HookRecordID))
 
 		// Get the latest entry
 		latestEntry := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).FindOne(ctx, bson.D{{HOOK_CONFIG_ENTRY_ID_FIELD_NAME, hookRecord.LatestHookConfigurationEntryID}})

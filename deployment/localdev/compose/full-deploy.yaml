@@ -174,6 +174,9 @@ services:
       - "DWN_QUEUES.NOTIFYCALLBACK=NotifyCallbackQueue"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
+    depends_on:
+      - eventsqueue
+      - docdb
   hooksvc:
     image: "openreserveio/hooksvc:latest"
     build:
@@ -189,6 +192,9 @@ services:
       - "DWN_QUEUESERVICE.CONNECTIONURI=nats://eventsqueue:4222"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
+    depends_on:
+      - eventsqueue
+      - docdb
   recordsvc:
     image: "openreserveio/recordsvc:latest"
     build:
@@ -203,6 +209,9 @@ services:
       - "DWN_RECORDSVC.LISTENPORT=9001"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
+    depends_on:
+      - eventsqueue
+      - docdb
   api:
     image: "openreserveio/api:latest"
     build:
@@ -221,4 +230,8 @@ services:
       - "OPEN_TELEMETRY_COLLECTOR_URL=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4318/v1/traces"
       - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4318/v1/metrics"
+    depends_on:
+      - recordsvc
+      - hooksvc
+      - notificationsvc
   

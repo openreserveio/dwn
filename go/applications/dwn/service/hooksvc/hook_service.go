@@ -3,6 +3,7 @@ package hooksvc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/framework/events"
 	"github.com/openreserveio/dwn/go/generated/services"
@@ -244,18 +245,22 @@ func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, req
 		return &response, nil
 	}
 
-	hookRecord, latestEntry, err := hookService.HookStore.GetHookRecord(ctx, request.RecordId)
+	hookRecords, err := hookService.HookStore.FindHookRecordsForDataRecord(ctx, request.RecordId)
 	if err != nil {
 		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 		return &response, nil
 	}
 
-	if hookRecord == nil || latestEntry == nil {
+	if hookRecords == nil || len(hookRecords) == 0 {
+		sp.AddEvent("No Hook Records")
 		response.Status = &services.CommonStatus{Status: services.Status_OK}
 		return &response, nil
 	}
 
-	hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+	for _, latestEntry := range hookRecords {
+		sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntry.Descriptor.URI))
+		hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+	}
 
 	response.Status = &services.CommonStatus{Status: services.Status_OK}
 	return &response, nil
