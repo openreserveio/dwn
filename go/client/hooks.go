@@ -13,7 +13,7 @@ import (
 
 func (client *DWNClient) SaveHook(schemaUri string, dataRecordId string, callbackUri string, requestor *Identity) (string, error) {
 
-	log.Info("Saving hook for schema %s, data record %s, callback %s", schemaUri, dataRecordId, callbackUri)
+	log.Debug("Saving hook for schema %s, data record %s, callback %s", schemaUri, dataRecordId, callbackUri)
 	descriptor := model.Descriptor{
 		Method:          model.METHOD_HOOKS_WRITE,
 		ParentID:        "",

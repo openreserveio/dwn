@@ -127,6 +127,15 @@ message UpdateHookResponse {
    CommonStatus status = 1;
 }
 
+message GetHookByRecordIdRequest {
+   string recordId = 1;
+}
+
+message GetHookByRecordIdResponse {
+   CommonStatus status = 1;
+   HookDefinition hookDefinition = 2;
+}
+
 message GetHooksForRecordRequest {
    string recordId = 1;
    string protocol = 2;
@@ -161,6 +170,7 @@ message NotifyHooksOfRecordEventResponse {
  service HookService {
    rpc RegisterHook(RegisterHookRequest) returns (RegisterHookResponse) {}
    rpc UpdateHook(UpdateHookRequest) returns (UpdateHookResponse) {}
+   rpc GetHookByRecordId(GetHookByRecordIdRequest) returns (GetHookByRecordIdResponse) {}
    rpc GetHooksForRecord(GetHooksForRecordRequest) returns (GetHooksForRecordResponse) {}
    rpc NotifyHooksOfRecordEvent(NotifyHooksOfRecordEventRequest) returns (NotifyHooksOfRecordEventResponse) {}
  }

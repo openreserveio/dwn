@@ -147,6 +147,48 @@ func (hookService HookService) UpdateHook(ctx context.Context, request *services
 	return &response, nil
 }
 
+func (hookService HookService) GetHookByRecordId(ctx context.Context, request *services.GetHookByRecordIdRequest) (*services.GetHookByRecordIdResponse, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
+	defer sp.End()
+
+	response := services.GetHookByRecordIdResponse{}
+
+	sp.AddEvent("Get hook from store")
+	if request.RecordId == "" {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Hook Record ID is required"}
+		return &response, nil
+	}
+
+	hookRecord, latestEntry, err := hookService.HookStore.GetHookRecord(ctx, request.RecordId)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	if hookRecord == nil || latestEntry == nil {
+		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
+		return &response, nil
+	}
+
+	hookDef := services.HookDefinition{
+		HookId: hookRecord.HookRecordID,
+		Uri:    latestEntry.Message.Descriptor.URI,
+	}
+	if strings.Contains(hookDef.Uri, "http") {
+		hookDef.HookChannel = services.HookDefinition_HTTP_CALLBACK
+	} else if strings.Contains(hookDef.Uri, "grpc") {
+		hookDef.HookChannel = services.HookDefinition_GRPC_CALLBACK
+	}
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+	response.HookDefinition = &hookDef
+
+	return &response, nil
+
+}
+
 func (hookService HookService) GetHooksForRecord(ctx context.Context, request *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
 	// tracing
 	_, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")

@@ -164,6 +164,7 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 	hookRecord.InitialHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
 	hookRecord.LatestHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
 	hookRecord.CreatorDID = initialConfiguration.Processing.AuthorDID
+	hookRecord.FilterDataRecordID = initialConfiguration.Descriptor.Filter.RecordID
 	_, err = store.DB.Collection(HOOK_RECORD_COLLECTION).InsertOne(ctx, hookRecord)
 	if err != nil {
 		return err
@@ -239,4 +240,58 @@ func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookReco
 
 	return nil
 
+}
+
+func (store *HookDocumentDBStore) FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*storage.HookRecord]*storage.HookConfigurationEntry, error) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(ctx, "hook_store.FindHookRecordsForDataRecord")
+	defer sp.End()
+
+	// set up filter for mongodb
+	filter := bson.D{{"filter_data_record_id", dataRecordId}}
+	findCur, err := store.DB.Collection(HOOK_RECORD_COLLECTION).Find(ctx, filter)
+	if err != nil {
+		log.Error("Error while looking for hook records for data record:  %v", err)
+		sp.RecordError(err)
+		return nil, err
+	}
+	if findCur.Err() != nil {
+
+		if findCur.Err() != mongo.ErrNoDocuments {
+			log.Error("Error finding hook records by data record ID:  %v", findCur.Err())
+			return nil, findCur.Err()
+		}
+
+		log.Debug("No records found")
+		return nil, nil
+
+	}
+
+	res := make(map[*storage.HookRecord]*storage.HookConfigurationEntry)
+	for findCur.Next(ctx) {
+		var hookRecord storage.HookRecord
+		findCur.Decode(&hookRecord)
+
+		// Get the latest entry
+		latestEntry := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).FindOne(ctx, bson.D{{HOOK_CONFIG_ENTRY_ID_FIELD_NAME, hookRecord.LatestHookConfigurationEntryID}})
+		if findCur.Err() != nil {
+
+			if findCur.Err() != mongo.ErrNoDocuments {
+				log.Error("Error finding hook configuration entries by latest entry ID:  %v", findCur.Err())
+				return nil, findCur.Err()
+			}
+
+			log.Debug("No records found")
+			return nil, nil
+
+		}
+
+		var latestConfigEntry storage.HookConfigurationEntry
+		latestEntry.Decode(&latestConfigEntry)
+
+		res[&hookRecord] = &latestConfigEntry
+	}
+
+	return res, nil
 }

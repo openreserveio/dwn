@@ -13,6 +13,8 @@ type HookStore interface {
 	CreateHookRecord(ctx context.Context, hookRecord *HookRecord, initialConfiguration *HookConfigurationEntry) error
 	UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *HookConfigurationEntry) error
 	DeleteHookRecord(ctx context.Context, hookRecordId string) error
+
+	FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (*HookRecord, *HookConfigurationEntry, error)
 }
 
 type HookRecord struct {
@@ -21,6 +23,9 @@ type HookRecord struct {
 	CreatorDID                      string             `bson:"creator_did"`
 	InitialHookConfigurationEntryID string             `bson:"initial_hook_config_entry_id"`
 	LatestHookConfigurationEntryID  string             `bson:"latest_hook_config_entry_id"`
+
+	// For Indexing
+	FilterDataRecordID string `bson:"filter_data_record_id"`
 }
 
 type HookConfigurationEntry struct {
