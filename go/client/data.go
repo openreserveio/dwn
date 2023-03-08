@@ -69,7 +69,7 @@ func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIde
 
 }
 
-func (client *DWNClient) SaveData(recordId string, schemaUrl string, data []byte, dataFormat string, dataAuthor *Identity, dataRecipient *Identity) (string, error) {
+func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat string, dataAuthor *Identity, dataRecipient *Identity) (string, error) {
 
 	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
 
@@ -77,7 +77,7 @@ func (client *DWNClient) SaveData(recordId string, schemaUrl string, data []byte
 		Method:          model.METHOD_RECORDS_WRITE,
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
-		ParentID:        recordId,
+		ParentID:        "",
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 		Schema:          schemaUrl,
@@ -95,10 +95,10 @@ func (client *DWNClient) SaveData(recordId string, schemaUrl string, data []byte
 
 	descriptorCID := model.CreateDescriptorCID(descriptor)
 	processingCID := model.CreateProcessingCID(processing)
-	newRecordId := model.CreateRecordCID(descriptorCID, processingCID)
+	recordId := model.CreateRecordCID(descriptorCID, processingCID)
 
 	message := model.Message{
-		RecordID:   newRecordId,
+		RecordID:   recordId,
 		ContextID:  "",
 		Data:       dataEncoded,
 		Processing: processing,
@@ -134,7 +134,7 @@ func (client *DWNClient) SaveData(recordId string, schemaUrl string, data []byte
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, data []byte, dataFormat string, dataUpdater *Identity) error {
+func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) error {
 
 	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
 
@@ -142,7 +142,7 @@ func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, 
 		Method:          model.METHOD_RECORDS_WRITE,
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
-		ParentID:        primaryIdentifier,
+		ParentID:        parentRecordId,
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 		Schema:          schemaUrl,
@@ -159,7 +159,7 @@ func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, 
 	}
 
 	message := model.Message{
-		RecordID:   primaryIdentifier,
+		RecordID:   parentRecordId,
 		ContextID:  "",
 		Data:       dataEncoded,
 		Processing: processing,

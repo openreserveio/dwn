@@ -49,6 +49,13 @@ var _ = Describe("WriteHook", func() {
 				println(fmt.Sprintf("Hook ID:  %s", hookId))
 			})
 
+			It("Should create a callback if we update the record", func() {
+
+				err := dwnClient.UpdateData(TEST_SCHEMA, recordId, []byte("YAAAAAAAAS"), client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity)
+				Expect(err).To(BeNil())
+
+			})
+
 		})
 
 	})
