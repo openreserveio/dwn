@@ -24,6 +24,12 @@ func (client *DWNClient) SaveHook(schemaUri string, dataRecordId string, callbac
 		Published:       false,
 		DateCreated:     time.Now(),
 		DatePublished:   nil,
+
+		// Filter for the data record ID
+		Filter: model.DescriptorFilter{
+			Schema:   schemaUri,
+			RecordID: dataRecordId,
+		},
 	}
 
 	processing := model.MessageProcessing{
@@ -33,7 +39,7 @@ func (client *DWNClient) SaveHook(schemaUri string, dataRecordId string, callbac
 	}
 
 	message := model.Message{
-		RecordID:   dataRecordId,
+		RecordID:   uuid.NewString(),
 		ContextID:  "",
 		Processing: processing,
 		Descriptor: descriptor,

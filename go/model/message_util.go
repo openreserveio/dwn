@@ -12,7 +12,9 @@ const (
 	METHOD_RECORDS_COMMIT = "RecordsCommit"
 	METHOD_RECORDS_DELETE = "RecordsDelete"
 
-	METHOD_HOOKS_WRITE = "HooksWrite"
+	METHOD_HOOKS_WRITE  = "HooksWrite"
+	METHOD_HOOKS_QUERY  = "HooksQuery"
+	METHOD_HOOKS_DELETE = "HooksDelete"
 )
 
 func CreateRecordsWriteMessage(authorDID string, recipientDID string, protocol string, protocolVersion string, schema string, dataFormat string, data []byte) *Message {

@@ -110,6 +110,14 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 		childSpan.AddEvent("Start Hooks Write")
 		messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
 
+	case model.METHOD_HOOKS_QUERY:
+		childSpan.AddEvent("Start Hooks Query")
+		messageResult = hooks.HooksQuery(ctx, fr.HookServiceClient, message)
+
+	case model.METHOD_HOOKS_DELETE:
+		childSpan.AddEvent("Start Hooks Delete")
+		messageResult = hooks.HooksDelete(ctx, fr.HookServiceClient, message)
+
 	default:
 		childSpan.AddEvent("Bad Method")
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}

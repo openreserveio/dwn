@@ -14,7 +14,7 @@ type HookStore interface {
 	UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *HookConfigurationEntry) error
 	DeleteHookRecord(ctx context.Context, hookRecordId string) error
 
-	FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (*HookRecord, *HookConfigurationEntry, error)
+	FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*HookRecord]*HookConfigurationEntry, error)
 }
 
 type HookRecord struct {
