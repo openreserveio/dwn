@@ -31,7 +31,7 @@ type StoreRecordResult struct {
 func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) (*StoreRecordResult, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "StoreRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "StoreRecord")
 	defer sp.End()
 
 	// Need to implement this message process flow per spec:
@@ -72,7 +72,7 @@ func StoreRecord(ctx context.Context, recordStore storage.RecordStore, recordMes
 func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCommitMessage *model.Message) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "recordCommit")
+	ctx, sp := observability.Tracer.Start(ctx, "recordCommit")
 	defer sp.End()
 
 	// Retrieve the currently active CollectionsWrite entry for the recordId specified in the inbound CollectionsCommit
@@ -130,7 +130,7 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "recordWrite")
+	ctx, sp := observability.Tracer.Start(ctx, "recordWrite")
 	defer sp.End()
 
 	/*

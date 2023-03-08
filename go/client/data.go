@@ -69,7 +69,7 @@ func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIde
 
 }
 
-func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat string, dataAuthor *Identity, dataRecipient *Identity) (string, error) {
+func (client *DWNClient) SaveData(recordId string, schemaUrl string, data []byte, dataFormat string, dataAuthor *Identity, dataRecipient *Identity) (string, error) {
 
 	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
 
@@ -77,7 +77,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 		Method:          model.METHOD_RECORDS_WRITE,
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
-		ParentID:        "",
+		ParentID:        recordId,
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 		Schema:          schemaUrl,
@@ -95,10 +95,10 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 	descriptorCID := model.CreateDescriptorCID(descriptor)
 	processingCID := model.CreateProcessingCID(processing)
-	recordId := model.CreateRecordCID(descriptorCID, processingCID)
+	newRecordId := model.CreateRecordCID(descriptorCID, processingCID)
 
 	message := model.Message{
-		RecordID:   recordId,
+		RecordID:   newRecordId,
 		ContextID:  "",
 		Data:       dataEncoded,
 		Processing: processing,

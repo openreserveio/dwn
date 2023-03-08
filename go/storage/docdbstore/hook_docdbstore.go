@@ -44,7 +44,7 @@ func CreateHookDocumentDBStore(connectionUri string) (*HookDocumentDBStore, erro
 func (store *HookDocumentDBStore) GetHookRecord(ctx context.Context, hookRecordId string) (*storage.HookRecord, *storage.HookConfigurationEntry, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecord")
 	defer sp.End()
 
 	// Get the Hook Record
@@ -95,7 +95,7 @@ func (store *HookDocumentDBStore) GetHookRecord(ctx context.Context, hookRecordI
 func (store *HookDocumentDBStore) GetHookRecordConfigurationEntries(ctx context.Context, hookRecordId string) (*storage.HookRecord, []*storage.HookConfigurationEntry, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecordConfigurationEntries")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecordConfigurationEntries")
 	defer sp.End()
 
 	// Get the Hook Record
@@ -151,7 +151,7 @@ func (store *HookDocumentDBStore) GetHookRecordConfigurationEntries(ctx context.
 func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookRecord *storage.HookRecord, initialConfiguration *storage.HookConfigurationEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.CreateHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.CreateHookRecord")
 	defer sp.End()
 
 	initialConfiguration.ConfigurationEntryID = uuid.NewString()
@@ -177,7 +177,7 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.UpdateHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.UpdateHookRecord")
 	defer sp.End()
 
 	// Get current setup, error if not found
@@ -221,7 +221,7 @@ func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookReco
 func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.DeleteHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.DeleteHookRecord")
 	defer sp.End()
 
 	// delete hook records
@@ -245,7 +245,7 @@ func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookReco
 func (store *HookDocumentDBStore) FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*storage.HookRecord]*storage.HookConfigurationEntry, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.FindHookRecordsForDataRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.FindHookRecordsForDataRecord")
 	defer sp.End()
 
 	// set up filter for mongodb

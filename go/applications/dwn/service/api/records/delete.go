@@ -11,7 +11,7 @@ import (
 func RecordsDelete(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "RecordsDelete")
+	ctx, childSpan := observability.Tracer.Start(ctx, "RecordsDelete")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject

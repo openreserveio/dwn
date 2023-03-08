@@ -80,7 +80,7 @@ func (apiService APIService) Run() error {
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "HandleDWNRequest")
+	nctx, childSpan := observability.Tracer.Start(ctx, "HandleDWNRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Parsing Request Object")
@@ -93,7 +93,7 @@ func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 	childSpan.AddEvent("Request Object Parsed")
 
 	childSpan.AddEvent("Routing Request")
-	responseObject, err := apiService.Router.Route(ctx, ro)
+	responseObject, err := apiService.Router.Route(nctx, ro)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return

@@ -37,7 +37,7 @@ func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error
 func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreRecordRequest) (*services.StoreRecordResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "StoreRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "StoreRecord")
 	defer sp.End()
 
 	response := services.StoreRecordResponse{}
@@ -78,7 +78,7 @@ func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreR
 func (c RecordService) FindRecord(ctx context.Context, request *services.FindRecordRequest) (*services.FindRecordResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "FindRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "FindRecord")
 	defer sp.End()
 
 	response := services.FindRecordResponse{}

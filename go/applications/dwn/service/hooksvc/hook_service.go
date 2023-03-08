@@ -48,7 +48,7 @@ func CreateHookService(hookStoreConnectionURI string, queueConnUrl string) (*Hoo
 func (hookService HookService) RegisterHook(ctx context.Context, request *services.RegisterHookRequest) (*services.RegisterHookResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "RegisterHook")
+	ctx, sp := observability.Tracer.Start(ctx, "RegisterHook")
 	defer sp.End()
 
 	response := services.RegisterHookResponse{}
@@ -104,7 +104,7 @@ func (hookService HookService) RegisterHook(ctx context.Context, request *servic
 func (hookService HookService) UpdateHook(ctx context.Context, request *services.UpdateHookRequest) (*services.UpdateHookResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "UpdateHook")
+	ctx, sp := observability.Tracer.Start(ctx, "UpdateHook")
 	defer sp.End()
 
 	response := services.UpdateHookResponse{}
@@ -150,7 +150,7 @@ func (hookService HookService) UpdateHook(ctx context.Context, request *services
 func (hookService HookService) GetHookByRecordId(ctx context.Context, request *services.GetHookByRecordIdRequest) (*services.GetHookByRecordIdResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
 	defer sp.End()
 
 	response := services.GetHookByRecordIdResponse{}
@@ -191,7 +191,7 @@ func (hookService HookService) GetHookByRecordId(ctx context.Context, request *s
 
 func (hookService HookService) GetHooksForRecord(ctx context.Context, request *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
 	defer sp.End()
 
 	response := services.GetHooksForRecordResponse{}
@@ -232,7 +232,7 @@ func (hookService HookService) GetHooksForRecord(ctx context.Context, request *s
 func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, request *services.NotifyHooksOfRecordEventRequest) (*services.NotifyHooksOfRecordEventResponse, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "NotifyHooksOfRecordEvent")
+	ctx, sp := observability.Tracer.Start(ctx, "NotifyHooksOfRecordEvent")
 	defer sp.End()
 
 	response := services.NotifyHooksOfRecordEventResponse{}

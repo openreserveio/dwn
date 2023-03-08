@@ -12,7 +12,7 @@ import (
 func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "RecordsWrite")
+	ctx, childSpan := observability.Tracer.Start(ctx, "RecordsWrite")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject
