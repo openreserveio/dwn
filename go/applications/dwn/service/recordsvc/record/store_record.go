@@ -196,6 +196,7 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 
 	} else {
 
+		sp.AddEvent("NOT an initial entry")
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
