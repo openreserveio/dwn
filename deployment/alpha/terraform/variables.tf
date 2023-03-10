@@ -2,7 +2,13 @@
 variable "cluster_name" {
   description = "Name of cluster - used by Terratest for e2e test automation"
   type        = string
-  default     = ""
+  default     = "alphaopenreservecluster"
+}
+
+variable "vpc_cidr" {
+  description = "CIDR Range for this VPC"
+  type = string
+  default = "10.0.0.0/16"
 }
 
 variable "eks_cluster_domain" {
