@@ -33,7 +33,7 @@ func CreateFeatureRouter(recordSvcClient services.RecordServiceClient, hooksvcCl
 func (fr *FeatureRouter) Route(ctx context.Context, requestObject *model.RequestObject) (interface{}, error) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "Route Operation")
+	ctx, childSpan := observability.Tracer.Start(ctx, "Route Operation")
 	defer childSpan.End()
 
 	// Setup Response Object
@@ -67,7 +67,7 @@ type MessageProcResult struct {
 func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *model.Message) (*MessageProcResult, error) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "processMessage")
+	ctx, childSpan := observability.Tracer.Start(ctx, "processMessage")
 	defer childSpan.End()
 
 	// Support Simple Test Messages
@@ -96,7 +96,7 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 
 	case model.METHOD_RECORDS_WRITE:
 		childSpan.AddEvent("Start Records Write")
-		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, message)
+		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, fr.HookServiceClient, message)
 
 	case model.METHOD_RECORDS_COMMIT:
 		childSpan.AddEvent("Start Records Commit")
@@ -109,6 +109,14 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 	case model.METHOD_HOOKS_WRITE:
 		childSpan.AddEvent("Start Hooks Write")
 		messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
+
+	case model.METHOD_HOOKS_QUERY:
+		childSpan.AddEvent("Start Hooks Query")
+		messageResult = hooks.HooksQuery(ctx, fr.HookServiceClient, message)
+
+	case model.METHOD_HOOKS_DELETE:
+		childSpan.AddEvent("Start Hooks Delete")
+		messageResult = hooks.HooksDelete(ctx, fr.HookServiceClient, message)
 
 	default:
 		childSpan.AddEvent("Bad Method")

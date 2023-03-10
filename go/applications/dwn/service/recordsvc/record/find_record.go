@@ -18,7 +18,7 @@ type FindRecordResult struct {
 func FindRecordBySchemaAndRecordID(ctx context.Context, collectionStore storage.RecordStore, schemaUri string, recordId string) (*FindRecordResult, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "FindRecordBySchemaAndRecordID")
+	ctx, sp := observability.Tracer.Start(ctx, "FindRecordBySchemaAndRecordID")
 	defer sp.End()
 
 	collRecord := collectionStore.GetRecord(recordId)
