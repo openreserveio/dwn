@@ -15,6 +15,7 @@ type HookStore interface {
 	DeleteHookRecord(ctx context.Context, hookRecordId string) error
 
 	FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*HookRecord]*HookConfigurationEntry, error)
+	FindHookRecordsForSchemaAndProtocol(ctx context.Context, schemaUri string, protocol string, protocolVersion string) (map[*HookRecord]*HookConfigurationEntry, error)
 }
 
 type HookRecord struct {
@@ -25,7 +26,10 @@ type HookRecord struct {
 	LatestHookConfigurationEntryID  string             `bson:"latest_hook_config_entry_id"`
 
 	// For Indexing
-	FilterDataRecordID string `bson:"filter_data_record_id"`
+	FilterDataRecordID    string `bson:"filter_data_record_id"`
+	FilterSchema          string `bson:"filter_schema"`
+	FilterProtocol        string `bson:"filter_protocol"`
+	FilterProtocolVersion string `bson:"filter_protocol_version"`
 }
 
 type HookConfigurationEntry struct {

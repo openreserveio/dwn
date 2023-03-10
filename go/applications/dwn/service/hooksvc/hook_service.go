@@ -239,7 +239,7 @@ func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, req
 	response := services.NotifyHooksOfRecordEventResponse{}
 
 	// Get Hooks for Record
-	sp.AddEvent("Get hooks to see if there are notifications to send")
+	sp.AddEvent("Get hooks by data record to see if there are notifications to send")
 	if request.RecordId == "" {
 		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Record ID is required for notifications"}
 		return &response, nil
@@ -252,14 +252,33 @@ func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, req
 	}
 
 	if hookRecords == nil || len(hookRecords) == 0 {
-		sp.AddEvent("No Hook Records")
-		response.Status = &services.CommonStatus{Status: services.Status_OK}
+		sp.AddEvent("No Hook Records by record id")
+	} else {
+
+		for _, latestEntry := range hookRecords {
+			sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntry.Descriptor.URI))
+			hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+		}
+
+	}
+
+	// Get Hooks for schema & protocol
+	sp.AddEvent("Get hooks by schema and protocol to see if there are notifications to send")
+	spHookRecords, err := hookService.HookStore.FindHookRecordsForSchemaAndProtocol(ctx, request.Schema, request.Protocol, request.ProtocolVersion)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 		return &response, nil
 	}
 
-	for _, latestEntry := range hookRecords {
-		sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntry.Descriptor.URI))
-		hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+	if spHookRecords == nil || len(spHookRecords) == 0 {
+		sp.AddEvent("No Hook Records by schema and protocol")
+	} else {
+
+		for _, latestEntry := range spHookRecords {
+			sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntry.Descriptor.URI))
+			hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+		}
+
 	}
 
 	response.Status = &services.CommonStatus{Status: services.Status_OK}

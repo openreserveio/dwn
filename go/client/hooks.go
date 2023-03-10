@@ -11,7 +11,79 @@ import (
 	"time"
 )
 
-func (client *DWNClient) SaveHook(schemaUri string, dataRecordId string, callbackUri string, requestor *Identity) (string, error) {
+func (client *DWNClient) SaveHookForSchemaAndProtocol(schemaUri string, protocol string, protocolVersion string, callbackUri string, requestor *Identity) (string, error) {
+
+	log.Debug("Saving hook for schema %s, protocol & version %s %s, callback %s", schemaUri, protocol, protocolVersion, callbackUri)
+	descriptor := model.Descriptor{
+		Method:          model.METHOD_HOOKS_WRITE,
+		ParentID:        "",
+		Protocol:        client.Protocol,
+		ProtocolVersion: client.ProtocolVersion,
+		Schema:          schemaUri,
+		URI:             callbackUri,
+		Published:       false,
+		DateCreated:     time.Now(),
+		DatePublished:   nil,
+
+		// Filter for the data record ID
+		Filter: model.DescriptorFilter{
+			Schema:          schemaUri,
+			Protocol:        protocol,
+			ProtocolVersion: protocolVersion,
+		},
+	}
+
+	processing := model.MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    requestor.DID,
+		RecipientDID: requestor.DID,
+	}
+
+	message := model.Message{
+		RecordID:   uuid.NewString(),
+		ContextID:  "",
+		Processing: processing,
+		Descriptor: descriptor,
+	}
+
+	attestation := model.CreateAttestation(&message, *requestor.Keypair.PrivateKey)
+	message.Attestation = attestation
+
+	ro := model.RequestObject{}
+	ro.Messages = append(ro.Messages, message)
+
+	res, err := resty.New().R().
+		SetBody(ro).
+		SetHeader(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_APPLICATION_JSON).
+		Post(client.DWNUrlBase)
+
+	if err != nil {
+		return "", err
+	}
+	if !res.IsSuccess() {
+		return "", errors.New("Unable to create hook")
+	}
+
+	var responseObject model.ResponseObject
+	err = json.Unmarshal(res.Body(), &responseObject)
+
+	if responseObject.Status.Code != http.StatusOK {
+		return "", errors.New(responseObject.Status.Detail)
+	}
+
+	if len(responseObject.Replies) == 0 {
+		return "", errors.New("No response replies")
+	}
+
+	if len(responseObject.Replies[0].Entries) == 0 {
+		return "", errors.New("No response entries")
+	}
+
+	return string(responseObject.Replies[0].Entries[0].Result), nil
+
+}
+
+func (client *DWNClient) SaveHookForRecord(schemaUri string, dataRecordId string, callbackUri string, requestor *Identity) (string, error) {
 
 	log.Debug("Saving hook for schema %s, data record %s, callback %s", schemaUri, dataRecordId, callbackUri)
 	descriptor := model.Descriptor{
