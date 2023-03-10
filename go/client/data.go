@@ -134,7 +134,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, data []byte, dataFormat string, dataUpdater *Identity) error {
+func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) error {
 
 	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
 
@@ -142,7 +142,7 @@ func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, 
 		Method:          model.METHOD_RECORDS_WRITE,
 		DataCID:         model.CreateDataCID(dataEncoded),
 		DataFormat:      dataFormat,
-		ParentID:        primaryIdentifier,
+		ParentID:        parentRecordId,
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 		Schema:          schemaUrl,
@@ -159,7 +159,7 @@ func (client *DWNClient) UpdateData(schemaUrl string, primaryIdentifier string, 
 	}
 
 	message := model.Message{
-		RecordID:   primaryIdentifier,
+		RecordID:   parentRecordId,
 		ContextID:  "",
 		Data:       dataEncoded,
 		Processing: processing,

@@ -12,7 +12,7 @@ import (
 func RecordsCommit(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "RecordsCommit")
+	ctx, childSpan := observability.Tracer.Start(ctx, "RecordsCommit")
 	defer childSpan.End()
 
 	var messageResultObj model.MessageResultObject

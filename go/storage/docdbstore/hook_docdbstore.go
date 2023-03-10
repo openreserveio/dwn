@@ -3,6 +3,7 @@ package docdbstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
@@ -44,7 +45,7 @@ func CreateHookDocumentDBStore(connectionUri string) (*HookDocumentDBStore, erro
 func (store *HookDocumentDBStore) GetHookRecord(ctx context.Context, hookRecordId string) (*storage.HookRecord, *storage.HookConfigurationEntry, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecord")
 	defer sp.End()
 
 	// Get the Hook Record
@@ -95,7 +96,7 @@ func (store *HookDocumentDBStore) GetHookRecord(ctx context.Context, hookRecordI
 func (store *HookDocumentDBStore) GetHookRecordConfigurationEntries(ctx context.Context, hookRecordId string) (*storage.HookRecord, []*storage.HookConfigurationEntry, error) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecordConfigurationEntries")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.GetHookRecordConfigurationEntries")
 	defer sp.End()
 
 	// Get the Hook Record
@@ -151,7 +152,7 @@ func (store *HookDocumentDBStore) GetHookRecordConfigurationEntries(ctx context.
 func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookRecord *storage.HookRecord, initialConfiguration *storage.HookConfigurationEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.CreateHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.CreateHookRecord")
 	defer sp.End()
 
 	initialConfiguration.ConfigurationEntryID = uuid.NewString()
@@ -164,6 +165,13 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 	hookRecord.InitialHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
 	hookRecord.LatestHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
 	hookRecord.CreatorDID = initialConfiguration.Processing.AuthorDID
+
+	// Filters for searching & indexing
+	hookRecord.FilterDataRecordID = initialConfiguration.Descriptor.Filter.RecordID
+	hookRecord.FilterSchema = initialConfiguration.Descriptor.Filter.Schema
+	hookRecord.FilterProtocol = initialConfiguration.Descriptor.Filter.Protocol
+	hookRecord.FilterProtocolVersion = initialConfiguration.Descriptor.Filter.ProtocolVersion
+
 	_, err = store.DB.Collection(HOOK_RECORD_COLLECTION).InsertOne(ctx, hookRecord)
 	if err != nil {
 		return err
@@ -176,7 +184,7 @@ func (store *HookDocumentDBStore) CreateHookRecord(ctx context.Context, hookReco
 func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.UpdateHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.UpdateHookRecord")
 	defer sp.End()
 
 	// Get current setup, error if not found
@@ -199,6 +207,12 @@ func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookReco
 	// Latest hook config should point to this new one
 	hookRecord.LatestHookConfigurationEntryID = updatedConfiguration.ConfigurationEntryID
 
+	// Update Filters for searching & indexing
+	hookRecord.FilterDataRecordID = updatedConfiguration.Descriptor.Filter.RecordID
+	hookRecord.FilterSchema = updatedConfiguration.Descriptor.Filter.Schema
+	hookRecord.FilterProtocol = updatedConfiguration.Descriptor.Filter.Protocol
+	hookRecord.FilterProtocolVersion = updatedConfiguration.Descriptor.Filter.ProtocolVersion
+
 	// First, insert the new configuration
 	_, err = store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).InsertOne(ctx, updatedConfiguration)
 	if err != nil {
@@ -220,7 +234,7 @@ func (store *HookDocumentDBStore) UpdateHookRecord(ctx context.Context, hookReco
 func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(ctx, "hook_store.DeleteHookRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.DeleteHookRecord")
 	defer sp.End()
 
 	// delete hook records
@@ -238,5 +252,133 @@ func (store *HookDocumentDBStore) DeleteHookRecord(ctx context.Context, hookReco
 	}
 
 	return nil
+
+}
+
+func (store *HookDocumentDBStore) FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*storage.HookRecord]*storage.HookConfigurationEntry, error) {
+
+	// tracing
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.FindHookRecordsForDataRecord")
+	defer sp.End()
+
+	// set up filter for mongodb
+	sp.AddEvent(fmt.Sprintf("Setting Up Filter for Data Record ID:  %s", dataRecordId))
+	filter := bson.D{{"filter_data_record_id", dataRecordId}}
+	findCur, err := store.DB.Collection(HOOK_RECORD_COLLECTION).Find(ctx, filter)
+	if err != nil {
+		log.Error("Error while looking for hook records for data record:  %v", err)
+		sp.RecordError(err)
+		return nil, err
+	}
+	if findCur.Err() != nil {
+
+		if findCur.Err() != mongo.ErrNoDocuments {
+			log.Error("Error finding hook records by data record ID:  %v", findCur.Err())
+			sp.RecordError(findCur.Err())
+			return nil, findCur.Err()
+		}
+
+		log.Debug("No records found")
+		sp.AddEvent("No Hook Records Found, returning nil,nil")
+		return nil, nil
+
+	}
+
+	sp.AddEvent("We have hook records!")
+	res := make(map[*storage.HookRecord]*storage.HookConfigurationEntry)
+	for findCur.Next(ctx) {
+		var hookRecord storage.HookRecord
+		findCur.Decode(&hookRecord)
+		sp.AddEvent(fmt.Sprintf("Found Hook Record:  %s", hookRecord.HookRecordID))
+
+		// Get the latest entry
+		latestEntry := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).FindOne(ctx, bson.D{{HOOK_CONFIG_ENTRY_ID_FIELD_NAME, hookRecord.LatestHookConfigurationEntryID}})
+		if findCur.Err() != nil {
+
+			if findCur.Err() != mongo.ErrNoDocuments {
+				sp.RecordError(findCur.Err())
+				log.Error("Error finding hook configuration entries by latest entry ID:  %v", findCur.Err())
+				return nil, findCur.Err()
+			}
+
+			sp.AddEvent("No records found for latest entry of hook record.")
+			log.Debug("No records found")
+			return nil, nil
+
+		}
+
+		var latestConfigEntry storage.HookConfigurationEntry
+		latestEntry.Decode(&latestConfigEntry)
+
+		sp.AddEvent("Adding hook record & latestConfigEntry")
+		res[&hookRecord] = &latestConfigEntry
+	}
+
+	return res, nil
+}
+
+func (store *HookDocumentDBStore) FindHookRecordsForSchemaAndProtocol(ctx context.Context, schemaUri string, protocol string, protocolVersion string) (map[*storage.HookRecord]*storage.HookConfigurationEntry, error) {
+
+	// tracing
+	ctx, sp := observability.Tracer.Start(ctx, "hook_store.FindHookRecordsForSchemaAndProtocol")
+	defer sp.End()
+
+	// set up filter for mongodb
+	sp.AddEvent(fmt.Sprintf("Setting Up Filter for Schema and Protocol, Protocol Version:  %s - %s %s", schemaUri, protocol, protocolVersion))
+	var filter bson.D
+	if protocolVersion != "" {
+		filter = bson.D{{"filter_schema", schemaUri}, {"filter_protocol", protocol}, {"filter_protocol_version", protocolVersion}}
+	} else {
+		filter = bson.D{{"filter_schema", schemaUri}, {"filter_protocol", protocol}}
+	}
+
+	findCur, err := store.DB.Collection(HOOK_RECORD_COLLECTION).Find(ctx, filter)
+	if err != nil {
+		log.Error("Error while looking for hook records for schema and protocol:  %v", err)
+		sp.RecordError(err)
+		return nil, err
+	}
+	if findCur.Err() != nil {
+
+		if findCur.Err() != mongo.ErrNoDocuments {
+			log.Error("Error finding hook records by schema and protocol:  %v", findCur.Err())
+			sp.RecordError(findCur.Err())
+			return nil, findCur.Err()
+		}
+
+		log.Debug("No records found")
+		sp.AddEvent("No Hook Records Found, returning nil,nil")
+		return nil, nil
+
+	}
+
+	sp.AddEvent("We have hook records by schema and protocol!")
+	res := make(map[*storage.HookRecord]*storage.HookConfigurationEntry)
+	for findCur.Next(ctx) {
+		var hookRecord storage.HookRecord
+		findCur.Decode(&hookRecord)
+		sp.AddEvent(fmt.Sprintf("Found Hook Record:  %s", hookRecord.HookRecordID))
+
+		// Get the latest entry
+		latestEntry := store.DB.Collection(HOOK_CONFIG_ENTRY_COLLECTION).FindOne(ctx, bson.D{{HOOK_CONFIG_ENTRY_ID_FIELD_NAME, hookRecord.LatestHookConfigurationEntryID}})
+		if findCur.Err() != nil {
+
+			if findCur.Err() != mongo.ErrNoDocuments {
+				log.Error("Error finding hook configuration entries by latest entry ID:  %v", findCur.Err())
+				return nil, findCur.Err()
+			}
+
+			log.Debug("No records found")
+			return nil, nil
+
+		}
+
+		var latestConfigEntry storage.HookConfigurationEntry
+		latestEntry.Decode(&latestConfigEntry)
+
+		res[&hookRecord] = &latestConfigEntry
+	}
+
+	return res, nil
 
 }
