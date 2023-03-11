@@ -31,7 +31,9 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 ### For v0.2.0 release (2023 Q2)
 
 - [ ] [Permissions](https://github.com/openreserveio/dwn/issues/30)
-- [ ] Protocols support
+- [ ] [HooksDelete](https://github.com/openreserveio/dwn/issues/78)
+- [ ] [ProtocolsConfigure](https://github.com/openreserveio/dwn/issues/79)
+- [ ] [ProtocolsQuery](https://github.com/openreserveio/dwn/issues/80)
 - [ ] Sync
 - [ ] Commit Strategy changes to message processing
 - [ ] DID service for openreserve DID method
@@ -39,6 +41,7 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 
 ### To be scheduled:
 
+- [ ] Enforce [Protocols](https://identity.foundation/decentralized-web-node/spec/#protocols)
 - [ ] Support [DID Registration](https://identity.foundation/did-registration/)
 - [ ] Automated release to alpha.openreserve.io open testing channel
 
