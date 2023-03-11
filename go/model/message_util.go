@@ -17,55 +17,51 @@ const (
 	METHOD_HOOKS_DELETE = "HooksDelete"
 )
 
-func CreateRecordsWriteMessage(authorDID string, recipientDID string, protocol string, protocolVersion string, schema string, dataFormat string, data []byte) *Message {
+type ProtocolDefinition struct {
+	ContextID       string
+	Protocol        string
+	ProtocolVersion string
+}
 
-	// If there is data, base64 encode it in string form
-	var encodedData string = ""
-	if data != nil {
-		encodedData = base64.URLEncoding.EncodeToString(data)
-	}
+func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, protocolDef *ProtocolDefinition, schema string, dataFormat string, data []byte) *Message {
 
-	// create the data CID if there is data
-	var dataCID string = ""
-	if encodedData != "" {
-		dataCID = CreateDataCID(encodedData)
-	}
+	// Encode your data
+	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
+	dataCID := CreateDataCID(dataEncoded)
 
-	// Descriptor
-	var messageDescriptorCID string = ""
-	messageDesc := Descriptor{
+	descriptor := Descriptor{
 		Method:          METHOD_RECORDS_WRITE,
 		DataCID:         dataCID,
 		DataFormat:      dataFormat,
 		ParentID:        "",
-		Protocol:        protocol,
-		ProtocolVersion: protocolVersion,
+		Protocol:        protocolDef.Protocol,
+		ProtocolVersion: protocolDef.ProtocolVersion,
 		Schema:          schema,
 		CommitStrategy:  "",
+		Published:       false,
 		DateCreated:     time.Now(),
+		DatePublished:   nil,
 	}
-	messageDescriptorCID = CreateDescriptorCID(messageDesc)
 
-	// Message Processing
-	var processingCID string = ""
-	messageProcessing := MessageProcessing{
+	processing := MessageProcessing{
 		Nonce:        uuid.NewString(),
 		AuthorDID:    authorDID,
 		RecipientDID: recipientDID,
 	}
-	processingCID = CreateProcessingCID(messageProcessing)
 
-	recordId := CreateRecordCID(messageDescriptorCID, processingCID)
+	descCID := CreateDescriptorCID(descriptor)
+	mpCID := CreateProcessingCID(processing)
+	recordCID := CreateRecordCID(descCID, mpCID)
 
-	msg := Message{
-		RecordID:   recordId,
-		ContextID:  "",
-		Data:       encodedData,
-		Processing: messageProcessing,
-		Descriptor: messageDesc,
+	message := Message{
+		RecordID:   recordCID,
+		ContextID:  protocolDef.ContextID,
+		Data:       dataEncoded,
+		Processing: processing,
+		Descriptor: descriptor,
 	}
 
-	return &msg
+	return &message
 
 }
 

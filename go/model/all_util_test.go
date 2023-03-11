@@ -13,6 +13,7 @@ import (
 	"github.com/ipld/go-ipld-prime/node/basicnode"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/openreserveio/dwn/go/client"
 	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/model"
 )
@@ -43,7 +44,18 @@ var _ = Describe("Util", func() {
 
 		Context("With data", func() {
 
-			message := model.CreateRecordsWriteMessage("did:tmp:10", "did:tmp:20", "", "", "https://openreserve.io/schemas/test.json", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"))
+			protocolDefinition := model.ProtocolDefinition{
+				ContextID:       "",
+				Protocol:        "",
+				ProtocolVersion: "",
+			}
+
+			authorKeypair := client.NewKeypair()
+			authorID := client.FromKeypair(authorKeypair)
+			recipKeypair := client.NewKeypair()
+			recipID := client.FromKeypair(recipKeypair)
+
+			message := model.CreateInitialRecordsWriteMessage(authorID.DID, recipID.DID, &protocolDefinition, "https://openreserve.io/schemas/test.json", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"))
 			decodedData, err := base64.URLEncoding.DecodeString(message.Data)
 
 			It("The Data should be decoded and match what was passed in", func() {

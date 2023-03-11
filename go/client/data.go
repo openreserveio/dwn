@@ -71,60 +71,24 @@ func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIde
 
 func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat string, dataAuthor *Identity, dataRecipient *Identity) (string, error) {
 
-	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
-
-	descriptor := model.Descriptor{
-		Method:          model.METHOD_RECORDS_WRITE,
-		DataCID:         model.CreateDataCID(dataEncoded),
-		DataFormat:      dataFormat,
-		ParentID:        "",
+	protocolDef := model.ProtocolDefinition{
+		ContextID:       "",
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
-		Schema:          schemaUrl,
-		CommitStrategy:  "",
-		Published:       false,
-		DateCreated:     time.Now(),
-		DatePublished:   nil,
 	}
 
-	processing := model.MessageProcessing{
-		Nonce:        uuid.NewString(),
-		AuthorDID:    dataAuthor.DID,
-		RecipientDID: dataRecipient.DID,
-	}
+	recordsWriteMessage := model.CreateInitialRecordsWriteMessage(dataAuthor.DID, dataRecipient.DID, &protocolDef, schemaUrl, dataFormat, data)
 
-	descriptorCID := model.CreateDescriptorCID(descriptor)
-	processingCID := model.CreateProcessingCID(processing)
-	recordId := model.CreateRecordCID(descriptorCID, processingCID)
-
-	message := model.Message{
-		RecordID:   recordId,
-		ContextID:  "",
-		Data:       dataEncoded,
-		Processing: processing,
-		Descriptor: descriptor,
-	}
-
-	attestation := model.CreateAttestation(&message, *dataAuthor.Keypair.PrivateKey)
-	message.Attestation = attestation
+	attestation := model.CreateAttestation(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
+	recordsWriteMessage.Attestation = attestation
 
 	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, message)
+	ro.Messages = append(ro.Messages, *recordsWriteMessage)
 
-	res, err := resty.New().R().
-		SetBody(ro).
-		SetHeader(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_APPLICATION_JSON).
-		Post(client.DWNUrlBase)
-
+	responseObject, err := client.CallDWNHTTP(ro)
 	if err != nil {
 		return "", err
 	}
-	if !res.IsSuccess() {
-		return "", errors.New("Unable to create data")
-	}
-
-	var responseObject model.ResponseObject
-	err = json.Unmarshal(res.Body(), &responseObject)
 
 	if responseObject.Status.Code != http.StatusOK {
 		return "", errors.New(responseObject.Status.Detail)
@@ -158,8 +122,12 @@ func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, dat
 		RecipientDID: dataUpdater.DID,
 	}
 
+	descCID := model.CreateDescriptorCID(descriptor)
+	mpCID := model.CreateProcessingCID(processing)
+	recordCID := model.CreateRecordCID(descCID, mpCID)
+
 	message := model.Message{
-		RecordID:   parentRecordId,
+		RecordID:   recordCID,
 		ContextID:  "",
 		Data:       dataEncoded,
 		Processing: processing,

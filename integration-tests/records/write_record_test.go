@@ -18,10 +18,10 @@ var _ = Describe("Write Record", func() {
 
 		dwnClient := client.CreateDWNClient(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
-		authorKeypair := client.New()
+		authorKeypair := client.NewKeypair()
 		authorIdentity := client.FromKeypair(authorKeypair)
 
-		recipientKeypair := client.New()
+		recipientKeypair := client.NewKeypair()
 		recipientIdentity := client.FromKeypair(recipientKeypair)
 
 		body := []byte("{\"name\":\"test\"}")
