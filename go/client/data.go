@@ -9,7 +9,6 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"net/http"
-	"time"
 )
 
 func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) ([]byte, string, error) {
@@ -98,67 +97,30 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) error {
+func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
 
-	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
-
-	descriptor := model.Descriptor{
-		Method:          model.METHOD_RECORDS_WRITE,
-		DataCID:         model.CreateDataCID(dataEncoded),
-		DataFormat:      dataFormat,
-		ParentID:        parentRecordId,
+	protocolDef := model.ProtocolDefinition{
+		ContextID:       "",
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
-		Schema:          schemaUrl,
-		CommitStrategy:  "",
-		Published:       false,
-		DateCreated:     time.Now(),
-		DatePublished:   nil,
 	}
+	message := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, parentRecordId, &protocolDef, schemaUrl, dataFormat, data)
 
-	processing := model.MessageProcessing{
-		Nonce:        uuid.NewString(),
-		AuthorDID:    dataUpdater.DID,
-		RecipientDID: dataUpdater.DID,
-	}
-
-	descCID := model.CreateDescriptorCID(descriptor)
-	mpCID := model.CreateProcessingCID(processing)
-	recordCID := model.CreateRecordCID(descCID, mpCID)
-
-	message := model.Message{
-		RecordID:   recordCID,
-		ContextID:  "",
-		Data:       dataEncoded,
-		Processing: processing,
-		Descriptor: descriptor,
-	}
-
-	attestation := model.CreateAttestation(&message, *dataUpdater.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(message, *dataUpdater.Keypair.PrivateKey)
 	message.Attestation = attestation
 
 	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, message)
+	ro.Messages = append(ro.Messages, *message)
 
-	res, err := resty.New().R().
-		SetBody(ro).
-		SetHeader(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_APPLICATION_JSON).
-		Post(client.DWNUrlBase)
-
+	responseObject, err := client.CallDWNHTTP(ro)
 	if err != nil {
-		return err
+		return "", err
 	}
-	if !res.IsSuccess() {
-		return errors.New("Unable to create data")
-	}
-
-	var responseObject model.ResponseObject
-	err = json.Unmarshal(res.Body(), &responseObject)
 
 	if responseObject.Status.Code != http.StatusOK {
-		return errors.New(responseObject.Status.Detail)
+		return "", errors.New(responseObject.Status.Detail)
 	}
 
-	return nil
+	return string(responseObject.Replies[0].Entries[0].Result), nil
 
 }

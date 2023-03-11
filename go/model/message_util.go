@@ -23,6 +23,50 @@ type ProtocolDefinition struct {
 	ProtocolVersion string
 }
 
+func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, previousRecordId string, protocolDef *ProtocolDefinition, schemaUri string, dataFormat string, data []byte) *Message {
+
+	// TODO:  How to deal with Context IDs?
+
+	// Encode your data
+	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
+	dataCID := CreateDataCID(dataEncoded)
+
+	descriptor := Descriptor{
+		Method:          METHOD_RECORDS_WRITE,
+		DataCID:         dataCID,
+		DataFormat:      dataFormat,
+		ParentID:        previousRecordId,
+		Protocol:        protocolDef.Protocol,
+		ProtocolVersion: protocolDef.ProtocolVersion,
+		Schema:          schemaUri,
+		CommitStrategy:  "",
+		Published:       false,
+		DateCreated:     time.Now(),
+		DatePublished:   nil,
+	}
+
+	processing := MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    authorDID,
+		RecipientDID: recipientDID,
+	}
+
+	descCID := CreateDescriptorCID(descriptor)
+	mpCID := CreateProcessingCID(processing)
+	recordCID := CreateRecordCID(descCID, mpCID)
+
+	message := Message{
+		RecordID:   recordCID,
+		ContextID:  protocolDef.ContextID,
+		Data:       dataEncoded,
+		Processing: processing,
+		Descriptor: descriptor,
+	}
+
+	return &message
+
+}
+
 func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, protocolDef *ProtocolDefinition, schema string, dataFormat string, data []byte) *Message {
 
 	// Encode your data
