@@ -44,8 +44,9 @@ var _ = Describe("Write Record", func() {
 			Expect(recordId).ToNot(BeEmpty())
 
 			bodyUpdated := []byte("{\"name\":\"test_two_changed\", \"status\":\"APPROVED_changed\"}")
-			err = dwnClient.UpdateData(TEST_SCHEMA, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
+			newRecordId, err := dwnClient.UpdateData(TEST_SCHEMA, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
 			Expect(err).To(BeNil())
+			Expect(newRecordId).ToNot(BeEmpty())
 
 		})
 

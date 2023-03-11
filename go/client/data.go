@@ -4,8 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/go-resty/resty/v2"
-	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/storage"
 	"net/http"
@@ -13,45 +11,22 @@ import (
 
 func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) ([]byte, string, error) {
 
-	queryDescriptor := model.Descriptor{
-		Method: model.METHOD_RECORDS_QUERY,
-		Filter: model.DescriptorFilter{
-			RecordID: recordId,
-			Schema:   schemaUrl,
-		},
+	protocolDef := model.ProtocolDefinition{
+		ContextID:       "",
+		Protocol:        client.Protocol,
+		ProtocolVersion: client.ProtocolVersion,
 	}
+	queryMessage := model.CreateQueryRecordsMessage(schemaUrl, recordId, &protocolDef, requestorIdentity.DID)
 
-	queryMessageProcessing := model.MessageProcessing{
-		Nonce:        uuid.NewString(),
-		AuthorDID:    requestorIdentity.DID,
-		RecipientDID: requestorIdentity.DID,
-	}
-
-	queryMessage := model.Message{
-		ContextID:  "",
-		Processing: queryMessageProcessing,
-		Descriptor: queryDescriptor,
-	}
-
-	authorization := model.CreateAuthorization(&queryMessage, *requestorIdentity.Keypair.PrivateKey)
-	attestation := model.CreateAttestation(&queryMessage, *requestorIdentity.Keypair.PrivateKey)
+	authorization := model.CreateAuthorization(queryMessage, *requestorIdentity.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(queryMessage, *requestorIdentity.Keypair.PrivateKey)
 	queryMessage.Attestation = attestation
 	queryMessage.Authorization = authorization
 
 	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, queryMessage)
+	ro.Messages = append(ro.Messages, *queryMessage)
 
-	res, err := resty.New().R().
-		SetBody(ro).
-		SetHeader("Content-Type", "application/json").
-		Post(client.DWNUrlBase)
-
-	if err != nil {
-		return nil, "", err
-	}
-
-	var responseObject model.ResponseObject
-	err = json.Unmarshal(res.Body(), &responseObject)
+	responseObject, err := client.CallDWNHTTP(ro)
 	if err != nil {
 		return nil, "", err
 	}

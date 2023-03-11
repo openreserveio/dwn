@@ -23,6 +23,34 @@ type ProtocolDefinition struct {
 	ProtocolVersion string
 }
 
+func CreateQueryRecordsMessage(schemaUri string, recordId string, protocolDef *ProtocolDefinition, requestorDID string) *Message {
+
+	queryDescriptor := Descriptor{
+		Method: METHOD_RECORDS_QUERY,
+		Filter: DescriptorFilter{
+			RecordID:        recordId,
+			Schema:          schemaUri,
+			Protocol:        protocolDef.Protocol,
+			ProtocolVersion: protocolDef.ProtocolVersion,
+		},
+	}
+
+	queryMessageProcessing := MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    requestorDID,
+		RecipientDID: requestorDID,
+	}
+
+	queryMessage := Message{
+		ContextID:  protocolDef.ContextID,
+		Processing: queryMessageProcessing,
+		Descriptor: queryDescriptor,
+	}
+
+	return &queryMessage
+
+}
+
 func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, previousRecordId string, protocolDef *ProtocolDefinition, schemaUri string, dataFormat string, data []byte) *Message {
 
 	// TODO:  How to deal with Context IDs?
