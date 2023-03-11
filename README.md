@@ -1,7 +1,7 @@
 # DWN
 
 [![godoc dwn](https://img.shields.io/badge/godoc-dwn-blue)](https://pkg.go.dev/github.com/openreserveio/dwn/go)
-[![go version 1.20.1](https://img.shields.io/badge/go_version-1.20.1-brightgreen)](https://go.dev/)
+[![go version 1.20.2](https://img.shields.io/badge/go_version-1.20.2-brightgreen)](https://go.dev/)
 [![license Apache 2](https://img.shields.io/badge/license-Apache%202-black)](https://github.com/openreserveio/dwn/blob/main/LICENSE)
 [![issues](https://img.shields.io/github/issues/openreserveio/dwn)](https://github.com/openreserveio/dwn/issues)
 ![push](https://github.com/openreserveio/dwn/workflows/dwn-compile-test-golang/badge.svg?branch=main&event=push)
