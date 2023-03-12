@@ -15,7 +15,7 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 * [Developer Documentation](docs/developer/README.md)
 * [Operations Documentation](docs/operations/README.md)
 
-# Goals
+# Project Goals
 
 * To create a MVP of a DWN service, written in GoLang, that can be used in an "[as-a-service](https://forums.tbd.website/t/dwn-sdks-and-as-a-service/128)" capacity.  
 * This DWN service should be able to be hosted by a domain owner (ie dwn.openreserve.io), and can support multiple wallets/devices/DIDs exchanging messages

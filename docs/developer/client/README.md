@@ -1,5 +1,11 @@
 # Golang DWN Client SDK
 
+You use a Client SDK (in-lieu of creating your own DWN Messages) to interact with a DWN Node with your application.  
+
+## Use Cases
+
+_TBD_
+
 ## Install
 
 Installing the client is easy!
