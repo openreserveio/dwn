@@ -90,6 +90,8 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
 
+	// Create a Write pointing back to the previous latest entry,
+	// then do a commit on it
 	protocolDef := model.ProtocolDefinition{
 		ContextID:       "",
 		Protocol:        client.Protocol,
