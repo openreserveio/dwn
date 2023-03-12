@@ -31,15 +31,31 @@ func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIde
 		return nil, "", err
 	}
 
-	// TODO: Change this return object -- shouldn't be a message entry from storage package
-	var entry storage.MessageEntry
-	json.Unmarshal(responseObject.Replies[0].Entries[0].Result, &entry)
-	data, err := base64.RawURLEncoding.DecodeString(entry.Data)
-	if err != nil {
-		return nil, "", err
+	// If the da†a was not found, return nil, "", nil
+	if len(responseObject.Replies) > 0 {
+
+		if responseObject.Replies[0].Status.Code == http.StatusNotFound {
+			return nil, "", nil
+		}
+
 	}
 
-	return data, entry.Descriptor.DataFormat, nil
+	var data []byte
+	var dataFormat string
+	if len(responseObject.Replies[0].Entries) > 0 {
+
+		// TODO: Change this return object -- shouldn't be a message entry from storage package
+		var entry storage.MessageEntry
+		json.Unmarshal(responseObject.Replies[0].Entries[0].Result, &entry)
+		data, err = base64.RawURLEncoding.DecodeString(entry.Data)
+		if err != nil {
+			return nil, "", err
+		}
+		dataFormat = entry.Descriptor.DataFormat
+
+	}
+
+	return data, dataFormat, nil
 
 }
 
