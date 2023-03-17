@@ -17,6 +17,7 @@ type RecordStore interface {
 	AddMessageEntry(entry *MessageEntry) error
 	GetMessageEntryByID(messageEntryID string) *MessageEntry
 	GetRecord(recordId string) *Record
+	GetRecordForCommit(recordId string) (*Record, *MessageEntry)
 	DeleteMessageEntry(entry *MessageEntry) error
 	DeleteMessageEntryByID(messageEntryId string) error
 }

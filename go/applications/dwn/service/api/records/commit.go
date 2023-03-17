@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func RecordsCommit(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
+func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
 	ctx, childSpan := observability.Tracer.Start(ctx, "RecordsCommit")
@@ -25,22 +25,22 @@ func RecordsCommit(ctx context.Context, collSvcClient services.RecordServiceClie
 	}
 
 	// Make sure authorizations are valid for messages that are writes to existing records
-	// Check for existing record
-	findCollResp, err := collSvcClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
+	// Check for existing record by the parent ID for commit
+	findRecordResponse, err := recordServiceClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
 		return messageResultObj
 	}
 
 	// There can be no COMMIT to a record that does not exist or is erroring out
-	switch findCollResp.Status.Status {
+	switch findRecordResponse.Status.Status {
 
 	case services.Status_NOT_FOUND:
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusBadRequest, Detail: "Cannot COMMIT to a record that does not exist."}
 		return messageResultObj
 
 	case services.Status_ERROR:
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: findCollResp.Status.Details}
+		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: findRecordResponse.Status.Details}
 		return messageResultObj
 
 	case services.Status_OK:
@@ -51,7 +51,7 @@ func RecordsCommit(ctx context.Context, collSvcClient services.RecordServiceClie
 		}
 
 		authorized := false
-		for _, v := range findCollResp.Writers {
+		for _, v := range findRecordResponse.Writers {
 			if v == message.Processing.AuthorDID {
 				authorized = true
 			}
@@ -69,7 +69,7 @@ func RecordsCommit(ctx context.Context, collSvcClient services.RecordServiceClie
 	storeReq := services.StoreRecordRequest{
 		Message: encodedMsg,
 	}
-	storeResp, err := collSvcClient.StoreRecord(ctx, &storeReq)
+	storeResp, err := recordServiceClient.StoreRecord(ctx, &storeReq)
 	if err != nil {
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj

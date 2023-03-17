@@ -13,6 +13,7 @@ enum Status {
 
 enum QueryType {
     SINGLE_RECORD_BY_ID_SCHEMA_URI = 0;
+    SINGLE_RECORD_BY_ID_FOR_COMMIT = 1;
 
 
 }

@@ -97,13 +97,19 @@ func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, dat
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 	}
-	message := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, parentRecordId, &protocolDef, schemaUrl, dataFormat, data)
+	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, parentRecordId, &protocolDef, schemaUrl, dataFormat, data)
+	writeAttestation := model.CreateAttestation(writeMessage, *dataUpdater.Keypair.PrivateKey)
+	writeMessage.Attestation = writeAttestation
 
-	attestation := model.CreateAttestation(message, *dataUpdater.Keypair.PrivateKey)
-	message.Attestation = attestation
+	// Create the corresponding COMMIT
+	commitMessage := model.CreateRecordsCommitMessage(writeMessage.RecordID, dataUpdater.DID)
+	commitAttestation := model.CreateAttestation(commitMessage, *dataUpdater.Keypair.PrivateKey)
+	commitMessage.Attestation = commitAttestation
 
+	// Append both
 	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, *message)
+	ro.Messages = append(ro.Messages, *writeMessage)
+	ro.Messages = append(ro.Messages, *commitMessage)
 
 	responseObject, err := client.CallDWNHTTP(ro)
 	if err != nil {
@@ -112,6 +118,18 @@ func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, dat
 
 	if responseObject.Status.Code != http.StatusOK {
 		return "", errors.New(responseObject.Status.Detail)
+	}
+
+	if len(responseObject.Replies) < 2 {
+		return "", errors.New("Wrong number of message replies.")
+	}
+
+	if responseObject.Replies[1].Status.Code != http.StatusOK {
+		return "", errors.New(responseObject.Replies[1].Status.Detail)
+	}
+
+	if len(responseObject.Replies[0].Entries) < 1 {
+		return "", errors.New("An updated record ID was not returned")
 	}
 
 	return string(responseObject.Replies[0].Entries[0].Result), nil

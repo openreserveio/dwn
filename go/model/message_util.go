@@ -95,6 +95,37 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 
 }
 
+func CreateRecordsCommitMessage(previousWriteRecordId string, committerDID string) *Message {
+
+	// TODO:  How to deal with Context IDs?
+
+	descriptor := Descriptor{
+		Method:         METHOD_RECORDS_COMMIT,
+		ParentID:       previousWriteRecordId,
+		CommitStrategy: "",
+		DateCreated:    time.Now(),
+	}
+
+	processing := MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    committerDID,
+		RecipientDID: committerDID,
+	}
+
+	descCID := CreateDescriptorCID(descriptor)
+	mpCID := CreateProcessingCID(processing)
+	recordCID := CreateRecordCID(descCID, mpCID)
+
+	message := Message{
+		RecordID:   recordCID,
+		Processing: processing,
+		Descriptor: descriptor,
+	}
+
+	return &message
+
+}
+
 func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, protocolDef *ProtocolDefinition, schema string, dataFormat string, data []byte) *Message {
 
 	// Encode your data

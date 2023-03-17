@@ -157,6 +157,43 @@ func (store *RecordDocumentDBStore) GetRecord(recordId string) *storage.Record {
 	return &collectionRecord
 }
 
+func (store *RecordDocumentDBStore) GetRecordForCommit(parentRecordId string) (*storage.Record, *storage.MessageEntry) {
+
+	// tracing
+	_, sp := observability.Tracer.Start(context.Background(), "GetRecordForCommit")
+	defer sp.End()
+
+	// For this, the parent record ID is the record ID of the MESSAGE ENTRY, and then its associated Record
+	// Generally this is for COMMIT a Write that is not the initial entry
+	res := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).FindOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, parentRecordId}})
+	if res.Err() != nil {
+		if res.Err() != mongo.ErrNoDocuments {
+			log.Error("Error getting record by ID:  %v", res.Err())
+			return nil, nil
+		}
+
+		log.Debug("No records found")
+		return nil, nil
+
+	}
+
+	var recordMessageEntry storage.MessageEntry
+	err := res.Decode(&recordMessageEntry)
+	if err != nil {
+		log.Error("Error decoding result of getting record message entry by ID:  %v", err)
+		return nil, nil
+	}
+
+	rec := store.GetRecord(recordMessageEntry.RecordID)
+	if rec == nil {
+		log.Error("We somehow found a message entry but no associated record for it?")
+		return nil, nil
+	}
+
+	return rec, &recordMessageEntry
+
+}
+
 func (store *RecordDocumentDBStore) DeleteMessageEntry(entry *storage.MessageEntry) error {
 	return store.DeleteMessageEntryByID(entry.MessageEntryID)
 }

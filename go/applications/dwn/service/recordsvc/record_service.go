@@ -116,6 +116,37 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 			return &response, nil
 		}
 
+	} else if request.QueryType == services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT {
+
+		result, err := record.FindRecordForCommit(ctx, c.RecordStore, request.SchemaURI, request.RecordId)
+		if err != nil {
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+			return &response, nil
+		}
+
+		switch result.Status {
+
+		case "OK":
+			response.Status = &services.CommonStatus{Status: services.Status_OK}
+			response.SchemaURI = request.SchemaURI
+			response.Writers = []string{result.LatestEntry.Processing.AuthorDID}
+			response.Readers = []string{result.LatestEntry.Processing.AuthorDID, result.LatestEntry.Processing.RecipientDID}
+			response.IsPublished = result.LatestEntry.Descriptor.Published
+
+			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)
+			response.RecordItem = latestEntryJsonBytes
+
+			return &response, nil
+
+		case "NOT_FOUND":
+			response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
+			return &response, nil
+
+		default:
+			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Some kind of error"}
+			return &response, nil
+		}
+
 	}
 
 	response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Unsupport query type"}

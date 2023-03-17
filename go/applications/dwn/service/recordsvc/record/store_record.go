@@ -82,12 +82,16 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 
 	// Retrieve the currently active CollectionsWrite entry for the recordId specified in the inbound CollectionsCommit
 	// message. If there is no currently active CollectionsWrite entry, discard the inbound message and cease processing.
-	existingCollRecord := recordStore.GetRecord(recordCommitMessage.Descriptor.ParentID)
-	if existingCollRecord == nil {
+	// The parentID in the case of a COMMIT is the specific record ID in the chain of messages.
+	// We need to retrieve THAT entry, ensure its the latest checkpoint entry and then "commit"
+	sp.AddEvent("Get record for commit from parent ID")
+	existingRecord, parentWrite := recordStore.GetRecordForCommit(recordCommitMessage.Descriptor.ParentID)
+	if existingRecord == nil || parentWrite == nil {
 		return errors.New(ERR_COMMIT_TO_RECORD_NOT_FOUND)
 	}
 
-	latestCheckpointEntry := recordStore.GetMessageEntryByID(existingCollRecord.LatestCheckpointEntryID)
+	sp.AddEvent("Get Message Entry from existing record")
+	latestCheckpointEntry := recordStore.GetMessageEntryByID(existingRecord.LatestCheckpointEntryID)
 	if latestCheckpointEntry == nil {
 		return errors.New(ERR_COMMIT_TO_RECORD_CHECKPOINT_ENTRY_NOT_FOUND)
 	}
@@ -96,10 +100,13 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 	// If any have been mutated, discard the message and cease processing.
 	// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 	// inbound message. If any have been mutated, discard the message and cease processing.
-	initialMessageEntry := recordStore.GetMessageEntryByID(existingCollRecord.InitialEntryID)
+	sp.AddEvent("Get the initial entry from the existing record")
+	initialMessageEntry := recordStore.GetMessageEntryByID(existingRecord.InitialEntryID)
 	if initialMessageEntry == nil {
 		return errors.New("Unable to find an initial entry")
 	}
+
+	sp.AddEvent("Checking for immutables")
 	if initialMessageEntry.Descriptor.Protocol != recordCommitMessage.Descriptor.Protocol ||
 		initialMessageEntry.Descriptor.ProtocolVersion != recordCommitMessage.Descriptor.ProtocolVersion ||
 		initialMessageEntry.Descriptor.Schema != recordCommitMessage.Descriptor.Schema {
@@ -112,7 +119,7 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 		return errors.New(ERR_MISMATCHED_COMMIT_STRATEGY)
 	}
 
-	// he parentId of the message MUST match the currently active CollectionsWrite message’s Entry ID or that of
+	// The parentId of the message MUST match the currently active CollectionsWrite message’s Entry ID or that of
 	// another CollectionsCommit that descends from it. If the parentId does not match any of the messages in the
 	// commit tree, discard the inbound message and cease processing.
 	// This is done by way of searching for the parent ID
@@ -123,10 +130,23 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 		return errors.New(ERR_COMMIT_MESSAGE_CREATE_DATE_BEFORE_WRITE)
 	}
 
+	sp.AddEvent("Adding Message Entry")
+	commitMessageEntry := storage.MessageEntry{
+		Message:        *recordCommitMessage,
+		MessageEntryID: uuid.NewString(),
+	}
+	err := recordStore.AddMessageEntry(&commitMessageEntry)
+	if err != nil {
+		sp.RecordError(err)
+		return err
+	}
+
 	// If all of the above steps are successful, store the message in relation to the record.
 	// I think this means we set the latest checkpoint to the latest entry
-	existingCollRecord.LatestEntryID = existingCollRecord.LatestCheckpointEntryID
-	recordStore.SaveRecord(existingCollRecord)
+	sp.AddEvent("Updating existing record")
+	existingRecord.LatestEntryID = existingRecord.LatestCheckpointEntryID
+	existingRecord.LatestCheckpointEntryID = commitMessageEntry.MessageEntryID
+	recordStore.SaveRecord(existingRecord)
 
 	return nil
 
@@ -200,21 +220,27 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
-		parentCollRec := recordStore.GetRecord(recordMessage.Descriptor.ParentID)
-		if parentCollRec == nil {
+		sp.AddEvent("Get the parent  record for write referenced in the parentID")
+		parentRecord := recordStore.GetRecord(recordMessage.Descriptor.ParentID)
+
+		if parentRecord == nil {
 			// If a message is not the Initial Entry, its descriptor MUST contain a parentId to
 			// determine the entry’s position in the record’s lineage. If a parentId is present
 			// proceed with processing, else discard the record and cease processing.
 			// We dont have the parent.  Reject with err
+			sp.RecordError(errors.New("Unable to find Parent Records for overwrite using parent ID"))
 			return false, fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", recordMessage.Descriptor.ParentID)
 		}
 
 		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 		// inbound message. If any have been mutated, discard the message and cease processing.
-		initialMessageEntry := recordStore.GetMessageEntryByID(parentCollRec.InitialEntryID)
+		sp.AddEvent("Get the parent's Initial Entry ID")
+		initialMessageEntry := recordStore.GetMessageEntryByID(parentRecord.InitialEntryID)
 		if initialMessageEntry == nil {
 			return false, errors.New("Unable to find an initial entry")
 		}
+
+		sp.AddEvent("Ensuring immutable values stay immutable")
 		if initialMessageEntry.Descriptor.Protocol != recordMessage.Descriptor.Protocol ||
 			initialMessageEntry.Descriptor.ProtocolVersion != recordMessage.Descriptor.ProtocolVersion ||
 			initialMessageEntry.Descriptor.Schema != recordMessage.Descriptor.Schema {
@@ -225,7 +251,8 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// and compare the parentId value of the inbound message to the Entry ID of the
 		// Latest Checkpoint Entry derived from running the Record ID Generation Process on it.
 		// If the values match, proceed with processing, if the values do not match discard the message and cease processing.
-		latestCheckpointEntry := recordStore.GetMessageEntryByID(parentCollRec.LatestCheckpointEntryID)
+		sp.AddEvent("Getting the latest checkpoint entry")
+		latestCheckpointEntry := recordStore.GetMessageEntryByID(parentRecord.LatestCheckpointEntryID)
 		if latestCheckpointEntry == nil {
 			return false, errors.New("Unable to find the latest checkpoint entry")
 		}
@@ -241,6 +268,7 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		if latestCheckpointEntry.Descriptor.Method != model.METHOD_RECORDS_WRITE &&
 			recordMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 
+			sp.AddEvent("Storing latest entry, adjusting latest entry ID to this WRITE")
 			latestEntry := storage.MessageEntry{
 				ID:             primitive.NewObjectID(),
 				MessageEntryID: uuid.NewString(),
@@ -252,8 +280,8 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 				return false, err
 			}
 
-			parentCollRec.LatestEntryID = latestEntry.MessageEntryID
-			err = recordStore.SaveRecord(parentCollRec)
+			parentRecord.LatestEntryID = latestEntry.MessageEntryID
+			err = recordStore.SaveRecord(parentRecord)
 			if err != nil {
 				return false, err
 			}
@@ -273,7 +301,7 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 				recordMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
 
 				// TODO:  How to compare lexicographically?  Will come back to this
-
+				sp.AddEvent("Storing latest entry OVERRIDE previous WRITE, adjusting latest entry ID to this WRITE")
 				latestEntry := storage.MessageEntry{
 					ID:             primitive.NewObjectID(),
 					MessageEntryID: uuid.NewString(),
@@ -291,8 +319,8 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 				//	return err
 				//}
 
-				parentCollRec.LatestCheckpointEntryID = latestEntry.MessageEntryID
-				err = recordStore.SaveRecord(parentCollRec)
+				parentRecord.LatestCheckpointEntryID = latestEntry.MessageEntryID
+				err = recordStore.SaveRecord(parentRecord)
 				if err != nil {
 					return false, err
 				}
