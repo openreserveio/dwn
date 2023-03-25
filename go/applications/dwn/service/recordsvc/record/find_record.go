@@ -49,7 +49,7 @@ func FindRecordForCommit(ctx context.Context, recordStore storage.RecordStore, s
 	record, messageEntry := recordStore.GetRecordForCommit(parentRecordId)
 	if record == nil || messageEntry == nil {
 		sp.AddEvent("Unable to find records for Commit")
-		result.Status = "404"
+		result.Status = "NOT_FOUND"
 		result.Error = errors.New("Not Found")
 		return &result, nil
 	}
