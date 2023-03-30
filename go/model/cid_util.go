@@ -61,12 +61,15 @@ func CreateCIDFromNode(node datamodel.Node) cid.Cid {
 	var buf bytes.Buffer
 	dagcbor.Encode(node, &buf)
 
-	cidPrefix := cid.Prefix{
-		Version: 1,
-		MhType:  mh.SHA2_256,
+	cidBuilder := cid.V1Builder{
+		MhType:   mh.SHA2_256,
+		MhLength: -1,
 	}
-	cid, _ := cidPrefix.Sum(buf.Bytes())
-	return cid
+	contentCID, err := cidBuilder.Sum(buf.Bytes())
+	if err != nil {
+		return cid.Cid{}
+	}
+	return contentCID
 
 }
 
@@ -101,6 +104,9 @@ func CreateDataCID(data string) string {
 func CreateDescriptorCID(descriptor Descriptor) string {
 
 	node := bindnode.Wrap(&descriptor, DescriptorSchemaType).Representation()
+	if node.IsNull() {
+		return ""
+	}
 	return CreateCIDFromNode(node).String()
 
 }

@@ -6,6 +6,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/datamodel"
@@ -57,6 +58,7 @@ var _ = Describe("Util", func() {
 
 			message := model.CreateInitialRecordsWriteMessage(authorID.DID, recipID.DID, &protocolDefinition, "https://openreserve.io/schemas/test.json", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"))
 			decodedData, err := base64.URLEncoding.DecodeString(message.Data)
+			println(fmt.Sprintf("Message Record ID:  %v", message.RecordID))
 
 			It("The Data should be decoded and match what was passed in", func() {
 
