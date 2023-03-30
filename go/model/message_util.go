@@ -69,7 +69,7 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 		Schema:          schemaUri,
 		CommitStrategy:  "",
 		Published:       false,
-		DateCreated:     time.Now(),
+		DateCreated:     time.Now().Format(time.RFC3339),
 		DatePublished:   nil,
 	}
 
@@ -103,7 +103,7 @@ func CreateRecordsCommitMessage(previousWriteRecordId string, committerDID strin
 		Method:         METHOD_RECORDS_COMMIT,
 		ParentID:       previousWriteRecordId,
 		CommitStrategy: "",
-		DateCreated:    time.Now(),
+		DateCreated:    time.Now().Format(time.RFC3339),
 	}
 
 	processing := MessageProcessing{
@@ -142,7 +142,7 @@ func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, pro
 		Schema:          schema,
 		CommitStrategy:  "",
 		Published:       false,
-		DateCreated:     time.Now(),
+		DateCreated:     time.Now().Format(time.RFC3339),
 		DatePublished:   nil,
 	}
 

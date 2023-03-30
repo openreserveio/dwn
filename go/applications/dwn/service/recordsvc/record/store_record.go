@@ -9,6 +9,7 @@ import (
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 const (
@@ -20,6 +21,7 @@ const (
 	ERR_MISMATCHED_COMMIT_STRATEGY = "Commit Strategy value in existing checkpoint record does not match the commitStrategy value specified in the inbound message,"
 
 	ERR_COMMIT_MESSAGE_CREATE_DATE_BEFORE_WRITE = "Commit message's created date is before the latest write message."
+	ERR_INVALID_DATE_FORMAT                     = "Invalid date format, you must use RFC3339 format"
 )
 
 type StoreRecordResult struct {
@@ -126,7 +128,13 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 
 	// The inbound message’s entry dateCreated value is less than the dateCreated value of the message in the commit
 	// tree its parentId references, discard the message and cease processing.
-	if recordCommitMessage.Descriptor.DateCreated.Before(latestCheckpointEntry.Descriptor.DateCreated) {
+	recordCommitMessageDateCreated, err := time.Parse(time.RFC3339, recordCommitMessage.Descriptor.DateCreated)
+	latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointEntry.Descriptor.DateCreated)
+	if err != nil {
+		return errors.New(ERR_INVALID_DATE_FORMAT)
+	}
+
+	if recordCommitMessageDateCreated.Before(latestCheckpointEntryDateCreated) {
 		return errors.New(ERR_COMMIT_MESSAGE_CREATE_DATE_BEFORE_WRITE)
 	}
 
@@ -135,7 +143,7 @@ func recordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 		Message:        *recordCommitMessage,
 		MessageEntryID: uuid.NewString(),
 	}
-	err := recordStore.AddMessageEntry(&commitMessageEntry)
+	err = recordStore.AddMessageEntry(&commitMessageEntry)
 	if err != nil {
 		sp.RecordError(err)
 		return err
@@ -265,8 +273,13 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// the dateCreated value of the inbound message is greater than the Latest Checkpoint Entry,
 		// store the message as the Latest Entry and cease processing, else discard the inbound message
 		// and cease processing.
+		recordMessageDateCreated, err := time.Parse(time.RFC3339, recordMessage.Descriptor.DateCreated)
+		latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointEntry.Descriptor.DateCreated)
+		if err != nil {
+			return false, errors.New(ERR_INVALID_DATE_FORMAT)
+		}
 		if latestCheckpointEntry.Descriptor.Method != model.METHOD_RECORDS_WRITE &&
-			recordMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
+			recordMessageDateCreated.After(latestCheckpointEntryDateCreated) {
 
 			sp.AddEvent("Storing latest entry, adjusting latest entry ID to this WRITE")
 			latestEntry := storage.MessageEntry{
@@ -297,8 +310,13 @@ func recordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// and discard the existing CollectionsWrite entry that was attached to the Latest Checkpoint Entry.
 		if latestCheckpointEntry.Descriptor.Method == model.METHOD_RECORDS_WRITE {
 
-			if latestCheckpointEntry.Descriptor.DateCreated.Equal(recordMessage.Descriptor.DateCreated) ||
-				recordMessage.Descriptor.DateCreated.After(latestCheckpointEntry.Descriptor.DateCreated) {
+			recordMessageDateCreated, err := time.Parse(time.RFC3339, recordMessage.Descriptor.DateCreated)
+			latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointEntry.Descriptor.DateCreated)
+			if err != nil {
+				return false, errors.New(ERR_INVALID_DATE_FORMAT)
+			}
+			if latestCheckpointEntryDateCreated.Equal(recordMessageDateCreated) ||
+				recordMessageDateCreated.After(latestCheckpointEntryDateCreated) {
 
 				// TODO:  How to compare lexicographically?  Will come back to this
 				sp.AddEvent("Storing latest entry OVERRIDE previous WRITE, adjusting latest entry ID to this WRITE")

@@ -72,6 +72,9 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 	attestation := model.CreateAttestation(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
 	recordsWriteMessage.Attestation = attestation
 
+	authorization := model.CreateAuthorization(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
+	recordsWriteMessage.Authorization = authorization
+
 	ro := model.RequestObject{}
 	ro.Messages = append(ro.Messages, *recordsWriteMessage)
 
@@ -82,6 +85,18 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 	if responseObject.Status.Code != http.StatusOK {
 		return "", errors.New(responseObject.Status.Detail)
+	}
+
+	if len(responseObject.Replies) < 1 {
+		return "", errors.New("Wrong number of message replies.")
+	}
+
+	if responseObject.Replies[0].Status.Code != http.StatusOK {
+		return "", errors.New(responseObject.Replies[0].Status.Detail)
+	}
+
+	if len(responseObject.Replies[0].Entries) < 1 {
+		return "", errors.New("No Reply Entries as expected")
 	}
 
 	return string(responseObject.Replies[0].Entries[0].Result), nil

@@ -22,7 +22,7 @@ func (client *DWNClient) SaveHookForSchemaAndProtocol(schemaUri string, protocol
 		Schema:          schemaUri,
 		URI:             callbackUri,
 		Published:       false,
-		DateCreated:     time.Now(),
+		DateCreated:     time.Now().Format(time.RFC3339),
 		DatePublished:   nil,
 
 		// Filter for the data record ID
@@ -94,7 +94,7 @@ func (client *DWNClient) SaveHookForRecord(schemaUri string, dataRecordId string
 		Schema:          schemaUri,
 		URI:             callbackUri,
 		Published:       false,
-		DateCreated:     time.Now(),
+		DateCreated:     time.Now().Format(time.RFC3339),
 		DatePublished:   nil,
 
 		// Filter for the data record ID

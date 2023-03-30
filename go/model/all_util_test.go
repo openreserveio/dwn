@@ -71,10 +71,10 @@ var _ = Describe("Util", func() {
 				Expect(message).ToNot(BeNil())
 
 				Expect(message.Processing.Nonce).ToNot(BeEmpty())
-				Expect(message.Processing.AuthorDID).To(Equal("did:tmp:10"))
-				Expect(message.Processing.RecipientDID).To(Equal("did:tmp:20"))
+				Expect(message.Processing.AuthorDID).To(Equal(authorID.DID))
+				Expect(message.Processing.RecipientDID).To(Equal(recipID.DID))
 
-				Expect(message.Descriptor.Method).To(Equal("CollectionsWrite"))
+				Expect(message.Descriptor.Method).To(Equal(model.METHOD_RECORDS_WRITE))
 				Expect(message.Descriptor.DataCID).ToNot(BeEmpty())
 				Expect(message.Descriptor.DataFormat).To(Equal(model.DATA_FORMAT_JSON))
 
