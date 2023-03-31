@@ -115,11 +115,15 @@ func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, dat
 	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, parentRecordId, &protocolDef, schemaUrl, dataFormat, data)
 	writeAttestation := model.CreateAttestation(writeMessage, *dataUpdater.Keypair.PrivateKey)
 	writeMessage.Attestation = writeAttestation
+	writeAuthorization := model.CreateAuthorization(writeMessage, *dataUpdater.Keypair.PrivateKey)
+	writeMessage.Authorization = writeAuthorization
 
 	// Create the corresponding COMMIT
-	commitMessage := model.CreateRecordsCommitMessage(writeMessage.RecordID, dataUpdater.DID)
+	commitMessage := model.CreateRecordsCommitMessage(writeMessage.RecordID, writeMessage.Descriptor.Schema, dataUpdater.DID)
 	commitAttestation := model.CreateAttestation(commitMessage, *dataUpdater.Keypair.PrivateKey)
 	commitMessage.Attestation = commitAttestation
+	commitAuthorization := model.CreateAuthorization(commitMessage, *dataUpdater.Keypair.PrivateKey)
+	commitMessage.Authorization = commitAuthorization
 
 	// Append both
 	ro := model.RequestObject{}

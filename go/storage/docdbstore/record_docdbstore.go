@@ -3,6 +3,7 @@ package docdbstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
@@ -20,6 +21,7 @@ const (
 
 	COLLECTION_RECORD_ID_FIELD_NAME        = "record_id"
 	COLLECTION_MESSAGE_ENTRY_ID_FIELD_NAME = "message_entry_id"
+	COLLECTION_MESSAGE_ENTRY_RECORD_ID     = "message.record_id"
 )
 
 type RecordDocumentDBStore struct {
@@ -165,26 +167,31 @@ func (store *RecordDocumentDBStore) GetRecordForCommit(parentRecordId string) (*
 
 	// For this, the parent record ID is the record ID of the MESSAGE ENTRY, and then its associated Record
 	// Generally this is for COMMIT a Write that is not the initial entry
-	res := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).FindOne(context.Background(), bson.D{{COLLECTION_RECORD_ID_FIELD_NAME, parentRecordId}})
+	sp.AddEvent(fmt.Sprintf("Getting message entry by its record ID:  %s", parentRecordId))
+	res := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).FindOne(context.Background(), bson.D{{COLLECTION_MESSAGE_ENTRY_RECORD_ID, parentRecordId}})
 	if res.Err() != nil {
 		if res.Err() != mongo.ErrNoDocuments {
+			sp.RecordError(res.Err())
 			log.Error("Error getting record by ID:  %v", res.Err())
 			return nil, nil
 		}
 
+		sp.AddEvent(fmt.Sprintf("No records found with record id:  %s", parentRecordId))
 		log.Debug("No records found")
 		return nil, nil
 
 	}
 
+	sp.AddEvent(fmt.Sprintf("Found message entry by its record ID:  %s", parentRecordId))
 	var recordMessageEntry storage.MessageEntry
 	err := res.Decode(&recordMessageEntry)
 	if err != nil {
 		log.Error("Error decoding result of getting record message entry by ID:  %v", err)
+		sp.RecordError(err)
 		return nil, nil
 	}
 
-	rec := store.GetRecord(recordMessageEntry.RecordID)
+	rec := store.GetRecord(recordMessageEntry.Descriptor.ParentID)
 	if rec == nil {
 		log.Error("We somehow found a message entry but no associated record for it?")
 		return nil, nil

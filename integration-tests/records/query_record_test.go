@@ -2,6 +2,7 @@ package records_test
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/openreserveio/dwn/go/client"
@@ -61,7 +62,7 @@ var _ = Describe("Query For A Record", func() {
 		It("Stores the message as the initial entry", func() {
 
 			// Need to Create the Record.
-			recordData := []byte("{\"name\":\"test\"}")
+			recordData := []byte(fmt.Sprintf("{\"name\":\"test_%s\", \"status\":\"APPROVED\"}", uuid.NewString()))
 			recordId, err = dwnClient.SaveData(TEST_SCHEMA, recordData, "application/json", &authorIdentity, &recipientIdentity)
 
 			Expect(err).To(BeNil())

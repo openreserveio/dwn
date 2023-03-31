@@ -89,12 +89,7 @@ func CreateRecordCID(descriptorCID string, processingCID string) string {
 
 func CreateDataCID(data string) string {
 
-	d, err := qp.BuildList(basicnode.Prototype.Any, 1, func(la datamodel.ListAssembler) {
-		qp.ListEntry(la, qp.String(data))
-	})
-	if err != nil {
-		return ""
-	}
+	d := bindnode.Wrap(&data, nil).Representation()
 
 	return CreateCIDFromNode(d).String()
 
