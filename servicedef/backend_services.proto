@@ -85,6 +85,43 @@ message CommonStatus {
     CommonStatus status = 1;
  }
 
+ // Net New
+ message QueryRecordRequest {
+   bytes document = 1;
+ }
+
+ message QueryRecordResponse {
+   CommonStatus status = 1;
+   bytes document = 2;
+ }
+
+ message WriteRecordRequest {
+   bytes document = 1;
+ }
+
+ message WriteRecordResponse {
+   CommonStatus status = 1;
+   bytes document = 2;
+ }
+
+ message CommitRecordRequest {
+   bytes document = 1;
+ }
+
+ message CommitRecordResponse {
+   CommonStatus status = 1;
+   bytes document = 2;
+ }
+
+ message DeleteRecordRequest {
+   bytes document = 1;
+ }
+
+ message DeleteRecordResponse {
+   CommonStatus status = 1;
+   bytes document = 2;
+ }
+
  service RecordService {
 
     rpc StoreRecord(StoreRecordRequest) returns (StoreRecordResponse) {}
@@ -93,6 +130,12 @@ message CommonStatus {
     rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse) {}
     rpc ValidateRecord(ValidateRecordRequest) returns (ValidateRecordResponse) {}
     rpc InvalidateSchema(InvalidateSchemaRequest) returns (InvalidateSchemaResponse) {}
+    
+    // Net new go simplify the service
+    rpc Query(QueryRecordRequest) returns (QueryRecordResponse) {}
+    rpc Write(WriteRecordRequest) returns (WriteRecordResponse) {}
+    rpc Commit(CommitRecordRequest) returns (CommitRecordResponse) {}
+    rpc Delete(DeleteRecordRequest) returns (DeleteRecordResponse) {}
 
  }
 
