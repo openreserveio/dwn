@@ -3,6 +3,7 @@ package recordsvc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/recordsvc/record"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
@@ -10,6 +11,8 @@ import (
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/openreserveio/dwn/go/storage/docdbstore"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type RecordService struct {
@@ -152,6 +155,114 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 	response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Unsupport query type"}
 	return &response, nil
 
+}
+
+func (rs RecordService) Query(ctx context.Context, request *services.QueryRecordRequest) (*services.QueryRecordResponse, error) {
+
+	// tracing
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.Query")
+	defer sp.End()
+
+	response := services.QueryRecordResponse{}
+
+	var queryRecordMessage model.Message
+	err := json.Unmarshal(request.Message, &queryRecordMessage)
+	if err != nil {
+		sp.RecordError(err)
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	sp.AddEvent("Execute Query Method for Record")
+	queryResponseMessage, err := record.RecordQuery(ctx, rs.RecordStore, &queryRecordMessage)
+	if err != nil {
+		sp.RecordError(err)
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	if queryResponseMessage == nil {
+		sp.AddEvent("No message found by query")
+		response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
+		return &response, nil
+	}
+
+	queryResponseMessageBytes, _ := json.Marshal(queryResponseMessage)
+	sp.AddEvent("Query returned a message", trace.WithAttributes(attribute.String("message-json", string(queryResponseMessageBytes))))
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+	response.Message = queryResponseMessageBytes
+
+	return &response, nil
+
+}
+
+func (rs RecordService) Write(ctx context.Context, request *services.WriteRecordRequest) (*services.WriteRecordResponse, error) {
+
+	// tracing
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.Write")
+	defer sp.End()
+
+	response := services.WriteRecordResponse{}
+
+	var writeRecordMessage model.Message
+	err := json.Unmarshal(request.Message, &writeRecordMessage)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	sp.AddEvent("Execute Write Method for Record")
+	recordId, err := record.RecordWrite(ctx, rs.RecordStore, &writeRecordMessage)
+	if err != nil {
+		sp.RecordError(err)
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+	sp.AddEvent(fmt.Sprintf("Write Method for Record Executed Successfully:  %s", recordId))
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+	return &response, nil
+
+}
+
+func (rs RecordService) Commit(ctx context.Context, request *services.CommitRecordRequest) (*services.CommitRecordResponse, error) {
+
+	// tracing
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.Commit")
+	defer sp.End()
+
+	response := services.CommitRecordResponse{}
+
+	var commitRecordMessage model.Message
+	err := json.Unmarshal(request.Message, &commitRecordMessage)
+	if err != nil {
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+
+	sp.AddEvent("Execute Commit Method for Record")
+	err = record.RecordCommit(ctx, rs.RecordStore, &commitRecordMessage)
+	if err != nil {
+		sp.RecordError(err)
+		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
+		return &response, nil
+	}
+	sp.AddEvent("Commit Method for Record Executed Successfully")
+
+	response.Status = &services.CommonStatus{Status: services.Status_OK}
+	return &response, nil
+
+}
+
+func (rs RecordService) Delete(ctx context.Context, request *services.DeleteRecordRequest) (*services.DeleteRecordResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (rs RecordService) mustEmbedUnimplementedRecordServiceServer() {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c RecordService) CreateSchema(ctx context.Context, request *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {

@@ -87,39 +87,36 @@ message CommonStatus {
 
  // Net New
  message QueryRecordRequest {
-   bytes document = 1;
+   bytes message = 1;
  }
 
  message QueryRecordResponse {
    CommonStatus status = 1;
-   bytes document = 2;
+   bytes message = 2;
  }
 
  message WriteRecordRequest {
-   bytes document = 1;
+   bytes message = 1;
  }
 
  message WriteRecordResponse {
    CommonStatus status = 1;
-   bytes document = 2;
  }
 
  message CommitRecordRequest {
-   bytes document = 1;
+   bytes message = 1;
  }
 
  message CommitRecordResponse {
    CommonStatus status = 1;
-   bytes document = 2;
  }
 
  message DeleteRecordRequest {
-   bytes document = 1;
+   bytes message = 1;
  }
 
  message DeleteRecordResponse {
    CommonStatus status = 1;
-   bytes document = 2;
  }
 
  service RecordService {

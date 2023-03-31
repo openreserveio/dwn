@@ -118,6 +118,21 @@ func (mr *MockRecordStoreMockRecorder) GetRecord(recordId interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecord", reflect.TypeOf((*MockRecordStore)(nil).GetRecord), recordId)
 }
 
+// GetRecordForCommit mocks base method.
+func (m *MockRecordStore) GetRecordForCommit(recordId string) (*storage.Record, *storage.MessageEntry) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecordForCommit", recordId)
+	ret0, _ := ret[0].(*storage.Record)
+	ret1, _ := ret[1].(*storage.MessageEntry)
+	return ret0, ret1
+}
+
+// GetRecordForCommit indicates an expected call of GetRecordForCommit.
+func (mr *MockRecordStoreMockRecorder) GetRecordForCommit(recordId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecordForCommit", reflect.TypeOf((*MockRecordStore)(nil).GetRecordForCommit), recordId)
+}
+
 // SaveRecord mocks base method.
 func (m *MockRecordStore) SaveRecord(record *storage.Record) error {
 	m.ctrl.T.Helper()
