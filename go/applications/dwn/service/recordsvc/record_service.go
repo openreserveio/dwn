@@ -37,48 +37,6 @@ func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error
 
 }
 
-func (c RecordService) StoreRecord(ctx context.Context, request *services.StoreRecordRequest) (*services.StoreRecordResponse, error) {
-
-	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "StoreRecord")
-	defer sp.End()
-
-	response := services.StoreRecordResponse{}
-	var collectionMessage model.Message
-	err := json.Unmarshal(request.Message, &collectionMessage)
-	if err != nil {
-		response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
-		return &response, nil
-	}
-
-	if collectionMessage.Descriptor.Method == model.METHOD_RECORDS_WRITE ||
-		collectionMessage.Descriptor.Method == model.METHOD_RECORDS_COMMIT ||
-		collectionMessage.Descriptor.Method == model.METHOD_RECORDS_DELETE {
-
-		result, err := record.StoreRecord(ctx, c.RecordStore, &collectionMessage)
-		if err != nil {
-			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
-			return &response, nil
-		}
-
-		if result.Status == "UNSUPPORTED_METHOD" {
-			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "UNSUPPORTED METHOD"}
-			return &response, nil
-		} else if result.Status == "ERROR" {
-			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: result.Error.Error()}
-			return &response, nil
-		}
-
-		response.Status = &services.CommonStatus{Status: services.Status_OK}
-		response.RecordId = result.RecordID
-		response.InitialEntry = result.InitialEntry
-
-	}
-
-	return &response, nil
-
-}
-
 func (c RecordService) FindRecord(ctx context.Context, request *services.FindRecordRequest) (*services.FindRecordResponse, error) {
 
 	// tracing

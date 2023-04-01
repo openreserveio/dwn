@@ -156,26 +156,6 @@ func (mr *MockRecordServiceClientMockRecorder) Query(ctx, in interface{}, opts .
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockRecordServiceClient)(nil).Query), varargs...)
 }
 
-// StoreRecord mocks base method.
-func (m *MockRecordServiceClient) StoreRecord(ctx context.Context, in *services.StoreRecordRequest, opts ...grpc.CallOption) (*services.StoreRecordResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, in}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "StoreRecord", varargs...)
-	ret0, _ := ret[0].(*services.StoreRecordResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// StoreRecord indicates an expected call of StoreRecord.
-func (mr *MockRecordServiceClientMockRecorder) StoreRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRecord", reflect.TypeOf((*MockRecordServiceClient)(nil).StoreRecord), varargs...)
-}
-
 // ValidateRecord mocks base method.
 func (m *MockRecordServiceClient) ValidateRecord(ctx context.Context, in *services.ValidateRecordRequest, opts ...grpc.CallOption) (*services.ValidateRecordResponse, error) {
 	m.ctrl.T.Helper()
@@ -327,21 +307,6 @@ func (m *MockRecordServiceServer) Query(arg0 context.Context, arg1 *services.Que
 func (mr *MockRecordServiceServerMockRecorder) Query(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockRecordServiceServer)(nil).Query), arg0, arg1)
-}
-
-// StoreRecord mocks base method.
-func (m *MockRecordServiceServer) StoreRecord(arg0 context.Context, arg1 *services.StoreRecordRequest) (*services.StoreRecordResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreRecord", arg0, arg1)
-	ret0, _ := ret[0].(*services.StoreRecordResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// StoreRecord indicates an expected call of StoreRecord.
-func (mr *MockRecordServiceServerMockRecorder) StoreRecord(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRecord", reflect.TypeOf((*MockRecordServiceServer)(nil).StoreRecord), arg0, arg1)
 }
 
 // ValidateRecord mocks base method.

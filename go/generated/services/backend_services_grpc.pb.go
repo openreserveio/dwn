@@ -19,7 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RecordService_StoreRecord_FullMethodName      = "/services.RecordService/StoreRecord"
 	RecordService_FindRecord_FullMethodName       = "/services.RecordService/FindRecord"
 	RecordService_CreateSchema_FullMethodName     = "/services.RecordService/CreateSchema"
 	RecordService_ValidateRecord_FullMethodName   = "/services.RecordService/ValidateRecord"
@@ -34,7 +33,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RecordServiceClient interface {
-	StoreRecord(ctx context.Context, in *StoreRecordRequest, opts ...grpc.CallOption) (*StoreRecordResponse, error)
 	FindRecord(ctx context.Context, in *FindRecordRequest, opts ...grpc.CallOption) (*FindRecordResponse, error)
 	CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*CreateSchemaResponse, error)
 	ValidateRecord(ctx context.Context, in *ValidateRecordRequest, opts ...grpc.CallOption) (*ValidateRecordResponse, error)
@@ -52,15 +50,6 @@ type recordServiceClient struct {
 
 func NewRecordServiceClient(cc grpc.ClientConnInterface) RecordServiceClient {
 	return &recordServiceClient{cc}
-}
-
-func (c *recordServiceClient) StoreRecord(ctx context.Context, in *StoreRecordRequest, opts ...grpc.CallOption) (*StoreRecordResponse, error) {
-	out := new(StoreRecordResponse)
-	err := c.cc.Invoke(ctx, RecordService_StoreRecord_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *recordServiceClient) FindRecord(ctx context.Context, in *FindRecordRequest, opts ...grpc.CallOption) (*FindRecordResponse, error) {
@@ -139,7 +128,6 @@ func (c *recordServiceClient) Delete(ctx context.Context, in *DeleteRecordReques
 // All implementations must embed UnimplementedRecordServiceServer
 // for forward compatibility
 type RecordServiceServer interface {
-	StoreRecord(context.Context, *StoreRecordRequest) (*StoreRecordResponse, error)
 	FindRecord(context.Context, *FindRecordRequest) (*FindRecordResponse, error)
 	CreateSchema(context.Context, *CreateSchemaRequest) (*CreateSchemaResponse, error)
 	ValidateRecord(context.Context, *ValidateRecordRequest) (*ValidateRecordResponse, error)
@@ -156,9 +144,6 @@ type RecordServiceServer interface {
 type UnimplementedRecordServiceServer struct {
 }
 
-func (UnimplementedRecordServiceServer) StoreRecord(context.Context, *StoreRecordRequest) (*StoreRecordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreRecord not implemented")
-}
 func (UnimplementedRecordServiceServer) FindRecord(context.Context, *FindRecordRequest) (*FindRecordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindRecord not implemented")
 }
@@ -194,24 +179,6 @@ type UnsafeRecordServiceServer interface {
 
 func RegisterRecordServiceServer(s grpc.ServiceRegistrar, srv RecordServiceServer) {
 	s.RegisterService(&RecordService_ServiceDesc, srv)
-}
-
-func _RecordService_StoreRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreRecordRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RecordServiceServer).StoreRecord(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RecordService_StoreRecord_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RecordServiceServer).StoreRecord(ctx, req.(*StoreRecordRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _RecordService_FindRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -365,10 +332,6 @@ var RecordService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "services.RecordService",
 	HandlerType: (*RecordServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "StoreRecord",
-			Handler:    _RecordService_StoreRecord_Handler,
-		},
 		{
 			MethodName: "FindRecord",
 			Handler:    _RecordService_FindRecord_Handler,

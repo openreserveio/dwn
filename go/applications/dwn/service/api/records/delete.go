@@ -11,12 +11,12 @@ import (
 func RecordsDelete(ctx context.Context, collSvcClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, childSpan := observability.Tracer.Start(ctx, "RecordsDelete")
-	defer childSpan.End()
+	ctx, sp := observability.Tracer.Start(ctx, "api.records.RecordsDelete")
+	defer sp.End()
 
 	var messageResultObj model.MessageResultObject
 
-	messageResultObj.Status = model.ResponseStatus{Code: http.StatusMethodNotAllowed, Detail: "CollectionDelete for next iteration"}
+	messageResultObj.Status = model.ResponseStatus{Code: http.StatusMethodNotAllowed, Detail: "RecordsDelete for next iteration"}
 
 	return messageResultObj
 

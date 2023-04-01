@@ -28,19 +28,6 @@ message CommonStatus {
   * RECORD SERVICE
   */
 
- message StoreRecordRequest {
-
-   bytes message = 1;
-
- }
-
- message StoreRecordResponse {
-    CommonStatus status = 1;
-    string recordId = 2;
-    string ownerDID = 3;
-    bool initialEntry = 4;
- }
-
  message FindRecordRequest {
 
     QueryType queryType = 1;
@@ -121,7 +108,6 @@ message CommonStatus {
 
  service RecordService {
 
-    rpc StoreRecord(StoreRecordRequest) returns (StoreRecordResponse) {}
     rpc FindRecord(FindRecordRequest) returns (FindRecordResponse) {}
 
     rpc CreateSchema(CreateSchemaRequest) returns (CreateSchemaResponse) {}

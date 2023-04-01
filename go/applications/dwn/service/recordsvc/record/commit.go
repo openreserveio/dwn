@@ -10,6 +10,18 @@ import (
 	"time"
 )
 
+const (
+	ERR_DUPLICATE_INITIAL_ENTRY                     = "Trying to write an Initial Entry to a record that already exists"
+	ERR_COMMIT_TO_RECORD_NOT_FOUND                  = "Trying to commit to a record that does not yet exist"
+	ERR_COMMIT_TO_RECORD_CHECKPOINT_ENTRY_NOT_FOUND = "Trying to commit to a record that does not have a latest checkpoint"
+
+	ERR_MUTATE_UMMUTABLE_VALUE     = "Attempt to mutate an immutable value"
+	ERR_MISMATCHED_COMMIT_STRATEGY = "Commit Strategy value in existing checkpoint record does not match the commitStrategy value specified in the inbound message,"
+
+	ERR_COMMIT_MESSAGE_CREATE_DATE_BEFORE_WRITE = "Commit message's created date is before the latest write message."
+	ERR_INVALID_DATE_FORMAT                     = "Invalid date format, you must use RFC3339 format"
+)
+
 func RecordCommit(ctx context.Context, recordStore storage.RecordStore, recordCommitMessage *model.Message) error {
 
 	// tracing
