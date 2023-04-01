@@ -1,0 +1,9 @@
+apiVersion: v2
+name: dwn-chart
+description: A Helm Chart for a deployment of Open Reserve's DWN to a K8S cluster
+type: application
+version: 1.0.0
+appVersion: "0.1.0"
+maintainers:
+- email: "devops@openreserve.io"
+  name: "Open Reserve DevOps"

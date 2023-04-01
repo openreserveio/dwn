@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: otelcoll-deployment
+  name: {{ .Release.Name }}-otelcoll
   labels:
     app: dwn
     component: otelcoll_deployment
