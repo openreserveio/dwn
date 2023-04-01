@@ -23,10 +23,10 @@ var _ = Describe("WriteHook", func() {
 
 			dwnClient := client.CreateDWNClient(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
-			authorKeypair := client.New()
+			authorKeypair := client.NewKeypair()
 			authorIdentity := client.FromKeypair(authorKeypair)
 
-			recipientKeypair := client.New()
+			recipientKeypair := client.NewKeypair()
 			recipientIdentity := client.FromKeypair(recipientKeypair)
 
 			bodyString := fmt.Sprintf("{\"name\":\"testing things\", \"random\":\"%s\"}", uuid.NewString())
@@ -53,7 +53,7 @@ var _ = Describe("WriteHook", func() {
 
 			It("Should create a callback if we update the record", func() {
 
-				err := dwnClient.UpdateData(TEST_SCHEMA, recordId, []byte("YAAAAAAAAS"), client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity)
+				_, err := dwnClient.UpdateData(TEST_SCHEMA, recordId, recordId, []byte("YAAAAAAAAS"), client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity)
 				Expect(err).To(BeNil())
 
 			})
@@ -68,10 +68,10 @@ var _ = Describe("WriteHook", func() {
 
 			dwnClient := client.CreateDWNClientForProtocol(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT), TEST_PROTOCOL, TEST_PROTOCOL_VERSION)
 
-			authorKeypair := client.New()
+			authorKeypair := client.NewKeypair()
 			authorIdentity := client.FromKeypair(authorKeypair)
 
-			recipientKeypair := client.New()
+			recipientKeypair := client.NewKeypair()
 			recipientIdentity := client.FromKeypair(recipientKeypair)
 
 			bodyString := fmt.Sprintf("{\"name\":\"testing things\", \"random\":\"%s\"}", uuid.NewString())

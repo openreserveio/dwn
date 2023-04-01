@@ -19,22 +19,29 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RecordService_StoreRecord_FullMethodName      = "/services.RecordService/StoreRecord"
 	RecordService_FindRecord_FullMethodName       = "/services.RecordService/FindRecord"
 	RecordService_CreateSchema_FullMethodName     = "/services.RecordService/CreateSchema"
 	RecordService_ValidateRecord_FullMethodName   = "/services.RecordService/ValidateRecord"
 	RecordService_InvalidateSchema_FullMethodName = "/services.RecordService/InvalidateSchema"
+	RecordService_Query_FullMethodName            = "/services.RecordService/Query"
+	RecordService_Write_FullMethodName            = "/services.RecordService/Write"
+	RecordService_Commit_FullMethodName           = "/services.RecordService/Commit"
+	RecordService_Delete_FullMethodName           = "/services.RecordService/Delete"
 )
 
 // RecordServiceClient is the client API for RecordService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RecordServiceClient interface {
-	StoreRecord(ctx context.Context, in *StoreRecordRequest, opts ...grpc.CallOption) (*StoreRecordResponse, error)
 	FindRecord(ctx context.Context, in *FindRecordRequest, opts ...grpc.CallOption) (*FindRecordResponse, error)
 	CreateSchema(ctx context.Context, in *CreateSchemaRequest, opts ...grpc.CallOption) (*CreateSchemaResponse, error)
 	ValidateRecord(ctx context.Context, in *ValidateRecordRequest, opts ...grpc.CallOption) (*ValidateRecordResponse, error)
 	InvalidateSchema(ctx context.Context, in *InvalidateSchemaRequest, opts ...grpc.CallOption) (*InvalidateSchemaResponse, error)
+	// Net new go simplify the service
+	Query(ctx context.Context, in *QueryRecordRequest, opts ...grpc.CallOption) (*QueryRecordResponse, error)
+	Write(ctx context.Context, in *WriteRecordRequest, opts ...grpc.CallOption) (*WriteRecordResponse, error)
+	Commit(ctx context.Context, in *CommitRecordRequest, opts ...grpc.CallOption) (*CommitRecordResponse, error)
+	Delete(ctx context.Context, in *DeleteRecordRequest, opts ...grpc.CallOption) (*DeleteRecordResponse, error)
 }
 
 type recordServiceClient struct {
@@ -43,15 +50,6 @@ type recordServiceClient struct {
 
 func NewRecordServiceClient(cc grpc.ClientConnInterface) RecordServiceClient {
 	return &recordServiceClient{cc}
-}
-
-func (c *recordServiceClient) StoreRecord(ctx context.Context, in *StoreRecordRequest, opts ...grpc.CallOption) (*StoreRecordResponse, error) {
-	out := new(StoreRecordResponse)
-	err := c.cc.Invoke(ctx, RecordService_StoreRecord_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *recordServiceClient) FindRecord(ctx context.Context, in *FindRecordRequest, opts ...grpc.CallOption) (*FindRecordResponse, error) {
@@ -90,15 +88,55 @@ func (c *recordServiceClient) InvalidateSchema(ctx context.Context, in *Invalida
 	return out, nil
 }
 
+func (c *recordServiceClient) Query(ctx context.Context, in *QueryRecordRequest, opts ...grpc.CallOption) (*QueryRecordResponse, error) {
+	out := new(QueryRecordResponse)
+	err := c.cc.Invoke(ctx, RecordService_Query_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recordServiceClient) Write(ctx context.Context, in *WriteRecordRequest, opts ...grpc.CallOption) (*WriteRecordResponse, error) {
+	out := new(WriteRecordResponse)
+	err := c.cc.Invoke(ctx, RecordService_Write_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recordServiceClient) Commit(ctx context.Context, in *CommitRecordRequest, opts ...grpc.CallOption) (*CommitRecordResponse, error) {
+	out := new(CommitRecordResponse)
+	err := c.cc.Invoke(ctx, RecordService_Commit_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *recordServiceClient) Delete(ctx context.Context, in *DeleteRecordRequest, opts ...grpc.CallOption) (*DeleteRecordResponse, error) {
+	out := new(DeleteRecordResponse)
+	err := c.cc.Invoke(ctx, RecordService_Delete_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RecordServiceServer is the server API for RecordService service.
 // All implementations must embed UnimplementedRecordServiceServer
 // for forward compatibility
 type RecordServiceServer interface {
-	StoreRecord(context.Context, *StoreRecordRequest) (*StoreRecordResponse, error)
 	FindRecord(context.Context, *FindRecordRequest) (*FindRecordResponse, error)
 	CreateSchema(context.Context, *CreateSchemaRequest) (*CreateSchemaResponse, error)
 	ValidateRecord(context.Context, *ValidateRecordRequest) (*ValidateRecordResponse, error)
 	InvalidateSchema(context.Context, *InvalidateSchemaRequest) (*InvalidateSchemaResponse, error)
+	// Net new go simplify the service
+	Query(context.Context, *QueryRecordRequest) (*QueryRecordResponse, error)
+	Write(context.Context, *WriteRecordRequest) (*WriteRecordResponse, error)
+	Commit(context.Context, *CommitRecordRequest) (*CommitRecordResponse, error)
+	Delete(context.Context, *DeleteRecordRequest) (*DeleteRecordResponse, error)
 	mustEmbedUnimplementedRecordServiceServer()
 }
 
@@ -106,9 +144,6 @@ type RecordServiceServer interface {
 type UnimplementedRecordServiceServer struct {
 }
 
-func (UnimplementedRecordServiceServer) StoreRecord(context.Context, *StoreRecordRequest) (*StoreRecordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreRecord not implemented")
-}
 func (UnimplementedRecordServiceServer) FindRecord(context.Context, *FindRecordRequest) (*FindRecordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindRecord not implemented")
 }
@@ -121,6 +156,18 @@ func (UnimplementedRecordServiceServer) ValidateRecord(context.Context, *Validat
 func (UnimplementedRecordServiceServer) InvalidateSchema(context.Context, *InvalidateSchemaRequest) (*InvalidateSchemaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvalidateSchema not implemented")
 }
+func (UnimplementedRecordServiceServer) Query(context.Context, *QueryRecordRequest) (*QueryRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
+}
+func (UnimplementedRecordServiceServer) Write(context.Context, *WriteRecordRequest) (*WriteRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Write not implemented")
+}
+func (UnimplementedRecordServiceServer) Commit(context.Context, *CommitRecordRequest) (*CommitRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Commit not implemented")
+}
+func (UnimplementedRecordServiceServer) Delete(context.Context, *DeleteRecordRequest) (*DeleteRecordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
 func (UnimplementedRecordServiceServer) mustEmbedUnimplementedRecordServiceServer() {}
 
 // UnsafeRecordServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -132,24 +179,6 @@ type UnsafeRecordServiceServer interface {
 
 func RegisterRecordServiceServer(s grpc.ServiceRegistrar, srv RecordServiceServer) {
 	s.RegisterService(&RecordService_ServiceDesc, srv)
-}
-
-func _RecordService_StoreRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StoreRecordRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RecordServiceServer).StoreRecord(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: RecordService_StoreRecord_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RecordServiceServer).StoreRecord(ctx, req.(*StoreRecordRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _RecordService_FindRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -224,6 +253,78 @@ func _RecordService_InvalidateSchema_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RecordService_Query_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRecordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecordServiceServer).Query(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecordService_Query_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecordServiceServer).Query(ctx, req.(*QueryRecordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecordService_Write_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WriteRecordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecordServiceServer).Write(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecordService_Write_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecordServiceServer).Write(ctx, req.(*WriteRecordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecordService_Commit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommitRecordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecordServiceServer).Commit(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecordService_Commit_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecordServiceServer).Commit(ctx, req.(*CommitRecordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RecordService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRecordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecordServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RecordService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecordServiceServer).Delete(ctx, req.(*DeleteRecordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RecordService_ServiceDesc is the grpc.ServiceDesc for RecordService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -231,10 +332,6 @@ var RecordService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "services.RecordService",
 	HandlerType: (*RecordServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "StoreRecord",
-			Handler:    _RecordService_StoreRecord_Handler,
-		},
 		{
 			MethodName: "FindRecord",
 			Handler:    _RecordService_FindRecord_Handler,
@@ -250,6 +347,22 @@ var RecordService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InvalidateSchema",
 			Handler:    _RecordService_InvalidateSchema_Handler,
+		},
+		{
+			MethodName: "Query",
+			Handler:    _RecordService_Query_Handler,
+		},
+		{
+			MethodName: "Write",
+			Handler:    _RecordService_Write_Handler,
+		},
+		{
+			MethodName: "Commit",
+			Handler:    _RecordService_Commit_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _RecordService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

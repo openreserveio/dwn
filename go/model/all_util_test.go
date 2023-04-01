@@ -6,6 +6,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/datamodel"
@@ -13,6 +14,7 @@ import (
 	"github.com/ipld/go-ipld-prime/node/basicnode"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/openreserveio/dwn/go/client"
 	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/model"
 )
@@ -43,8 +45,20 @@ var _ = Describe("Util", func() {
 
 		Context("With data", func() {
 
-			message := model.CreateRecordsWriteMessage("did:tmp:10", "did:tmp:20", "", "", "https://openreserve.io/schemas/test.json", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"))
+			protocolDefinition := model.ProtocolDefinition{
+				ContextID:       "",
+				Protocol:        "",
+				ProtocolVersion: "",
+			}
+
+			authorKeypair := client.NewKeypair()
+			authorID := client.FromKeypair(authorKeypair)
+			recipKeypair := client.NewKeypair()
+			recipID := client.FromKeypair(recipKeypair)
+
+			message := model.CreateInitialRecordsWriteMessage(authorID.DID, recipID.DID, &protocolDefinition, "https://openreserve.io/schemas/test.json", model.DATA_FORMAT_JSON, []byte("{\"name\":\"test\"}"))
 			decodedData, err := base64.URLEncoding.DecodeString(message.Data)
+			println(fmt.Sprintf("Message Record ID:  %v", message.RecordID))
 
 			It("The Data should be decoded and match what was passed in", func() {
 
@@ -59,10 +73,10 @@ var _ = Describe("Util", func() {
 				Expect(message).ToNot(BeNil())
 
 				Expect(message.Processing.Nonce).ToNot(BeEmpty())
-				Expect(message.Processing.AuthorDID).To(Equal("did:tmp:10"))
-				Expect(message.Processing.RecipientDID).To(Equal("did:tmp:20"))
+				Expect(message.Processing.AuthorDID).To(Equal(authorID.DID))
+				Expect(message.Processing.RecipientDID).To(Equal(recipID.DID))
 
-				Expect(message.Descriptor.Method).To(Equal("CollectionsWrite"))
+				Expect(message.Descriptor.Method).To(Equal(model.METHOD_RECORDS_WRITE))
 				Expect(message.Descriptor.DataCID).ToNot(BeEmpty())
 				Expect(message.Descriptor.DataFormat).To(Equal(model.DATA_FORMAT_JSON))
 

@@ -3,22 +3,73 @@ package model
 import (
 	"bytes"
 	"github.com/ipfs/go-cid"
+	"github.com/ipld/go-ipld-prime"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/datamodel"
 	"github.com/ipld/go-ipld-prime/fluent/qp"
 	"github.com/ipld/go-ipld-prime/node/basicnode"
+	"github.com/ipld/go-ipld-prime/node/bindnode"
+	"github.com/ipld/go-ipld-prime/schema"
+	mh "github.com/multiformats/go-multihash"
 )
+
+var DescriptorSchemaType schema.Type
+
+func init() {
+
+	descriptorSchemaBytes := []byte(`
+
+type Descriptor struct {
+  method String
+  dataCid String
+  dataFormat String
+  filter DescriptorFilter
+  parentId String
+  protocol String
+  protocolVersion String
+  schema String
+  commitStrategy String
+  published Bool
+  dateCreated String
+  datePublished nullable String 
+  uri String
+}
+
+type DescriptorFilter struct {
+  schema String
+  recordId String
+  contextId String
+  protocol String
+  protocolVersion String
+  dataFormat String
+  dateSort String
+}
+
+
+`)
+
+	ts, err := ipld.LoadSchemaBytes(descriptorSchemaBytes)
+	if err != nil {
+		panic(err)
+	}
+	DescriptorSchemaType = ts.TypeByName("Descriptor")
+
+}
 
 func CreateCIDFromNode(node datamodel.Node) cid.Cid {
 
 	var buf bytes.Buffer
 	dagcbor.Encode(node, &buf)
 
-	cidPrefix := cid.Prefix{
-		Version: 1,
+	cidBuilder := cid.V1Builder{
+		MhType:   mh.SHA2_256,
+		MhLength: -1,
 	}
-	cid, _ := cidPrefix.Sum(buf.Bytes())
-	return cid
+	contentCID, err := cidBuilder.Sum(buf.Bytes())
+	if err != nil {
+		return cid.Cid{}
+	}
+	return contentCID
 
 }
 
@@ -38,12 +89,7 @@ func CreateRecordCID(descriptorCID string, processingCID string) string {
 
 func CreateDataCID(data string) string {
 
-	d, err := qp.BuildList(basicnode.Prototype.Any, 1, func(la datamodel.ListAssembler) {
-		qp.ListEntry(la, qp.String(data))
-	})
-	if err != nil {
-		return ""
-	}
+	d := bindnode.Wrap(&data, nil).Representation()
 
 	return CreateCIDFromNode(d).String()
 
@@ -52,47 +98,11 @@ func CreateDataCID(data string) string {
 // See:
 func CreateDescriptorCID(descriptor Descriptor) string {
 
-	d, err := qp.BuildMap(basicnode.Prototype.Any, 1, func(ma datamodel.MapAssembler) {
-
-		qp.MapEntry(ma, "method", qp.String(descriptor.Method))
-
-		if descriptor.DataCID != "" {
-			qp.MapEntry(ma, "dataCid", qp.String(descriptor.DataCID))
-			qp.MapEntry(ma, "dataFormat", qp.String(descriptor.DataFormat))
-		}
-
-		if descriptor.ParentID != "" {
-			qp.MapEntry(ma, "parentId", qp.String(descriptor.ParentID))
-		}
-
-		if descriptor.Protocol != "" {
-			qp.MapEntry(ma, "protocol", qp.String(descriptor.Protocol))
-			qp.MapEntry(ma, "protocolVersion", qp.String(descriptor.ProtocolVersion))
-		}
-
-		if descriptor.Schema != "" {
-			qp.MapEntry(ma, "schema", qp.String(descriptor.Schema))
-		}
-
-		if descriptor.CommitStrategy != "" {
-			qp.MapEntry(ma, "commitStrategy", qp.String(descriptor.CommitStrategy))
-		}
-
-		qp.MapEntry(ma, "published", qp.Bool(descriptor.Published))
-
-		if !descriptor.DateCreated.IsZero() {
-			qp.MapEntry(ma, "dateCreated", qp.String(descriptor.DateCreated.String()))
-		}
-		if !descriptor.DatePublished.IsZero() {
-			qp.MapEntry(ma, "datePublished", qp.String(descriptor.DatePublished.String()))
-		}
-
-	})
-	if err != nil {
+	node := bindnode.Wrap(&descriptor, DescriptorSchemaType).Representation()
+	if node.IsNull() {
 		return ""
 	}
-
-	return CreateCIDFromNode(d).String()
+	return CreateCIDFromNode(node).String()
 
 }
 

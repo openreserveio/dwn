@@ -55,6 +55,10 @@ push-docker-multiplatform:
 	docker buildx build --platform=$(PLATFORMS) --push -f applications/pkg/docker/Dockerfile-notificationsvc -t ghcr.io/openreserveio/notificationsvc:latest -t ghcr.io/openreserveio/notificationsvc:$(SEMVER) .
 
 
+build-executable:
+	mkdir -p build/release
+	cd applications/dwn && go build -o ../../build/release/dwn-$(SEMVER) .
+
 build-release-executables:
 	mkdir -p build/release
 	cd applications/dwn && GOOS=darwin GOARCH=arm64 go build -o ../../build/release/dwn-darwin-arm64-$(SEMVER) .

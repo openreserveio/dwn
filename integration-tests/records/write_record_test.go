@@ -2,6 +2,7 @@ package records_test
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/openreserveio/dwn/go/client"
@@ -18,13 +19,14 @@ var _ = Describe("Write Record", func() {
 
 		dwnClient := client.CreateDWNClient(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 
-		authorKeypair := client.New()
+		authorKeypair := client.NewKeypair()
 		authorIdentity := client.FromKeypair(authorKeypair)
 
-		recipientKeypair := client.New()
+		recipientKeypair := client.NewKeypair()
 		recipientIdentity := client.FromKeypair(recipientKeypair)
 
-		body := []byte("{\"name\":\"test\"}")
+		randomUUID := uuid.NewString()
+		body := []byte(fmt.Sprintf("{\"name\":\"test_%s\", \"status\":\"APPROVED\"}", randomUUID))
 
 		It("Stores the message correctly as its initial entry", func() {
 
@@ -38,14 +40,20 @@ var _ = Describe("Write Record", func() {
 
 		It("Creates a new entry, then updates it", func() {
 
-			body := []byte("{\"name\":\"test_two\", \"status\":\"APPROVED\"}")
+			body := []byte(fmt.Sprintf("{\"name\":\"test_%s\", \"status\":\"APPROVED\"}", randomUUID))
 			recordId, err := dwnClient.SaveData(TEST_SCHEMA, body, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity, &recipientIdentity)
 			Expect(err).To(BeNil())
 			Expect(recordId).ToNot(BeEmpty())
 
-			bodyUpdated := []byte("{\"name\":\"test_two_changed\", \"status\":\"APPROVED_changed\"}")
-			err = dwnClient.UpdateData(TEST_SCHEMA, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
+			bodyUpdated := []byte(fmt.Sprintf("{\"name\":\"test_%s\", \"status\":\"APPROVED_CHANGED\"}", randomUUID))
+			newRecordId, err := dwnClient.UpdateData(TEST_SCHEMA, recordId, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
 			Expect(err).To(BeNil())
+			Expect(newRecordId).ToNot(BeEmpty())
+
+			_, data, _, err := dwnClient.GetData(TEST_SCHEMA, recordId, &recipientIdentity)
+			Expect(err).To(BeNil())
+			Expect(data).ToNot(BeNil())
+			Expect(data).To(Equal(bodyUpdated))
 
 		})
 

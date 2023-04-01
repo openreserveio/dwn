@@ -17,55 +17,155 @@ const (
 	METHOD_HOOKS_DELETE = "HooksDelete"
 )
 
-func CreateRecordsWriteMessage(authorDID string, recipientDID string, protocol string, protocolVersion string, schema string, dataFormat string, data []byte) *Message {
+type ProtocolDefinition struct {
+	ContextID       string
+	Protocol        string
+	ProtocolVersion string
+}
 
-	// If there is data, base64 encode it in string form
-	var encodedData string = ""
-	if data != nil {
-		encodedData = base64.URLEncoding.EncodeToString(data)
+func CreateQueryRecordsMessage(schemaUri string, recordId string, protocolDef *ProtocolDefinition, requestorDID string) *Message {
+
+	queryDescriptor := Descriptor{
+		Method: METHOD_RECORDS_QUERY,
+		Filter: DescriptorFilter{
+			RecordID:        recordId,
+			Schema:          schemaUri,
+			Protocol:        protocolDef.Protocol,
+			ProtocolVersion: protocolDef.ProtocolVersion,
+		},
 	}
 
-	// create the data CID if there is data
-	var dataCID string = ""
-	if encodedData != "" {
-		dataCID = CreateDataCID(encodedData)
+	queryMessageProcessing := MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    requestorDID,
+		RecipientDID: requestorDID,
 	}
 
-	// Descriptor
-	var messageDescriptorCID string = ""
-	messageDesc := Descriptor{
+	queryMessage := Message{
+		ContextID:  protocolDef.ContextID,
+		Processing: queryMessageProcessing,
+		Descriptor: queryDescriptor,
+	}
+
+	return &queryMessage
+
+}
+
+func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, previousRecordId string, protocolDef *ProtocolDefinition, schemaUri string, dataFormat string, data []byte) *Message {
+
+	// TODO:  How to deal with Context IDs?
+
+	// Encode your data
+	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
+	dataCID := CreateDataCID(dataEncoded)
+
+	descriptor := Descriptor{
 		Method:          METHOD_RECORDS_WRITE,
 		DataCID:         dataCID,
 		DataFormat:      dataFormat,
-		ParentID:        "",
-		Protocol:        protocol,
-		ProtocolVersion: protocolVersion,
-		Schema:          schema,
+		ParentID:        previousRecordId,
+		Protocol:        protocolDef.Protocol,
+		ProtocolVersion: protocolDef.ProtocolVersion,
+		Schema:          schemaUri,
 		CommitStrategy:  "",
-		DateCreated:     time.Now(),
+		Published:       false,
+		DateCreated:     time.Now().Format(time.RFC3339),
+		DatePublished:   nil,
 	}
-	messageDescriptorCID = CreateDescriptorCID(messageDesc)
 
-	// Message Processing
-	var processingCID string = ""
-	messageProcessing := MessageProcessing{
+	processing := MessageProcessing{
 		Nonce:        uuid.NewString(),
 		AuthorDID:    authorDID,
 		RecipientDID: recipientDID,
 	}
-	processingCID = CreateProcessingCID(messageProcessing)
 
-	recordId := CreateRecordCID(messageDescriptorCID, processingCID)
+	descCID := CreateDescriptorCID(descriptor)
+	mpCID := CreateProcessingCID(processing)
+	recordCID := CreateRecordCID(descCID, mpCID)
 
-	msg := Message{
-		RecordID:   recordId,
-		ContextID:  "",
-		Data:       encodedData,
-		Processing: messageProcessing,
-		Descriptor: messageDesc,
+	message := Message{
+		RecordID:   recordCID,
+		ContextID:  protocolDef.ContextID,
+		Data:       dataEncoded,
+		Processing: processing,
+		Descriptor: descriptor,
 	}
 
-	return &msg
+	return &message
+
+}
+
+func CreateRecordsCommitMessage(commitWriteMessageRecordId string, schemaUrl string, committerDID string) *Message {
+
+	// TODO:  How to deal with Context IDs?
+
+	descriptor := Descriptor{
+		Method:         METHOD_RECORDS_COMMIT,
+		ParentID:       commitWriteMessageRecordId,
+		Schema:         schemaUrl,
+		CommitStrategy: "",
+		DateCreated:    time.Now().Format(time.RFC3339),
+	}
+
+	processing := MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    committerDID,
+		RecipientDID: committerDID,
+	}
+
+	descCID := CreateDescriptorCID(descriptor)
+	mpCID := CreateProcessingCID(processing)
+	recordCID := CreateRecordCID(descCID, mpCID)
+
+	message := Message{
+		RecordID:   recordCID,
+		Processing: processing,
+		Descriptor: descriptor,
+	}
+
+	return &message
+
+}
+
+func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, protocolDef *ProtocolDefinition, schema string, dataFormat string, data []byte) *Message {
+
+	// Encode your data
+	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
+	dataCID := CreateDataCID(dataEncoded)
+
+	descriptor := Descriptor{
+		Method:          METHOD_RECORDS_WRITE,
+		DataCID:         dataCID,
+		DataFormat:      dataFormat,
+		ParentID:        "",
+		Protocol:        protocolDef.Protocol,
+		ProtocolVersion: protocolDef.ProtocolVersion,
+		Schema:          schema,
+		CommitStrategy:  "",
+		Published:       false,
+		DateCreated:     time.Now().Format(time.RFC3339),
+		DatePublished:   nil,
+	}
+
+	processing := MessageProcessing{
+		Nonce:        uuid.NewString(),
+		AuthorDID:    authorDID,
+		RecipientDID: recipientDID,
+	}
+
+	descCID := CreateDescriptorCID(descriptor)
+	mpCID := CreateProcessingCID(processing)
+	recordCID := CreateRecordCID(descCID, mpCID)
+
+	message := Message{
+		RecordID:   recordCID,
+		ContextID:  protocolDef.ContextID,
+		Data:       dataEncoded,
+		Processing: processing,
+		Descriptor: descriptor,
+	}
+
+	return &message
 
 }
 

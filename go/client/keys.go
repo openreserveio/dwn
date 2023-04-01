@@ -11,7 +11,7 @@ type Keypair struct {
 	PublicKey  *ecdsa.PublicKey
 }
 
-func New() Keypair {
+func NewKeypair() Keypair {
 
 	privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	publicKey := &privateKey.PublicKey

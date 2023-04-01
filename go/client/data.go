@@ -4,193 +4,152 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/go-resty/resty/v2"
-	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/model"
-	"github.com/openreserveio/dwn/go/storage"
 	"net/http"
-	"time"
 )
 
-func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) ([]byte, string, error) {
+func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) (*model.Message, []byte, string, error) {
 
-	queryDescriptor := model.Descriptor{
-		Method: model.METHOD_RECORDS_QUERY,
-		Filter: model.DescriptorFilter{
-			RecordID: recordId,
-			Schema:   schemaUrl,
-		},
+	protocolDef := model.ProtocolDefinition{
+		ContextID:       "",
+		Protocol:        client.Protocol,
+		ProtocolVersion: client.ProtocolVersion,
 	}
+	queryMessage := model.CreateQueryRecordsMessage(schemaUrl, recordId, &protocolDef, requestorIdentity.DID)
 
-	queryMessageProcessing := model.MessageProcessing{
-		Nonce:        uuid.NewString(),
-		AuthorDID:    requestorIdentity.DID,
-		RecipientDID: requestorIdentity.DID,
-	}
-
-	queryMessage := model.Message{
-		ContextID:  "",
-		Processing: queryMessageProcessing,
-		Descriptor: queryDescriptor,
-	}
-
-	authorization := model.CreateAuthorization(&queryMessage, *requestorIdentity.Keypair.PrivateKey)
-	attestation := model.CreateAttestation(&queryMessage, *requestorIdentity.Keypair.PrivateKey)
+	authorization := model.CreateAuthorization(queryMessage, *requestorIdentity.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(queryMessage, *requestorIdentity.Keypair.PrivateKey)
 	queryMessage.Attestation = attestation
 	queryMessage.Authorization = authorization
 
-	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, queryMessage)
-
-	res, err := resty.New().R().
-		SetBody(ro).
-		SetHeader("Content-Type", "application/json").
-		Post(client.DWNUrlBase)
-
+	responseObject, err := client.CallDWNHTTP(queryMessage)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, "", err
 	}
 
-	var responseObject model.ResponseObject
-	err = json.Unmarshal(res.Body(), &responseObject)
-	if err != nil {
-		return nil, "", err
+	// If the da†a was not found, return nil, "", nil
+	if len(responseObject.Replies) > 0 {
+
+		if responseObject.Replies[0].Status.Code == http.StatusNotFound {
+			return nil, nil, "", nil
+		}
+
 	}
 
-	// TODO: Change this return object -- shouldn't be a message entry from storage package
-	var entry storage.MessageEntry
-	json.Unmarshal(responseObject.Replies[0].Entries[0].Result, &entry)
-	data, err := base64.RawURLEncoding.DecodeString(entry.Data)
-	if err != nil {
-		return nil, "", err
+	var data []byte
+	var dataFormat string
+	var entry model.Message
+
+	if len(responseObject.Replies[0].Entries) > 0 {
+
+		// TODO: Change this return object -- shouldn't be a message entry from storage package
+		json.Unmarshal(responseObject.Replies[0].Entries[0].Result, &entry)
+		data, err = base64.RawURLEncoding.DecodeString(entry.Data)
+		if err != nil {
+			return nil, nil, "", err
+		}
+		dataFormat = entry.Descriptor.DataFormat
+
 	}
 
-	return data, entry.Descriptor.DataFormat, nil
+	return &entry, data, dataFormat, nil
 
 }
 
 func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat string, dataAuthor *Identity, dataRecipient *Identity) (string, error) {
 
-	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
-
-	descriptor := model.Descriptor{
-		Method:          model.METHOD_RECORDS_WRITE,
-		DataCID:         model.CreateDataCID(dataEncoded),
-		DataFormat:      dataFormat,
-		ParentID:        "",
+	protocolDef := model.ProtocolDefinition{
+		ContextID:       "",
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
-		Schema:          schemaUrl,
-		CommitStrategy:  "",
-		Published:       false,
-		DateCreated:     time.Now(),
-		DatePublished:   nil,
 	}
 
-	processing := model.MessageProcessing{
-		Nonce:        uuid.NewString(),
-		AuthorDID:    dataAuthor.DID,
-		RecipientDID: dataRecipient.DID,
-	}
+	recordsWriteMessage := model.CreateInitialRecordsWriteMessage(dataAuthor.DID, dataRecipient.DID, &protocolDef, schemaUrl, dataFormat, data)
 
-	descriptorCID := model.CreateDescriptorCID(descriptor)
-	processingCID := model.CreateProcessingCID(processing)
-	recordId := model.CreateRecordCID(descriptorCID, processingCID)
+	attestation := model.CreateAttestation(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
+	recordsWriteMessage.Attestation = attestation
 
-	message := model.Message{
-		RecordID:   recordId,
-		ContextID:  "",
-		Data:       dataEncoded,
-		Processing: processing,
-		Descriptor: descriptor,
-	}
+	authorization := model.CreateAuthorization(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
+	recordsWriteMessage.Authorization = authorization
 
-	attestation := model.CreateAttestation(&message, *dataAuthor.Keypair.PrivateKey)
-	message.Attestation = attestation
-
-	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, message)
-
-	res, err := resty.New().R().
-		SetBody(ro).
-		SetHeader(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_APPLICATION_JSON).
-		Post(client.DWNUrlBase)
-
+	responseObject, err := client.CallDWNHTTP(recordsWriteMessage)
 	if err != nil {
 		return "", err
 	}
-	if !res.IsSuccess() {
-		return "", errors.New("Unable to create data")
-	}
-
-	var responseObject model.ResponseObject
-	err = json.Unmarshal(res.Body(), &responseObject)
 
 	if responseObject.Status.Code != http.StatusOK {
 		return "", errors.New(responseObject.Status.Detail)
+	}
+
+	if len(responseObject.Replies) < 1 {
+		return "", errors.New("Wrong number of message replies.")
+	}
+
+	if responseObject.Replies[0].Status.Code != http.StatusOK {
+		return "", errors.New(responseObject.Replies[0].Status.Detail)
+	}
+
+	if len(responseObject.Replies[0].Entries) < 1 {
+		return "", errors.New("No Reply Entries as expected")
 	}
 
 	return string(responseObject.Replies[0].Entries[0].Result), nil
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) error {
+func (client *DWNClient) UpdateData(schemaUrl string, umbrellaRecordId string, latestRecordWriteId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
 
-	dataEncoded := base64.RawURLEncoding.EncodeToString(data)
-
-	descriptor := model.Descriptor{
-		Method:          model.METHOD_RECORDS_WRITE,
-		DataCID:         model.CreateDataCID(dataEncoded),
-		DataFormat:      dataFormat,
-		ParentID:        parentRecordId,
+	// Create a Write pointing back to the previous latest entry,
+	// then do a commit on it
+	protocolDef := model.ProtocolDefinition{
+		ContextID:       "",
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
-		Schema:          schemaUrl,
-		CommitStrategy:  "",
-		Published:       false,
-		DateCreated:     time.Now(),
-		DatePublished:   nil,
 	}
 
-	processing := model.MessageProcessing{
-		Nonce:        uuid.NewString(),
-		AuthorDID:    dataUpdater.DID,
-		RecipientDID: dataUpdater.DID,
-	}
-
-	message := model.Message{
-		RecordID:   parentRecordId,
-		ContextID:  "",
-		Data:       dataEncoded,
-		Processing: processing,
-		Descriptor: descriptor,
-	}
-
-	attestation := model.CreateAttestation(&message, *dataUpdater.Keypair.PrivateKey)
-	message.Attestation = attestation
-
-	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, message)
-
-	res, err := resty.New().R().
-		SetBody(ro).
-		SetHeader(HEADER_CONTENT_TYPE_KEY, HEADER_CONTENT_TYPE_APPLICATION_JSON).
-		Post(client.DWNUrlBase)
-
+	// Query for the latest
+	latestDataMessage, _, _, err := client.GetData(schemaUrl, umbrellaRecordId, dataUpdater)
 	if err != nil {
-		return err
+		return "", err
 	}
-	if !res.IsSuccess() {
-		return errors.New("Unable to create data")
+	if latestDataMessage == nil {
+		return "", errors.New("No latest data message found")
 	}
 
-	var responseObject model.ResponseObject
-	err = json.Unmarshal(res.Body(), &responseObject)
+	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, latestRecordWriteId, &protocolDef, schemaUrl, dataFormat, data)
+	writeAttestation := model.CreateAttestation(writeMessage, *dataUpdater.Keypair.PrivateKey)
+	writeMessage.Attestation = writeAttestation
+	writeAuthorization := model.CreateAuthorization(writeMessage, *dataUpdater.Keypair.PrivateKey)
+	writeMessage.Authorization = writeAuthorization
+
+	// Create the corresponding COMMIT
+	commitMessage := model.CreateRecordsCommitMessage(writeMessage.RecordID, writeMessage.Descriptor.Schema, dataUpdater.DID)
+	commitAttestation := model.CreateAttestation(commitMessage, *dataUpdater.Keypair.PrivateKey)
+	commitMessage.Attestation = commitAttestation
+	commitAuthorization := model.CreateAuthorization(commitMessage, *dataUpdater.Keypair.PrivateKey)
+	commitMessage.Authorization = commitAuthorization
+
+	responseObject, err := client.CallDWNHTTP(writeMessage, commitMessage)
+	if err != nil {
+		return "", err
+	}
 
 	if responseObject.Status.Code != http.StatusOK {
-		return errors.New(responseObject.Status.Detail)
+		return "", errors.New(responseObject.Status.Detail)
 	}
 
-	return nil
+	if len(responseObject.Replies) < 2 {
+		return "", errors.New("Wrong number of message replies.")
+	}
+
+	if responseObject.Replies[1].Status.Code != http.StatusOK {
+		return "", errors.New(responseObject.Replies[1].Status.Detail)
+	}
+
+	if len(responseObject.Replies[0].Entries) < 1 {
+		return "", errors.New("An updated record ID was not returned")
+	}
+
+	return string(responseObject.Replies[0].Entries[0].Result), nil
 
 }

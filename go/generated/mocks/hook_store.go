@@ -63,6 +63,36 @@ func (mr *MockHookStoreMockRecorder) DeleteHookRecord(ctx, hookRecordId interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHookRecord", reflect.TypeOf((*MockHookStore)(nil).DeleteHookRecord), ctx, hookRecordId)
 }
 
+// FindHookRecordsForDataRecord mocks base method.
+func (m *MockHookStore) FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*storage.HookRecord]*storage.HookConfigurationEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindHookRecordsForDataRecord", ctx, dataRecordId)
+	ret0, _ := ret[0].(map[*storage.HookRecord]*storage.HookConfigurationEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindHookRecordsForDataRecord indicates an expected call of FindHookRecordsForDataRecord.
+func (mr *MockHookStoreMockRecorder) FindHookRecordsForDataRecord(ctx, dataRecordId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindHookRecordsForDataRecord", reflect.TypeOf((*MockHookStore)(nil).FindHookRecordsForDataRecord), ctx, dataRecordId)
+}
+
+// FindHookRecordsForSchemaAndProtocol mocks base method.
+func (m *MockHookStore) FindHookRecordsForSchemaAndProtocol(ctx context.Context, schemaUri, protocol, protocolVersion string) (map[*storage.HookRecord]*storage.HookConfigurationEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindHookRecordsForSchemaAndProtocol", ctx, schemaUri, protocol, protocolVersion)
+	ret0, _ := ret[0].(map[*storage.HookRecord]*storage.HookConfigurationEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindHookRecordsForSchemaAndProtocol indicates an expected call of FindHookRecordsForSchemaAndProtocol.
+func (mr *MockHookStoreMockRecorder) FindHookRecordsForSchemaAndProtocol(ctx, schemaUri, protocol, protocolVersion interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindHookRecordsForSchemaAndProtocol", reflect.TypeOf((*MockHookStore)(nil).FindHookRecordsForSchemaAndProtocol), ctx, schemaUri, protocol, protocolVersion)
+}
+
 // GetHookRecord mocks base method.
 func (m *MockHookStore) GetHookRecord(ctx context.Context, hookRecordId string) (*storage.HookRecord, *storage.HookConfigurationEntry, error) {
 	m.ctrl.T.Helper()

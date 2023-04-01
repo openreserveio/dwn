@@ -36,6 +36,26 @@ func (m *MockRecordServiceClient) EXPECT() *MockRecordServiceClientMockRecorder 
 	return m.recorder
 }
 
+// Commit mocks base method.
+func (m *MockRecordServiceClient) Commit(ctx context.Context, in *services.CommitRecordRequest, opts ...grpc.CallOption) (*services.CommitRecordResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Commit", varargs...)
+	ret0, _ := ret[0].(*services.CommitRecordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Commit indicates an expected call of Commit.
+func (mr *MockRecordServiceClientMockRecorder) Commit(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Commit", reflect.TypeOf((*MockRecordServiceClient)(nil).Commit), varargs...)
+}
+
 // CreateSchema mocks base method.
 func (m *MockRecordServiceClient) CreateSchema(ctx context.Context, in *services.CreateSchemaRequest, opts ...grpc.CallOption) (*services.CreateSchemaResponse, error) {
 	m.ctrl.T.Helper()
@@ -54,6 +74,26 @@ func (mr *MockRecordServiceClientMockRecorder) CreateSchema(ctx, in interface{},
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSchema", reflect.TypeOf((*MockRecordServiceClient)(nil).CreateSchema), varargs...)
+}
+
+// Delete mocks base method.
+func (m *MockRecordServiceClient) Delete(ctx context.Context, in *services.DeleteRecordRequest, opts ...grpc.CallOption) (*services.DeleteRecordResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Delete", varargs...)
+	ret0, _ := ret[0].(*services.DeleteRecordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRecordServiceClientMockRecorder) Delete(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRecordServiceClient)(nil).Delete), varargs...)
 }
 
 // FindRecord mocks base method.
@@ -96,24 +136,24 @@ func (mr *MockRecordServiceClientMockRecorder) InvalidateSchema(ctx, in interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSchema", reflect.TypeOf((*MockRecordServiceClient)(nil).InvalidateSchema), varargs...)
 }
 
-// StoreRecord mocks base method.
-func (m *MockRecordServiceClient) StoreRecord(ctx context.Context, in *services.StoreRecordRequest, opts ...grpc.CallOption) (*services.StoreRecordResponse, error) {
+// Query mocks base method.
+func (m *MockRecordServiceClient) Query(ctx context.Context, in *services.QueryRecordRequest, opts ...grpc.CallOption) (*services.QueryRecordResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "StoreRecord", varargs...)
-	ret0, _ := ret[0].(*services.StoreRecordResponse)
+	ret := m.ctrl.Call(m, "Query", varargs...)
+	ret0, _ := ret[0].(*services.QueryRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StoreRecord indicates an expected call of StoreRecord.
-func (mr *MockRecordServiceClientMockRecorder) StoreRecord(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// Query indicates an expected call of Query.
+func (mr *MockRecordServiceClientMockRecorder) Query(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRecord", reflect.TypeOf((*MockRecordServiceClient)(nil).StoreRecord), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockRecordServiceClient)(nil).Query), varargs...)
 }
 
 // ValidateRecord mocks base method.
@@ -134,6 +174,26 @@ func (mr *MockRecordServiceClientMockRecorder) ValidateRecord(ctx, in interface{
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRecord", reflect.TypeOf((*MockRecordServiceClient)(nil).ValidateRecord), varargs...)
+}
+
+// Write mocks base method.
+func (m *MockRecordServiceClient) Write(ctx context.Context, in *services.WriteRecordRequest, opts ...grpc.CallOption) (*services.WriteRecordResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Write", varargs...)
+	ret0, _ := ret[0].(*services.WriteRecordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Write indicates an expected call of Write.
+func (mr *MockRecordServiceClientMockRecorder) Write(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockRecordServiceClient)(nil).Write), varargs...)
 }
 
 // MockRecordServiceServer is a mock of RecordServiceServer interface.
@@ -159,6 +219,21 @@ func (m *MockRecordServiceServer) EXPECT() *MockRecordServiceServerMockRecorder 
 	return m.recorder
 }
 
+// Commit mocks base method.
+func (m *MockRecordServiceServer) Commit(arg0 context.Context, arg1 *services.CommitRecordRequest) (*services.CommitRecordResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Commit", arg0, arg1)
+	ret0, _ := ret[0].(*services.CommitRecordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Commit indicates an expected call of Commit.
+func (mr *MockRecordServiceServerMockRecorder) Commit(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Commit", reflect.TypeOf((*MockRecordServiceServer)(nil).Commit), arg0, arg1)
+}
+
 // CreateSchema mocks base method.
 func (m *MockRecordServiceServer) CreateSchema(arg0 context.Context, arg1 *services.CreateSchemaRequest) (*services.CreateSchemaResponse, error) {
 	m.ctrl.T.Helper()
@@ -172,6 +247,21 @@ func (m *MockRecordServiceServer) CreateSchema(arg0 context.Context, arg1 *servi
 func (mr *MockRecordServiceServerMockRecorder) CreateSchema(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSchema", reflect.TypeOf((*MockRecordServiceServer)(nil).CreateSchema), arg0, arg1)
+}
+
+// Delete mocks base method.
+func (m *MockRecordServiceServer) Delete(arg0 context.Context, arg1 *services.DeleteRecordRequest) (*services.DeleteRecordResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(*services.DeleteRecordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockRecordServiceServerMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRecordServiceServer)(nil).Delete), arg0, arg1)
 }
 
 // FindRecord mocks base method.
@@ -204,19 +294,19 @@ func (mr *MockRecordServiceServerMockRecorder) InvalidateSchema(arg0, arg1 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InvalidateSchema", reflect.TypeOf((*MockRecordServiceServer)(nil).InvalidateSchema), arg0, arg1)
 }
 
-// StoreRecord mocks base method.
-func (m *MockRecordServiceServer) StoreRecord(arg0 context.Context, arg1 *services.StoreRecordRequest) (*services.StoreRecordResponse, error) {
+// Query mocks base method.
+func (m *MockRecordServiceServer) Query(arg0 context.Context, arg1 *services.QueryRecordRequest) (*services.QueryRecordResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreRecord", arg0, arg1)
-	ret0, _ := ret[0].(*services.StoreRecordResponse)
+	ret := m.ctrl.Call(m, "Query", arg0, arg1)
+	ret0, _ := ret[0].(*services.QueryRecordResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StoreRecord indicates an expected call of StoreRecord.
-func (mr *MockRecordServiceServerMockRecorder) StoreRecord(arg0, arg1 interface{}) *gomock.Call {
+// Query indicates an expected call of Query.
+func (mr *MockRecordServiceServerMockRecorder) Query(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreRecord", reflect.TypeOf((*MockRecordServiceServer)(nil).StoreRecord), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Query", reflect.TypeOf((*MockRecordServiceServer)(nil).Query), arg0, arg1)
 }
 
 // ValidateRecord mocks base method.
@@ -232,6 +322,21 @@ func (m *MockRecordServiceServer) ValidateRecord(arg0 context.Context, arg1 *ser
 func (mr *MockRecordServiceServerMockRecorder) ValidateRecord(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRecord", reflect.TypeOf((*MockRecordServiceServer)(nil).ValidateRecord), arg0, arg1)
+}
+
+// Write mocks base method.
+func (m *MockRecordServiceServer) Write(arg0 context.Context, arg1 *services.WriteRecordRequest) (*services.WriteRecordResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Write", arg0, arg1)
+	ret0, _ := ret[0].(*services.WriteRecordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Write indicates an expected call of Write.
+func (mr *MockRecordServiceServerMockRecorder) Write(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockRecordServiceServer)(nil).Write), arg0, arg1)
 }
 
 // mustEmbedUnimplementedRecordServiceServer mocks base method.
@@ -302,6 +407,26 @@ func NewMockHookServiceClient(ctrl *gomock.Controller) *MockHookServiceClient {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockHookServiceClient) EXPECT() *MockHookServiceClientMockRecorder {
 	return m.recorder
+}
+
+// GetHookByRecordId mocks base method.
+func (m *MockHookServiceClient) GetHookByRecordId(ctx context.Context, in *services.GetHookByRecordIdRequest, opts ...grpc.CallOption) (*services.GetHookByRecordIdResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetHookByRecordId", varargs...)
+	ret0, _ := ret[0].(*services.GetHookByRecordIdResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHookByRecordId indicates an expected call of GetHookByRecordId.
+func (mr *MockHookServiceClientMockRecorder) GetHookByRecordId(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookByRecordId", reflect.TypeOf((*MockHookServiceClient)(nil).GetHookByRecordId), varargs...)
 }
 
 // GetHooksForRecord mocks base method.
@@ -405,6 +530,21 @@ func NewMockHookServiceServer(ctrl *gomock.Controller) *MockHookServiceServer {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockHookServiceServer) EXPECT() *MockHookServiceServerMockRecorder {
 	return m.recorder
+}
+
+// GetHookByRecordId mocks base method.
+func (m *MockHookServiceServer) GetHookByRecordId(arg0 context.Context, arg1 *services.GetHookByRecordIdRequest) (*services.GetHookByRecordIdResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHookByRecordId", arg0, arg1)
+	ret0, _ := ret[0].(*services.GetHookByRecordIdResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHookByRecordId indicates an expected call of GetHookByRecordId.
+func (mr *MockHookServiceServerMockRecorder) GetHookByRecordId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookByRecordId", reflect.TypeOf((*MockHookServiceServer)(nil).GetHookByRecordId), arg0, arg1)
 }
 
 // GetHooksForRecord mocks base method.

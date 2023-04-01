@@ -67,8 +67,8 @@ type MessageProcResult struct {
 func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *model.Message) (*MessageProcResult, error) {
 
 	// Instrumentation
-	ctx, childSpan := observability.Tracer.Start(ctx, "processMessage")
-	defer childSpan.End()
+	ctx, sp := observability.Tracer.Start(ctx, "api.FeatureRouter.processMessage")
+	defer sp.End()
 
 	// Support Simple Test Messages
 	if message.RecordID == "TEST" && message.Data == "TEST" {
@@ -91,35 +91,35 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 	switch message.Descriptor.Method {
 
 	case model.METHOD_RECORDS_QUERY:
-		childSpan.AddEvent("Start Records Query")
+		sp.AddEvent("Start Records Query")
 		messageResult = records.RecordsQuery(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_RECORDS_WRITE:
-		childSpan.AddEvent("Start Records Write")
+		sp.AddEvent("Start Records Write")
 		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, fr.HookServiceClient, message)
 
 	case model.METHOD_RECORDS_COMMIT:
-		childSpan.AddEvent("Start Records Commit")
+		sp.AddEvent("Start Records Commit")
 		messageResult = records.RecordsCommit(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_RECORDS_DELETE:
-		childSpan.AddEvent("Start Records Delete")
+		sp.AddEvent("Start Records Delete")
 		messageResult = records.RecordsDelete(ctx, fr.RecordServiceClient, message)
 
 	case model.METHOD_HOOKS_WRITE:
-		childSpan.AddEvent("Start Hooks Write")
+		sp.AddEvent("Start Hooks Write")
 		messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
 
 	case model.METHOD_HOOKS_QUERY:
-		childSpan.AddEvent("Start Hooks Query")
+		sp.AddEvent("Start Hooks Query")
 		messageResult = hooks.HooksQuery(ctx, fr.HookServiceClient, message)
 
 	case model.METHOD_HOOKS_DELETE:
-		childSpan.AddEvent("Start Hooks Delete")
+		sp.AddEvent("Start Hooks Delete")
 		messageResult = hooks.HooksDelete(ctx, fr.HookServiceClient, message)
 
 	default:
-		childSpan.AddEvent("Bad Method")
+		sp.AddEvent("Bad Method")
 		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
 
 	}
