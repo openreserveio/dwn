@@ -20,3 +20,6 @@ hooksvc:
 notificationsvc:
   replicaCount: 1
   queueNotifyCallback: NotifyCallbackQueue
+
+api:
+  replicaCount: 2
