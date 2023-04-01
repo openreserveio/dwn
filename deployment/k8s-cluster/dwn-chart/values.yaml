@@ -7,3 +7,6 @@ mongodb:
 
 eventsqueue:
   replicaCount: 1
+
+otelcoll:
+  replicaCount: 1

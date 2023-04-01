@@ -6,7 +6,7 @@ metadata:
     app: dwn
     component: otelcoll_deployment
 spec:
-  replicas: 1
+  replicas: {{ .Values.otelcoll.replicaCount }}
   selector:
     matchLabels:
       component: otelcoll
