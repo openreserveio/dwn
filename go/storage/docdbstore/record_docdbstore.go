@@ -162,7 +162,7 @@ func (store *RecordDocumentDBStore) GetRecord(recordId string) *storage.Record {
 func (store *RecordDocumentDBStore) GetRecordForCommit(parentRecordId string) (*storage.Record, *storage.MessageEntry) {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "GetRecordForCommit")
+	_, sp := observability.Tracer.Start(context.Background(), "recordsvc.storage.docdbstore.GetRecordForCommit")
 	defer sp.End()
 
 	// For this, the parent record ID is the record ID of the MESSAGE ENTRY, and then its associated Record

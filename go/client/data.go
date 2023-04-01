@@ -103,7 +103,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, recordId string, parentRecordId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
+func (client *DWNClient) UpdateData(schemaUrl string, recordId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
 
 	// Create a Write pointing back to the previous latest entry,
 	// then do a commit on it
@@ -112,7 +112,14 @@ func (client *DWNClient) UpdateData(schemaUrl string, recordId string, parentRec
 		Protocol:        client.Protocol,
 		ProtocolVersion: client.ProtocolVersion,
 	}
-	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, parentRecordId, &protocolDef, schemaUrl, dataFormat, data)
+
+	// Query for the latest
+	queryMessage := model.CreateQueryRecordsMessage(schemaUrl, recordId, &protocolDef, dataUpdater.DID)
+	if queryMessage == nil {
+		return "", errors.New("Query for latest record was not found")
+	}
+
+	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, queryMessage.RecordID, &protocolDef, schemaUrl, dataFormat, data)
 	writeAttestation := model.CreateAttestation(writeMessage, *dataUpdater.Keypair.PrivateKey)
 	writeMessage.Attestation = writeAttestation
 	writeAuthorization := model.CreateAuthorization(writeMessage, *dataUpdater.Keypair.PrivateKey)

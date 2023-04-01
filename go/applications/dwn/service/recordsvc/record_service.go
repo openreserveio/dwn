@@ -40,7 +40,7 @@ func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error
 func (c RecordService) FindRecord(ctx context.Context, request *services.FindRecordRequest) (*services.FindRecordResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "FindRecord")
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.FindRecord")
 	defer sp.End()
 
 	response := services.FindRecordResponse{}
@@ -48,8 +48,10 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 	// TODO: We are only doing single record finds right now
 	if request.QueryType == services.QueryType_SINGLE_RECORD_BY_ID_SCHEMA_URI {
 
+		sp.AddEvent(fmt.Sprintf("Finding latest record by ID %s and schema URI %s", request.RecordId, request.SchemaURI))
 		result, err := record.FindRecordBySchemaAndRecordID(ctx, c.RecordStore, request.SchemaURI, request.RecordId)
 		if err != nil {
+			sp.RecordError(err)
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
 			return &response, nil
 		}
@@ -57,6 +59,7 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 		switch result.Status {
 
 		case "OK":
+			sp.AddEvent("Found record")
 			response.Status = &services.CommonStatus{Status: services.Status_OK}
 			response.SchemaURI = request.SchemaURI
 			response.Writers = []string{result.LatestEntry.Processing.AuthorDID}
@@ -69,16 +72,19 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 			return &response, nil
 
 		case "NOT_FOUND":
+			sp.AddEvent("Record not found")
 			response.Status = &services.CommonStatus{Status: services.Status_NOT_FOUND}
 			return &response, nil
 
 		default:
+			sp.AddEvent("Some kind of error")
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: "Some kind of error"}
 			return &response, nil
 		}
 
 	} else if request.QueryType == services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT {
 
+		sp.AddEvent(fmt.Sprintf("Finding latest record ENTRY for COMMIT by ID %s and schema URI %s", request.RecordId, request.SchemaURI))
 		result, err := record.FindRecordForCommit(ctx, c.RecordStore, request.SchemaURI, request.RecordId)
 		if err != nil {
 			response.Status = &services.CommonStatus{Status: services.Status_ERROR, Details: err.Error()}
@@ -229,6 +235,10 @@ func (c RecordService) CreateSchema(ctx context.Context, request *services.Creat
 }
 
 func (c RecordService) ValidateRecord(ctx context.Context, request *services.ValidateRecordRequest) (*services.ValidateRecordResponse, error) {
+
+	// tracing
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.ValidateRecord")
+	defer sp.End()
 
 	return &services.ValidateRecordResponse{
 		Status: &services.CommonStatus{Status: services.Status_OK},

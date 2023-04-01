@@ -19,7 +19,7 @@ type FindRecordResult struct {
 func FindRecordBySchemaAndRecordID(ctx context.Context, recordStore storage.RecordStore, schemaUri string, recordId string) (*FindRecordResult, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "FindRecordBySchemaAndRecordID")
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.record.FindRecordBySchemaAndRecordID")
 	defer sp.End()
 
 	collRecord := recordStore.GetRecord(recordId)
@@ -41,11 +41,12 @@ func FindRecordBySchemaAndRecordID(ctx context.Context, recordStore storage.Reco
 func FindRecordForCommit(ctx context.Context, recordStore storage.RecordStore, schemaUri string, parentRecordId string) (*FindRecordResult, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "FindRecordForCommit")
+	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.record.FindRecordForCommit")
 	defer sp.End()
 
 	result := FindRecordResult{}
 
+	sp.AddEvent("Calling Record Store to get record for commit")
 	record, messageEntry := recordStore.GetRecordForCommit(parentRecordId)
 	if record == nil || messageEntry == nil {
 		sp.AddEvent("Unable to find records for Commit")
