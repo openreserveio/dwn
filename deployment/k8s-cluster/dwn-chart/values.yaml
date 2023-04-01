@@ -10,3 +10,6 @@ eventsqueue:
 
 otelcoll:
   replicaCount: 1
+
+recordsvc:
+  replicaCount: 2
