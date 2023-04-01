@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: dwn
+    component: mongodb_deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: mongodb
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+              name: mongodb-port
+          env:
+            - name: "MONGO_INITDB_ROOT_USERNAME"
+              value: "openreserveuser"
+            - name: "MONGO_INITDB_ROOT_PASSWORD"
+              value: "openreservepass"
