@@ -16,3 +16,7 @@ recordsvc:
 
 hooksvc:
   replicaCount: 2
+
+notificationsvc:
+  replicaCount: 1
+  queueNotifyCallback: NotifyCallbackQueue
