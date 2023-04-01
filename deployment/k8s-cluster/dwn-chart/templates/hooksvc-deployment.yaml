@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-hooksvc
+  labels:
+    app: dwn
+    component: hooksvc_deployment
+spec:
+  replicas: {{ .Values.hooksvc.replicaCount }}
+  selector:
+    matchLabels:
+      component: hooksvc
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: hooksvc
+    spec:
+      containers:
+      - name: dwn-hooksvc
+        image: ghcr.io/openreserveio/hooksvc:latest
+        ports:
+          - containerPort: 9001
+            name: dwnhooksvc-port
+        env:
+          - name: "DWN_HOOKSVC.LISTENPORT"
+            value: "9003"
+          - name: "DWN_HOOKSVC.DOCDBCONNECTIONURI"
+            value: "mongodb://openreserveuser:openreservepass@{{ .Release.Name }}-mongodb:27017"
+          - name: "DWN_QUEUESERVICE.CONNECTIONURI"
+            value: "nats://{{ .Release.Name }}-eventsqueue:4222"
+          - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/traces"
+          - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
+            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/metrics"
+        imagePullPolicy: Always

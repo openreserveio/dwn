@@ -13,3 +13,6 @@ otelcoll:
 
 recordsvc:
   replicaCount: 2
+
+hooksvc:
+  replicaCount: 2

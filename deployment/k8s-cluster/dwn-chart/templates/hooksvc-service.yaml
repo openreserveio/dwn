@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-hooksvc
+spec:
+  selector:
+    component: hooksvc
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - protocol: TCP
+      port: 9001
+      targetPort: dwnhooksvc-port
