@@ -7,6 +7,7 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
@@ -86,6 +87,7 @@ func RecordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 
 	sp.AddEvent("Adding Message Entry")
 	commitMessageEntry := storage.MessageEntry{
+		ID:             primitive.NewObjectID(),
 		Message:        *recordCommitMessage,
 		MessageEntryID: uuid.NewString(),
 	}

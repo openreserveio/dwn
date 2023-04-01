@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/openreserveio/dwn/go/model"
-	"github.com/openreserveio/dwn/go/storage"
 	"net/http"
 )
 
-func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) ([]byte, string, error) {
+func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIdentity *Identity) (*model.Message, []byte, string, error) {
 
 	protocolDef := model.ProtocolDefinition{
 		ContextID:       "",
@@ -23,39 +22,37 @@ func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIde
 	queryMessage.Attestation = attestation
 	queryMessage.Authorization = authorization
 
-	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, *queryMessage)
-
-	responseObject, err := client.CallDWNHTTP(ro)
+	responseObject, err := client.CallDWNHTTP(queryMessage)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, "", err
 	}
 
 	// If the da†a was not found, return nil, "", nil
 	if len(responseObject.Replies) > 0 {
 
 		if responseObject.Replies[0].Status.Code == http.StatusNotFound {
-			return nil, "", nil
+			return nil, nil, "", nil
 		}
 
 	}
 
 	var data []byte
 	var dataFormat string
+	var entry model.Message
+
 	if len(responseObject.Replies[0].Entries) > 0 {
 
 		// TODO: Change this return object -- shouldn't be a message entry from storage package
-		var entry storage.MessageEntry
 		json.Unmarshal(responseObject.Replies[0].Entries[0].Result, &entry)
 		data, err = base64.RawURLEncoding.DecodeString(entry.Data)
 		if err != nil {
-			return nil, "", err
+			return nil, nil, "", err
 		}
 		dataFormat = entry.Descriptor.DataFormat
 
 	}
 
-	return data, dataFormat, nil
+	return &entry, data, dataFormat, nil
 
 }
 
@@ -75,10 +72,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 	authorization := model.CreateAuthorization(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
 	recordsWriteMessage.Authorization = authorization
 
-	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, *recordsWriteMessage)
-
-	responseObject, err := client.CallDWNHTTP(ro)
+	responseObject, err := client.CallDWNHTTP(recordsWriteMessage)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +97,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, recordId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
+func (client *DWNClient) UpdateData(schemaUrl string, umbrellaRecordId string, latestRecordWriteId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
 
 	// Create a Write pointing back to the previous latest entry,
 	// then do a commit on it
@@ -114,12 +108,15 @@ func (client *DWNClient) UpdateData(schemaUrl string, recordId string, data []by
 	}
 
 	// Query for the latest
-	queryMessage := model.CreateQueryRecordsMessage(schemaUrl, recordId, &protocolDef, dataUpdater.DID)
-	if queryMessage == nil {
-		return "", errors.New("Query for latest record was not found")
+	latestDataMessage, _, _, err := client.GetData(schemaUrl, umbrellaRecordId, dataUpdater)
+	if err != nil {
+		return "", err
+	}
+	if latestDataMessage == nil {
+		return "", errors.New("No latest data message found")
 	}
 
-	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, queryMessage.RecordID, &protocolDef, schemaUrl, dataFormat, data)
+	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, latestRecordWriteId, &protocolDef, schemaUrl, dataFormat, data)
 	writeAttestation := model.CreateAttestation(writeMessage, *dataUpdater.Keypair.PrivateKey)
 	writeMessage.Attestation = writeAttestation
 	writeAuthorization := model.CreateAuthorization(writeMessage, *dataUpdater.Keypair.PrivateKey)
@@ -132,12 +129,7 @@ func (client *DWNClient) UpdateData(schemaUrl string, recordId string, data []by
 	commitAuthorization := model.CreateAuthorization(commitMessage, *dataUpdater.Keypair.PrivateKey)
 	commitMessage.Authorization = commitAuthorization
 
-	// Append both
-	ro := model.RequestObject{}
-	ro.Messages = append(ro.Messages, *writeMessage)
-	ro.Messages = append(ro.Messages, *commitMessage)
-
-	responseObject, err := client.CallDWNHTTP(ro)
+	responseObject, err := client.CallDWNHTTP(writeMessage, commitMessage)
 	if err != nil {
 		return "", err
 	}

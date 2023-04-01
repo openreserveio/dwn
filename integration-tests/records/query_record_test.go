@@ -37,7 +37,7 @@ var _ = Describe("Query For A Record", func() {
 			ro := model.RequestObject{}
 			ro.Messages = append(ro.Messages, *message)
 
-			data, dataFormat, err := dwnClient.GetData(TEST_SCHEMA, "DOES NOT EXIST", &recipientIdentity)
+			_, data, dataFormat, err := dwnClient.GetData(TEST_SCHEMA, "DOES NOT EXIST", &recipientIdentity)
 
 			Expect(err).To(BeNil())
 			Expect(data).To(BeNil())
@@ -72,7 +72,7 @@ var _ = Describe("Query For A Record", func() {
 
 		It("Queries for the record just created", func() {
 
-			recordData, dataFormat, err := dwnClient.GetData(TEST_SCHEMA, recordId, &recipientIdentity)
+			_, recordData, dataFormat, err := dwnClient.GetData(TEST_SCHEMA, recordId, &recipientIdentity)
 
 			Expect(err).To(BeNil())
 			Expect(recordData).ToNot(BeNil())

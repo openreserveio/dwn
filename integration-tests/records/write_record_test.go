@@ -46,9 +46,14 @@ var _ = Describe("Write Record", func() {
 			Expect(recordId).ToNot(BeEmpty())
 
 			bodyUpdated := []byte(fmt.Sprintf("{\"name\":\"test_%s\", \"status\":\"APPROVED_CHANGED\"}", randomUUID))
-			newRecordId, err := dwnClient.UpdateData(TEST_SCHEMA, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
+			newRecordId, err := dwnClient.UpdateData(TEST_SCHEMA, recordId, recordId, bodyUpdated, client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
 			Expect(err).To(BeNil())
 			Expect(newRecordId).ToNot(BeEmpty())
+
+			_, data, _, err := dwnClient.GetData(TEST_SCHEMA, recordId, &recipientIdentity)
+			Expect(err).To(BeNil())
+			Expect(data).ToNot(BeNil())
+			Expect(data).To(Equal(bodyUpdated))
 
 		})
 

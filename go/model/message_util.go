@@ -95,13 +95,13 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 
 }
 
-func CreateRecordsCommitMessage(previousWriteRecordId string, schemaUrl string, committerDID string) *Message {
+func CreateRecordsCommitMessage(commitWriteMessageRecordId string, schemaUrl string, committerDID string) *Message {
 
 	// TODO:  How to deal with Context IDs?
 
 	descriptor := Descriptor{
 		Method:         METHOD_RECORDS_COMMIT,
-		ParentID:       previousWriteRecordId,
+		ParentID:       commitWriteMessageRecordId,
 		Schema:         schemaUrl,
 		CommitStrategy: "",
 		DateCreated:    time.Now().Format(time.RFC3339),

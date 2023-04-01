@@ -2,7 +2,6 @@ package docdbstore
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
@@ -88,20 +87,13 @@ func (store *RecordDocumentDBStore) SaveRecord(record *storage.Record) error {
 func (store *RecordDocumentDBStore) AddMessageEntry(entry *storage.MessageEntry) error {
 
 	// tracing
-	_, sp := observability.Tracer.Start(context.Background(), "AddMessageEntry")
+	_, sp := observability.Tracer.Start(context.Background(), "recordsvc.storage.docdbstore.AddMessageEntry")
 	defer sp.End()
 
-	// Get Record
-	if entry.Descriptor.ParentID == "" {
-		return errors.New("Parent ID must be present to add a message entry to a collection")
-	}
-	collectionRecord := store.GetRecord(entry.Descriptor.ParentID)
-	if collectionRecord == nil {
-		return errors.New("No Record Found")
-	}
-
+	sp.AddEvent("Inserting message entry for record")
 	_, err := store.DB.Collection(COLLECTION_MESSAGE_ENTRY).InsertOne(context.Background(), entry)
 	if err != nil {
+		sp.RecordError(err)
 		return err
 	}
 

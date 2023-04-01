@@ -7,9 +7,15 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 )
 
-func (client *DWNClient) CallDWNHTTP(ro model.RequestObject) (model.ResponseObject, error) {
+func (client *DWNClient) CallDWNHTTP(messages ...*model.Message) (model.ResponseObject, error) {
 
 	respObj := model.ResponseObject{}
+
+	// Append both
+	ro := model.RequestObject{}
+	for _, message := range messages {
+		ro.Messages = append(ro.Messages, *message)
+	}
 
 	res, err := resty.New().R().
 		SetBody(ro).
