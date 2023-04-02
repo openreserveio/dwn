@@ -8,15 +8,15 @@ import (
 
 const (
 	INTERFACE_RECORDS     = "Records"
-	INTERFACE_HOOKS       = "Hooks"
 	METHOD_RECORDS_QUERY  = "Query"
 	METHOD_RECORDS_WRITE  = "Write"
 	METHOD_RECORDS_COMMIT = "Commit"
 	METHOD_RECORDS_DELETE = "Delete"
 
-	METHOD_HOOKS_WRITE  = "HooksWrite"
-	METHOD_HOOKS_QUERY  = "HooksQuery"
-	METHOD_HOOKS_DELETE = "HooksDelete"
+	INTERFACE_HOOKS     = "Hooks"
+	METHOD_HOOKS_WRITE  = "Write"
+	METHOD_HOOKS_QUERY  = "Query"
+	METHOD_HOOKS_DELETE = "Delete"
 )
 
 type ProtocolDefinition struct {
