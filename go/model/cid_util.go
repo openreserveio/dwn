@@ -20,6 +20,7 @@ func init() {
 	descriptorSchemaBytes := []byte(`
 
 type Descriptor struct {
+  interface String
   method String
   dataCid String
   dataFormat String
