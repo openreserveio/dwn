@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         component: otelcoll
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
         - name: dwn-api-otelcoll

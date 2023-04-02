@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-hooksvc
+  name: {{ .Release.Name }}-api
 spec:
   selector:
-    component: hooksvc
+    component: api
     app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
     - protocol: TCP
-      port: 9003
-      targetPort: dwnhooksvc-port
+      port: 8080
+      targetPort: dwnapi-port

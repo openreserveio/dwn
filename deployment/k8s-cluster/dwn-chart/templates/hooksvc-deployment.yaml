@@ -16,12 +16,13 @@ spec:
     metadata:
       labels:
         component: hooksvc
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: dwn-hooksvc
         image: ghcr.io/openreserveio/hooksvc:latest
         ports:
-          - containerPort: 9001
+          - containerPort: 9003
             name: dwnhooksvc-port
         env:
           - name: "DWN_HOOKSVC.LISTENPORT"
@@ -31,7 +32,7 @@ spec:
           - name: "DWN_QUEUESERVICE.CONNECTIONURI"
             value: "nats://{{ .Release.Name }}-eventsqueue:4222"
           - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
-            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/traces"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/traces"
           - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
-            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/metrics"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/metrics"
         imagePullPolicy: Always

@@ -21,13 +21,12 @@ spec:
       - name: dwn-notificationsvc
         image: ghcr.io/openreserveio/notificationsvc:latest
         env:
-          - 
           - name: "DWN_QUEUESERVICE.CONNECTIONURI"
-            value: "nats://{{ Release.Name }}-eventsqueue:4222"
+            value: "nats://{{ .Release.Name }}-eventsqueue:4222"
           - name: "DWN_QUEUES.NOTIFYCALLBACK"
             value: "{{ .Values.notificationsvc.queueNotifyCallback }}"
           - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
-            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/traces"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/traces"
           - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
-            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/metrics"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/metrics"
         imagePullPolicy: Always

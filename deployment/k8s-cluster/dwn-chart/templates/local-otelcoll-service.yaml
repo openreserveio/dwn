@@ -7,15 +7,19 @@ spec:
     component: otelcoll
     app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
-    - protocol: TCP
+    - name: grpc-oc
+      protocol: TCP
       port: 4317
       targetPort: oc-grpc-port
-    - protocol: TCP
+    - name: http-oc
+      protocol: TCP
       port: 4318
       targetPort: oc-http-port
-    - protocol: TCP
+    - name: t1-oc
+      protocol: TCP
       port: 9464
       targetPort: oc-t1-port
-    - protocol: TCP
+    - name: t2-oc
+      protocol: TCP
       port: 8888
       targetPort: oc-t2-port

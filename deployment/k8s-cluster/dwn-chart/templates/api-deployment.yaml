@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         component: api
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: dwn-api
@@ -24,12 +25,20 @@ spec:
           - containerPort: 8080
             name: dwnapi-port
         env:
+          - name: "DWN_API.LISTENADDRESS"
+            value: "0.0.0.0"
           - name: "DWN_API.LISTENPORT"
             value: "8080"
           - name: "DWN_RECORDSVC.EXTERNALADDRESS"
-            value: "{{ .Release.Name }}-recordsvc:9001"
+            value: "{{ .Release.Name }}-recordsvc"
+          - name: "DWN_RECORDSVC.EXTERNALPORT"
+            value: "9001"
+          - name: "DWN_HOOKSVC.EXTERNALADDRESS"
+            value: "{{ .Release.Name }}-hooksvc"
+          - name: "DWN_HOOKSVC.EXTERNALPORT"
+            value: "9003"
           - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
-            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/traces"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/traces"
           - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
-            value: "http://{{ .Release.Name }}-otellcoll:4318/v1/metrics"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/metrics"
         imagePullPolicy: Always

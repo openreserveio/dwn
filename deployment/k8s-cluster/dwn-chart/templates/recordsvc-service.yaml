@@ -9,4 +9,4 @@ spec:
   ports:
     - protocol: TCP
       port: 9001
-      targetPort: dwnrecordsvc-port
+      targetPort: dwnrcsvc-port
