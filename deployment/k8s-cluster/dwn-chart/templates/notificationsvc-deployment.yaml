@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-notificationsvc
+  labels:
+    app: dwn
+    component: notificationsvc_deployment
+spec:
+  replicas: {{ .Values.notificationsvc.replicaCount }}
+  selector:
+    matchLabels:
+      component: notificationsvc
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: notificationsvc
+    spec:
+      containers:
+      - name: dwn-notificationsvc
+        image: ghcr.io/openreserveio/notificationsvc:latest
+        env:
+          - name: "DWN_QUEUESERVICE.CONNECTIONURI"
+            value: "nats://{{ .Release.Name }}-eventsqueue:4222"
+          - name: "DWN_QUEUES.NOTIFYCALLBACK"
+            value: "{{ .Values.notificationsvc.queueNotifyCallback }}"
+          - name: "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/traces"
+          - name: "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
+            value: "http://{{ .Release.Name }}-otelcoll:4318/v1/metrics"
+        imagePullPolicy: Always

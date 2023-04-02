@@ -87,41 +87,49 @@ func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *m
 
 	var messageResult model.MessageResultObject
 
-	// Route logic based on Method
-	switch message.Descriptor.Method {
+	// Route logic based on Interface and Method
+	switch message.Descriptor.Interface {
 
-	case model.METHOD_RECORDS_QUERY:
-		sp.AddEvent("Start Records Query")
-		messageResult = records.RecordsQuery(ctx, fr.RecordServiceClient, message)
+	case model.INTERFACE_RECORDS:
 
-	case model.METHOD_RECORDS_WRITE:
-		sp.AddEvent("Start Records Write")
-		messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, fr.HookServiceClient, message)
+		switch message.Descriptor.Method {
+		case model.METHOD_RECORDS_QUERY:
+			sp.AddEvent("Start Records Query")
+			messageResult = records.RecordsQuery(ctx, fr.RecordServiceClient, message)
 
-	case model.METHOD_RECORDS_COMMIT:
-		sp.AddEvent("Start Records Commit")
-		messageResult = records.RecordsCommit(ctx, fr.RecordServiceClient, message)
+		case model.METHOD_RECORDS_WRITE:
+			sp.AddEvent("Start Records Write")
+			messageResult = records.RecordsWrite(ctx, fr.RecordServiceClient, fr.HookServiceClient, message)
 
-	case model.METHOD_RECORDS_DELETE:
-		sp.AddEvent("Start Records Delete")
-		messageResult = records.RecordsDelete(ctx, fr.RecordServiceClient, message)
+		case model.METHOD_RECORDS_COMMIT:
+			sp.AddEvent("Start Records Commit")
+			messageResult = records.RecordsCommit(ctx, fr.RecordServiceClient, message)
 
-	case model.METHOD_HOOKS_WRITE:
-		sp.AddEvent("Start Hooks Write")
-		messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
+		case model.METHOD_RECORDS_DELETE:
+			sp.AddEvent("Start Records Delete")
+			messageResult = records.RecordsDelete(ctx, fr.RecordServiceClient, message)
+		}
 
-	case model.METHOD_HOOKS_QUERY:
-		sp.AddEvent("Start Hooks Query")
-		messageResult = hooks.HooksQuery(ctx, fr.HookServiceClient, message)
+	case model.INTERFACE_HOOKS:
 
-	case model.METHOD_HOOKS_DELETE:
-		sp.AddEvent("Start Hooks Delete")
-		messageResult = hooks.HooksDelete(ctx, fr.HookServiceClient, message)
+		switch message.Descriptor.Method {
+		case model.METHOD_HOOKS_WRITE:
+			sp.AddEvent("Start Hooks Write")
+			messageResult = hooks.HooksWrite(ctx, fr.HookServiceClient, message)
 
-	default:
-		sp.AddEvent("Bad Method")
-		messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
+		case model.METHOD_HOOKS_QUERY:
+			sp.AddEvent("Start Hooks Query")
+			messageResult = hooks.HooksQuery(ctx, fr.HookServiceClient, message)
 
+		case model.METHOD_HOOKS_DELETE:
+			sp.AddEvent("Start Hooks Delete")
+			messageResult = hooks.HooksDelete(ctx, fr.HookServiceClient, message)
+
+		default:
+			sp.AddEvent("Bad Method")
+			messageResult = model.MessageResultObject{Status: model.ResponseStatus{Code: http.StatusBadRequest, Detail: fmt.Sprintf("We do not yet support message method: %s", message.Descriptor.Method)}}
+
+		}
 	}
 
 	// Reply back to channel

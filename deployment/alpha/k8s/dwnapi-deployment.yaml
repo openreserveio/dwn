@@ -24,6 +24,8 @@ spec:
             - containerPort: 8080
               name: dwnapi-port
           env:
+            - name: "DWN_API.LISTENADDRESS"
+              value: "0.0.0.0"
             - name: "DWN_API.LISTENPORT"
               value: "8080"
             - name: "DWN_RECORDSVC.EXTERNALADDRESS"

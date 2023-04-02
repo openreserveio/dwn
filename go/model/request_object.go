@@ -21,6 +21,7 @@ type Message struct {
 type Descriptor struct {
 
 	// Base Required Fields per https://identity.foundation/decentralized-web-node/spec/#messages
+	Interface  string `json:"interface" bson:"interface"`
 	Method     string `json:"method" bson:"method"`
 	DataCID    string `json:"dataCid,omitempty" bson:"dataCID"`
 	DataFormat string `json:"dataFormat,omitempty" bson:"dataFormat"`

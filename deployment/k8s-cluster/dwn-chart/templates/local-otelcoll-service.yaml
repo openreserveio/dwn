@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-otelcoll
+spec:
+  selector:
+    component: otelcoll
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: grpc-oc
+      protocol: TCP
+      port: 4317
+      targetPort: oc-grpc-port
+    - name: http-oc
+      protocol: TCP
+      port: 4318
+      targetPort: oc-http-port
+    - name: t1-oc
+      protocol: TCP
+      port: 9464
+      targetPort: oc-t1-port
+    - name: t2-oc
+      protocol: TCP
+      port: 8888
+      targetPort: oc-t2-port

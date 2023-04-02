@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-otelcoll
+  labels:
+    app: dwn
+    component: otelcoll_deployment
+spec:
+  replicas: {{ .Values.otelcoll.replicaCount }}
+  selector:
+    matchLabels:
+      component: otelcoll
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: otelcoll
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: dwn-api-otelcoll
+          image: otel/opentelemetry-collector-contrib:0.61.0
+          ports:
+            - containerPort: 4317
+              name: oc-grpc-port
+            - containerPort: 4318
+              name: oc-http-port
+            - containerPort: 9464
+              name: oc-t1-port
+            - containerPort: 8888
+              name: oc-t2-port

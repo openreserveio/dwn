@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-eventsqueue
+  labels:
+    app: dwn
+    component: eventsqueue_deployment
+spec:
+  replicas: {{ .Values.eventsqueue.replicaCount }}
+  selector:
+    matchLabels:
+      component: eventsqueue
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: eventsqueue
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: eventsqueue
+          image: nats
+          ports:
+            - containerPort: 4222
+              name: eq-port
+            - containerPort: 8222
+              name: eq-http-port
+          imagePullPolicy: Always

@@ -1,0 +1,25 @@
+# Default values for dwn-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+mongodb:
+  replicaCount: 1
+
+eventsqueue:
+  replicaCount: 1
+
+otelcoll:
+  replicaCount: 1
+
+recordsvc:
+  replicaCount: 2
+
+hooksvc:
+  replicaCount: 2
+
+notificationsvc:
+  replicaCount: 1
+  queueNotifyCallback: NotifyCallbackQueue
+
+api:
+  replicaCount: 2

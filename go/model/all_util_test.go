@@ -25,7 +25,7 @@ var _ = Describe("Util", func() {
 
 		Context("Without data", func() {
 
-			message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", nil, "CollectionsQuery", "", "https://openreserve.io/schemas/test.json")
+			message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", nil, "Records", "Query", "", "https://openreserve.io/schemas/test.json")
 
 			It("Should be a valid and well formed message", func() {
 
@@ -35,7 +35,7 @@ var _ = Describe("Util", func() {
 				Expect(message.Processing.AuthorDID).To(Equal("did:tmp:1"))
 				Expect(message.Processing.RecipientDID).To(Equal("did:tmp:2"))
 
-				Expect(message.Descriptor.Method).To(Equal("CollectionsQuery"))
+				Expect(message.Descriptor.Method).To(Equal("Query"))
 				Expect(message.Descriptor.DataCID).To(Equal(""))
 				Expect(message.Descriptor.DataFormat).To(Equal(""))
 
@@ -95,7 +95,7 @@ var _ = Describe("Util", func() {
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 				authorDID, _ := did.CreateKeyDID(&privateKey.PublicKey)
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage(authorDID, "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
+				message := model.CreateMessage(authorDID, "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 
 				attestation := model.CreateAttestation(message, *privateKey)
 				message.Attestation = attestation
@@ -112,7 +112,7 @@ var _ = Describe("Util", func() {
 			It("Should not verify", func() {
 
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "https://openreserve.io/schemas/test.json")
+				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 
 				attestation := model.CreateAttestation(message, *privateKey)

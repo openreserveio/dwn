@@ -7,14 +7,16 @@ import (
 )
 
 const (
-	METHOD_RECORDS_QUERY  = "RecordsQuery"
-	METHOD_RECORDS_WRITE  = "RecordsWrite"
-	METHOD_RECORDS_COMMIT = "RecordsCommit"
-	METHOD_RECORDS_DELETE = "RecordsDelete"
+	INTERFACE_RECORDS     = "Records"
+	METHOD_RECORDS_QUERY  = "Query"
+	METHOD_RECORDS_WRITE  = "Write"
+	METHOD_RECORDS_COMMIT = "Commit"
+	METHOD_RECORDS_DELETE = "Delete"
 
-	METHOD_HOOKS_WRITE  = "HooksWrite"
-	METHOD_HOOKS_QUERY  = "HooksQuery"
-	METHOD_HOOKS_DELETE = "HooksDelete"
+	INTERFACE_HOOKS     = "Hooks"
+	METHOD_HOOKS_WRITE  = "Write"
+	METHOD_HOOKS_QUERY  = "Query"
+	METHOD_HOOKS_DELETE = "Delete"
 )
 
 type ProtocolDefinition struct {
@@ -26,7 +28,8 @@ type ProtocolDefinition struct {
 func CreateQueryRecordsMessage(schemaUri string, recordId string, protocolDef *ProtocolDefinition, requestorDID string) *Message {
 
 	queryDescriptor := Descriptor{
-		Method: METHOD_RECORDS_QUERY,
+		Interface: INTERFACE_RECORDS,
+		Method:    METHOD_RECORDS_QUERY,
 		Filter: DescriptorFilter{
 			RecordID:        recordId,
 			Schema:          schemaUri,
@@ -60,6 +63,7 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 	dataCID := CreateDataCID(dataEncoded)
 
 	descriptor := Descriptor{
+		Interface:       INTERFACE_RECORDS,
 		Method:          METHOD_RECORDS_WRITE,
 		DataCID:         dataCID,
 		DataFormat:      dataFormat,
@@ -100,6 +104,7 @@ func CreateRecordsCommitMessage(commitWriteMessageRecordId string, schemaUrl str
 	// TODO:  How to deal with Context IDs?
 
 	descriptor := Descriptor{
+		Interface:      INTERFACE_RECORDS,
 		Method:         METHOD_RECORDS_COMMIT,
 		ParentID:       commitWriteMessageRecordId,
 		Schema:         schemaUrl,
@@ -134,6 +139,7 @@ func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, pro
 	dataCID := CreateDataCID(dataEncoded)
 
 	descriptor := Descriptor{
+		Interface:       INTERFACE_RECORDS,
 		Method:          METHOD_RECORDS_WRITE,
 		DataCID:         dataCID,
 		DataFormat:      dataFormat,
@@ -169,7 +175,7 @@ func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, pro
 
 }
 
-func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, methodName string, recordId string, schema string) *Message {
+func CreateMessage(authorDID string, recipientDID string, dataFormat string, data []byte, interfaceName string, methodName string, recordId string, schema string) *Message {
 
 	// Verify Message Name
 
@@ -197,6 +203,7 @@ func CreateMessage(authorDID string, recipientDID string, dataFormat string, dat
 	}
 
 	messageDesc := Descriptor{
+		Interface:  interfaceName,
 		Method:     methodName,
 		DataCID:    dataCID,
 		DataFormat: dataFormat,

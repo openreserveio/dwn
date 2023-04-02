@@ -15,6 +15,7 @@ func (client *DWNClient) SaveHookForSchemaAndProtocol(schemaUri string, protocol
 
 	log.Debug("Saving hook for schema %s, protocol & version %s %s, callback %s", schemaUri, protocol, protocolVersion, callbackUri)
 	descriptor := model.Descriptor{
+		Interface:       model.INTERFACE_HOOKS,
 		Method:          model.METHOD_HOOKS_WRITE,
 		ParentID:        "",
 		Protocol:        client.Protocol,
@@ -87,6 +88,7 @@ func (client *DWNClient) SaveHookForRecord(schemaUri string, dataRecordId string
 
 	log.Debug("Saving hook for schema %s, data record %s, callback %s", schemaUri, dataRecordId, callbackUri)
 	descriptor := model.Descriptor{
+		Interface:       model.INTERFACE_HOOKS,
 		Method:          model.METHOD_HOOKS_WRITE,
 		ParentID:        "",
 		Protocol:        client.Protocol,
