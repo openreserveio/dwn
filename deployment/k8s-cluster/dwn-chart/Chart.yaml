@@ -1,9 +1,9 @@
 apiVersion: v2
 name: dwn-chart
-description: A Helm Chart for a deployment of Open Reserve's DWN to a K8S cluster
+description: A Helm Chart for a deployment of Open Reserve's Golang DWN to a K8S cluster that includes infrastructure generally not in a k8s cluster (like mongodb).  DWN is in alpha while ths spec from DIF is in draft.
 type: application
 version: 1.0.0
 appVersion: "0.1.0"
 maintainers:
-- email: "devops@openreserve.io"
-  name: "Open Reserve DevOps"
+- email: "mzero@openreserve.io"
+  name: "M Z"
