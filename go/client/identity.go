@@ -1,6 +1,10 @@
 package client
 
-import "github.com/openreserveio/dwn/go/did"
+import (
+	"crypto/ecdsa"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did"
+)
 
 type Identity struct {
 	DID     string
@@ -10,8 +14,12 @@ type Identity struct {
 func FromKeypair(keypair Keypair) Identity {
 
 	ident := Identity{Keypair: keypair}
-	identDID, _ := did.CreateKeyDID(keypair.PublicKey)
-	ident.DID = identDID
+	privateKey, didKey, _ := did.GenerateDIDKey(crypto.Ed25519)
+
+	identity := Identity{
+		DID: didKey.String(),
+		Keypair: ed2
+	}
 
 	return ident
 

@@ -15,7 +15,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/openreserveio/dwn/go/client"
-	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/model"
 )
 
@@ -93,7 +92,7 @@ var _ = Describe("Util", func() {
 			It("Should verify", func() {
 
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-				authorDID, _ := did.CreateKeyDID(&privateKey.PublicKey)
+				authorDID, _ := didder.CreateKeyDID(&privateKey.PublicKey)
 				data := "{\"name\":\"test user\"}"
 				message := model.CreateMessage(authorDID, "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 

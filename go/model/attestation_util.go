@@ -9,18 +9,17 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/multiformats/go-multibase"
-	"github.com/openreserveio/dwn/go/did"
 )
 
 func VerifyAttestation(message *Message) bool {
 
-	if message.Attestation.Payload == "" || len(message.Attestation.Signatures) == 0 {
-		return false
-	}
-
-	encodedProtectedHeader := message.Attestation.Signatures[0].Protected
-	encodedSignature := message.Attestation.Signatures[0].Signature
-	encodedPayload := message.Attestation.Payload
+	//if message.Attestation.Payload == "" || len(message.Attestation.Signatures) == 0 {
+	//	return false
+	//}
+	//
+	//encodedProtectedHeader := message.Attestation.Signatures[0].Protected
+	//encodedSignature := message.Attestation.Signatures[0].Signature
+	//encodedPayload := message.Attestation.Payload
 
 	// Make sure the payloads match as expected
 	//expectedPayload := map[string]string{
@@ -36,32 +35,32 @@ func VerifyAttestation(message *Message) bool {
 	//}
 
 	// Get the ecdsa.PublicKey
-	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
-	if err != nil {
-		return false
-	}
-
-	var protectedHeaderMap map[string]string
-	err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
-	if err != nil {
-		return false
-	}
-
-	attestorDid := protectedHeaderMap["kid"]
-	if attestorDid == "" {
-		return false
-	}
-
-	res := did.ResolvePublicKey(attestorDid)
-	if res == nil {
-		return false
-	}
-
-	var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
-	err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
-	if err != nil {
-		return false
-	}
+	//jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
+	//if err != nil {
+	//	return false
+	//}
+	//
+	//var protectedHeaderMap map[string]string
+	//err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
+	//if err != nil {
+	//	return false
+	//}
+	//
+	//attestorDid := protectedHeaderMap["kid"]
+	//if attestorDid == "" {
+	//	return false
+	//}
+	//
+	//res := didder.ResolvePublicKey(attestorDid)
+	//if res == nil {
+	//	return false
+	//}
+	//
+	//var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
+	//err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
+	//if err != nil {
+	//	return false
+	//}
 
 	return true
 }

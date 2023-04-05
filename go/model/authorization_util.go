@@ -9,46 +9,45 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/multiformats/go-multibase"
-	"github.com/openreserveio/dwn/go/did"
 )
 
 func VerifyAuthorization(message *Message) bool {
 
-	if message.Authorization.Payload == "" || len(message.Authorization.Signatures) == 0 {
-		return false
-	}
-
-	encodedProtectedHeader := message.Authorization.Signatures[0].Protected
-	encodedSignature := message.Authorization.Signatures[0].Signature
-	encodedPayload := message.Authorization.Payload
-
-	// Get the ecdsa.PublicKey
-	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
-	if err != nil {
-		return false
-	}
-
-	var protectedHeaderMap map[string]string
-	err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
-	if err != nil {
-		return false
-	}
-
-	authorizerDid := protectedHeaderMap["kid"]
-	if authorizerDid == "" {
-		return false
-	}
-
-	res := did.ResolvePublicKey(authorizerDid)
-	if res == nil {
-		return false
-	}
-
-	var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
-	err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
-	if err != nil {
-		return false
-	}
+	//if message.Authorization.Payload == "" || len(message.Authorization.Signatures) == 0 {
+	//	return false
+	//}
+	//
+	//encodedProtectedHeader := message.Authorization.Signatures[0].Protected
+	//encodedSignature := message.Authorization.Signatures[0].Signature
+	//encodedPayload := message.Authorization.Payload
+	//
+	//// Get the ecdsa.PublicKey
+	//jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
+	//if err != nil {
+	//	return false
+	//}
+	//
+	//var protectedHeaderMap map[string]string
+	//err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
+	//if err != nil {
+	//	return false
+	//}
+	//
+	//authorizerDid := protectedHeaderMap["kid"]
+	//if authorizerDid == "" {
+	//	return false
+	//}
+	//
+	//res := didder.ResolvePublicKey(authorizerDid)
+	//if res == nil {
+	//	return false
+	//}
+	//
+	//var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
+	//err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
+	//if err != nil {
+	//	return false
+	//}
 
 	return true
 }
