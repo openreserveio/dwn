@@ -1,26 +1,29 @@
 package client
 
 import (
-	"crypto/ecdsa"
 	"github.com/TBD54566975/ssi-sdk/crypto"
 	"github.com/TBD54566975/ssi-sdk/did"
 )
 
 type Identity struct {
 	DID     string
+	DIDKey  *did.DIDKey
 	Keypair Keypair
 }
 
 func FromKeypair(keypair Keypair) Identity {
 
-	ident := Identity{Keypair: keypair}
-	privateKey, didKey, _ := did.GenerateDIDKey(crypto.Ed25519)
-
-	identity := Identity{
-		DID: didKey.String(),
-		Keypair: ed2
+	didKey, err := did.CreateDIDKey(crypto.Ed25519, keypair.PublicKey.([]byte))
+	if err != nil {
+		panic(err)
 	}
 
-	return ident
+	identity := Identity{
+		DID:     didKey.String(),
+		DIDKey:  didKey,
+		Keypair: keypair,
+	}
+
+	return identity
 
 }

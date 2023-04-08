@@ -1,7 +1,7 @@
 package model
 
 import (
-	"crypto/ecdsa"
+	"crypto"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -52,7 +52,7 @@ func VerifyAuthorization(message *Message) bool {
 	return true
 }
 
-func CreateAuthorization(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
+func CreateAuthorization(message *Message, privateKey crypto.PrivateKey) DWNJWS {
 
 	authorization := DWNJWS{}
 
