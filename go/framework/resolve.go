@@ -8,7 +8,7 @@ import (
 	"github.com/openreserveio/dwn/go/observability"
 )
 
-var didResolver *didsdk.Resolver
+var didResolver *didsdk.MultiMethodResolver
 
 func init() {
 
@@ -20,14 +20,14 @@ func init() {
 	didResolver = resolver
 }
 
-func ResolveDID(ctx context.Context, didString string) (*didsdk.DIDDocument, error) {
+func ResolveDID(ctx context.Context, didString string) (*didsdk.Document, error) {
 
 	// Instrumentation
 	ctx, sp := observability.Tracer.Start(ctx, "framework.ResolveDID")
 	defer sp.End()
 
 	sp.AddEvent(fmt.Sprintf("Resolving DID: %s", didString))
-	res, err := didResolver.Resolve(didString)
+	res, err := didResolver.Resolve(ctx, didString)
 	if err != nil {
 		sp.RecordError(err)
 		return nil, err
@@ -54,17 +54,17 @@ func ResolveDID(ctx context.Context, didString string) (*didsdk.DIDDocument, err
 
 	}
 
-	return &res.DIDDocument, nil
-	
+	return &res.Document, nil
+
 }
 
 // BuildResolver builds a DID resolver from a list of methods to support resolution for
-func BuildResolver(methods []string) (*didsdk.Resolver, error) {
+func BuildResolver(methods []string) (*didsdk.MultiMethodResolver, error) {
 
 	if len(methods) == 0 {
 		return nil, errors.New("no methods provided")
 	}
-	var resolvers []didsdk.Resolution
+	var resolvers []didsdk.Resolver
 	for _, method := range methods {
 		resolver, err := getKnownResolver(method)
 		if err != nil {
@@ -79,7 +79,7 @@ func BuildResolver(methods []string) (*didsdk.Resolver, error) {
 }
 
 // all possible resolvers for the DID service
-func getKnownResolver(method string) (didsdk.Resolution, error) {
+func getKnownResolver(method string) (didsdk.Resolver, error) {
 	switch didsdk.Method(method) {
 	case didsdk.KeyMethod:
 		return new(didsdk.KeyResolver), nil
