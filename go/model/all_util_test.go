@@ -126,8 +126,8 @@ var _ = Describe("Util", func() {
 				authz.Signatures[0].Signature = "12345"
 				message.Attestation = authz
 
-				// TODO:  result := model.VerifyAttestation(message)
-				// TODO:  Expect(result).To(BeFalse())
+				result := model.VerifyAuthorization(message)
+				Expect(result).To(BeFalse())
 
 			})
 

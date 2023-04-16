@@ -8,6 +8,7 @@ import (
 	didsdk "github.com/TBD54566975/ssi-sdk/did"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jws"
+	"strings"
 )
 
 /*
@@ -16,6 +17,11 @@ import (
  */
 
 func VerifyAuthorization(message *Message) bool {
+
+	// Do some basic checking
+	if message == nil || message.Authorization.Payload == "" || message.Authorization.Signatures == nil || len(message.Authorization.Signatures) == 0 {
+		return false
+	}
 
 	jwsToVerify := fmt.Sprintf("%s.%s.%s", message.Authorization.Signatures[0].Protected, message.Authorization.Payload, message.Authorization.Signatures[0].Signature)
 	jwsMessage, err := jws.ParseString(jwsToVerify)
@@ -36,7 +42,9 @@ func VerifyAuthorization(message *Message) bool {
 
 		// Get the public key from the DID Document verification method
 		// put all VerificationMethods into a map
-		authPublicKey, err := didsdk.GetKeyFromVerificationMethod(*signingKeyDidDocument, signingKey)
+		// Get everything after the # in the signingKeyId
+		ref := signingKeyId[strings.Index(signingKeyId, "#"):]
+		authPublicKey, err := didsdk.GetKeyFromVerificationMethod(*signingKeyDidDocument, ref)
 		if err != nil {
 			return false
 		}
