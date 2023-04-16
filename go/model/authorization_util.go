@@ -11,6 +11,11 @@ import (
 	"github.com/multiformats/go-multibase"
 )
 
+/*
+ * This entire utility file is an implementation of the DWN Message Authorization spec:
+ * https://identity.foundation/decentralized-web-node/spec/#message-authorization
+ */
+
 func VerifyAuthorization(message *Message) bool {
 
 	//if message.Authorization.Payload == "" || len(message.Authorization.Signatures) == 0 {
