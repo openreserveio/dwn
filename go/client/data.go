@@ -17,8 +17,8 @@ func (client *DWNClient) GetData(schemaUrl string, recordId string, requestorIde
 	}
 	queryMessage := model.CreateQueryRecordsMessage(schemaUrl, recordId, &protocolDef, requestorIdentity.DID)
 
-	authorization := model.CreateAuthorization(queryMessage, *requestorIdentity.Keypair.PrivateKey)
-	attestation := model.CreateAttestation(queryMessage, *requestorIdentity.Keypair.PrivateKey)
+	authorization := model.CreateAuthorization(queryMessage, requestorIdentity.Keypair.PublicKey, requestorIdentity.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(queryMessage, requestorIdentity.Keypair.PublicKey, requestorIdentity.Keypair.PrivateKey)
 	queryMessage.Attestation = attestation
 	queryMessage.Authorization = authorization
 
@@ -66,10 +66,10 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 	recordsWriteMessage := model.CreateInitialRecordsWriteMessage(dataAuthor.DID, dataRecipient.DID, &protocolDef, schemaUrl, dataFormat, data)
 
-	attestation := model.CreateAttestation(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(recordsWriteMessage, dataAuthor.Keypair.PublicKey, dataAuthor.Keypair.PrivateKey)
 	recordsWriteMessage.Attestation = attestation
 
-	authorization := model.CreateAuthorization(recordsWriteMessage, *dataAuthor.Keypair.PrivateKey)
+	authorization := model.CreateAuthorization(recordsWriteMessage, dataAuthor.Keypair.PublicKey, dataAuthor.Keypair.PrivateKey)
 	recordsWriteMessage.Authorization = authorization
 
 	responseObject, err := client.CallDWNHTTP(recordsWriteMessage)
@@ -117,16 +117,16 @@ func (client *DWNClient) UpdateData(schemaUrl string, umbrellaRecordId string, l
 	}
 
 	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, latestRecordWriteId, &protocolDef, schemaUrl, dataFormat, data)
-	writeAttestation := model.CreateAttestation(writeMessage, *dataUpdater.Keypair.PrivateKey)
+	writeAttestation := model.CreateAttestation(writeMessage, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	writeMessage.Attestation = writeAttestation
-	writeAuthorization := model.CreateAuthorization(writeMessage, *dataUpdater.Keypair.PrivateKey)
+	writeAuthorization := model.CreateAuthorization(writeMessage, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	writeMessage.Authorization = writeAuthorization
 
 	// Create the corresponding COMMIT
 	commitMessage := model.CreateRecordsCommitMessage(writeMessage.RecordID, writeMessage.Descriptor.Schema, dataUpdater.DID)
-	commitAttestation := model.CreateAttestation(commitMessage, *dataUpdater.Keypair.PrivateKey)
+	commitAttestation := model.CreateAttestation(commitMessage, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	commitMessage.Attestation = commitAttestation
-	commitAuthorization := model.CreateAuthorization(commitMessage, *dataUpdater.Keypair.PrivateKey)
+	commitAuthorization := model.CreateAuthorization(commitMessage, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	commitMessage.Authorization = commitAuthorization
 
 	responseObject, err := client.CallDWNHTTP(writeMessage, commitMessage)

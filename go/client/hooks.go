@@ -47,7 +47,7 @@ func (client *DWNClient) SaveHookForSchemaAndProtocol(schemaUri string, protocol
 		Descriptor: descriptor,
 	}
 
-	attestation := model.CreateAttestation(&message, *requestor.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(&message, requestor.Keypair.PublicKey, requestor.Keypair.PrivateKey)
 	message.Attestation = attestation
 
 	ro := model.RequestObject{}
@@ -119,7 +119,7 @@ func (client *DWNClient) SaveHookForRecord(schemaUri string, dataRecordId string
 		Descriptor: descriptor,
 	}
 
-	attestation := model.CreateAttestation(&message, *requestor.Keypair.PrivateKey)
+	attestation := model.CreateAttestation(&message, requestor.Keypair.PublicKey, requestor.Keypair.PrivateKey)
 	message.Attestation = attestation
 
 	ro := model.RequestObject{}

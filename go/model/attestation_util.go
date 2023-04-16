@@ -1,7 +1,7 @@
 package model
 
 import (
-	"crypto/ecdsa"
+	"crypto"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -65,13 +65,12 @@ func VerifyAttestation(message *Message) bool {
 	return true
 }
 
-func CreateAttestation(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
+func CreateAttestation(message *Message, publicKey crypto.PublicKey, privateKey crypto.PrivateKey) DWNJWS {
 
 	attestation := DWNJWS{}
 
 	// PEM encode public key -> multibase(base64url)
-	publicKey := privateKey.PublicKey
-	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(&publicKey)
+	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(publicKey)
 	pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
 	publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
 

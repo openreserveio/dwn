@@ -27,8 +27,8 @@ var _ = Describe("Query For A Record", func() {
 		dwnClient := client.CreateDWNClient(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 		message := model.CreateQueryRecordsMessage(TEST_SCHEMA, "DOES NOT EXIST", &model.ProtocolDefinition{}, recipientDID)
 
-		authorization := model.CreateAuthorization(message, *authorKeypair.PrivateKey)
-		attestation := model.CreateAttestation(message, *authorKeypair.PrivateKey)
+		authorization := model.CreateAuthorization(message, authorKeypair.PublicKey, authorKeypair.PrivateKey)
+		attestation := model.CreateAttestation(message, authorKeypair.PublicKey, authorKeypair.PrivateKey)
 		message.Attestation = attestation
 		message.Authorization = authorization
 

@@ -4,11 +4,11 @@ import (
 	"crypto"
 	"crypto/ed25519"
 	"crypto/rand"
-	crypto2 "github.com/TBD54566975/ssi-sdk/crypto"
+	tbdcrypto "github.com/TBD54566975/ssi-sdk/crypto"
 )
 
 type Keypair struct {
-	KeyType    crypto2.KeyType
+	KeyType    tbdcrypto.KeyType
 	PrivateKey crypto.PrivateKey
 	PublicKey  crypto.PublicKey
 }
@@ -21,6 +21,7 @@ func NewKeypair() Keypair {
 	}
 
 	return Keypair{
+		KeyType:    tbdcrypto.Ed25519,
 		PrivateKey: privateKey,
 		PublicKey:  publicKey,
 	}

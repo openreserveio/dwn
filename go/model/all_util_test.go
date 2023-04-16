@@ -3,10 +3,13 @@ package model_test
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/datamodel"
@@ -91,12 +94,12 @@ var _ = Describe("Util", func() {
 
 			It("Should verify", func() {
 
-				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-				authorDID, _ := didder.CreateKeyDID(&privateKey.PublicKey)
+				publicKey, privateKey, _ := ed25519.GenerateKey(rand.Reader)
+				authorDID, _ := did.CreateDIDKey(crypto.Ed25519, publicKey)
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage(authorDID, "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
+				message := model.CreateMessage(authorDID.String(), "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 
-				attestation := model.CreateAttestation(message, *privateKey)
+				attestation := model.CreateAttestation(message, nil, privateKey)
 				message.Attestation = attestation
 
 				result := model.VerifyAttestation(message)
@@ -114,7 +117,7 @@ var _ = Describe("Util", func() {
 				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 
-				attestation := model.CreateAttestation(message, *privateKey)
+				attestation := model.CreateAttestation(message, nil, *privateKey)
 				attestation.Signatures[0].Signature = "12345"
 				message.Attestation = attestation
 

@@ -52,13 +52,12 @@ func VerifyAuthorization(message *Message) bool {
 	return true
 }
 
-func CreateAuthorization(message *Message, privateKey crypto.PrivateKey) DWNJWS {
+func CreateAuthorization(message *Message, publicKey crypto.PublicKey, privateKey crypto.PrivateKey) DWNJWS {
 
 	authorization := DWNJWS{}
 
 	// PEM encode public key -> multibase(base64url)
-	publicKey := privateKey.PublicKey
-	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(&publicKey)
+	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(publicKey)
 	pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
 	publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
 

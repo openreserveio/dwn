@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto/ed25519"
 	"github.com/TBD54566975/ssi-sdk/crypto"
 	"github.com/TBD54566975/ssi-sdk/did"
 )
@@ -13,7 +14,16 @@ type Identity struct {
 
 func FromKeypair(keypair Keypair) Identity {
 
-	didKey, err := did.CreateDIDKey(crypto.Ed25519, keypair.PublicKey.([]byte))
+	var publicKeyBytes []byte
+	switch keypair.KeyType {
+	case crypto.Ed25519:
+		publicKeyBytes = keypair.PublicKey.(ed25519.PublicKey)
+
+	default:
+		panic("Unsupported key type")
+	}
+
+	didKey, err := did.CreateDIDKey(crypto.Ed25519, publicKeyBytes)
 	if err != nil {
 		panic(err)
 	}
