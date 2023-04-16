@@ -2,13 +2,12 @@ package model
 
 import (
 	"crypto"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/multiformats/go-multibase"
+	didsdk "github.com/TBD54566975/ssi-sdk/did"
+	"github.com/lestrrat-go/jwx/jwa"
+	"github.com/lestrrat-go/jwx/jws"
 )
 
 /*
@@ -18,81 +17,94 @@ import (
 
 func VerifyAuthorization(message *Message) bool {
 
-	//if message.Authorization.Payload == "" || len(message.Authorization.Signatures) == 0 {
-	//	return false
-	//}
-	//
-	//encodedProtectedHeader := message.Authorization.Signatures[0].Protected
-	//encodedSignature := message.Authorization.Signatures[0].Signature
-	//encodedPayload := message.Authorization.Payload
-	//
-	//// Get the ecdsa.PublicKey
-	//jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
-	//if err != nil {
-	//	return false
-	//}
-	//
-	//var protectedHeaderMap map[string]string
-	//err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
-	//if err != nil {
-	//	return false
-	//}
-	//
-	//authorizerDid := protectedHeaderMap["kid"]
-	//if authorizerDid == "" {
-	//	return false
-	//}
-	//
-	//res := didder.ResolvePublicKey(authorizerDid)
-	//if res == nil {
-	//	return false
-	//}
-	//
-	//var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
-	//err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
-	//if err != nil {
-	//	return false
-	//}
+	jwsToVerify := fmt.Sprintf("%s.%s.%s", message.Authorization.Signatures[0].Protected, message.Authorization.Payload, message.Authorization.Signatures[0].Signature)
+	jwsMessage, err := jws.ParseString(jwsToVerify)
+	if err != nil {
+		return false
+	}
+
+	for _, sigs := range jwsMessage.Signatures() {
+
+		signingKeyId := sigs.ProtectedHeaders().KeyID()
+		signingAlg := sigs.ProtectedHeaders().Algorithm()
+
+		// Resolve the signing key
+		signingKeyDidDocument, err := ResolveDID(signingKeyId)
+		if err != nil || signingKeyDidDocument == nil {
+			return false
+		}
+
+		// Get the public key from the DID Document verification method
+		// put all VerificationMethods into a map
+		authPublicKey, err := didsdk.GetKeyFromVerificationMethod(*signingKeyDidDocument, signingKey)
+		if err != nil {
+			return false
+		}
+
+		_, err = jws.Verify([]byte(jwsToVerify), signingAlg, authPublicKey)
+		if err != nil {
+			return false
+		}
+
+	}
 
 	return true
 }
 
-func CreateAuthorization(message *Message, publicKey crypto.PublicKey, privateKey crypto.PrivateKey) DWNJWS {
+func CreateAuthorization(message *Message, authKeyUri string, publicKey crypto.PublicKey, privateKey crypto.PrivateKey) DWNJWS {
 
 	authorization := DWNJWS{}
 
 	// PEM encode public key -> multibase(base64url)
-	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(publicKey)
-	pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
-	publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
+	// publicKeyBytes, _ := x509.MarshalPKIXPublicKey(publicKey)
+	// pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
+	// publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
 
-	protectedHeader := map[string]string{
-		"typ": "JWS",
-		"alg": jwt.SigningMethodES512.Alg(),
-		"kid": fmt.Sprintf("did:key:%s", publicKeyMultibase),
+	// Using github.com/lestrrat-go/jwx package here because *amazing*
+	/*
+		From Spec:
+		* The JWS MUST include a payload property, and its value MUST be an object composed of the following values:
+		  * The object MUST include a descriptorCid property, and its value MUST be the stringified Version 1 CID of the
+			DAG CBOR encoded descriptor object.
+		  * The object MAY include a permissionsGrantCid property, and its value MUST be the stringified Version 1 CID of the
+			DAG CBOR encoded Permission Grant being invoked.
+		  * If attestation of an object is permitted, the payload MAY include an attestationCid property, and its value MUST be
+			the stringified Version 1 CID of the DAG CBOR encoded attestation string.
+
+	*/
+	descriptorCid := CreateDescriptorCID(message.Descriptor)
+	// TODO:  Include permissionsGrants and attestation logic per spec
+	// attestationCid := CreateAttestationCID(message.Attestation)
+	// permissionsGrantCid := CreatePermissionsGrantCID(message.PermissionsGrant)
+
+	payloadMap := map[string]string{
+		"descriptorCid":       descriptorCid,
+		"permissionsGrantCid": "",
+		"attestationCid":      "",
 	}
-	jsonProtectedHeader, _ := json.Marshal(&protectedHeader)
-	jwsProtectedHeader := base64.URLEncoding.EncodeToString(jsonProtectedHeader)
+	jsonPayload, _ := json.Marshal(&payloadMap)
 
-	payload := map[string]string{
-		"descriptorCid": CreateDescriptorCID(message.Descriptor),
-		"processingCid": CreateProcessingCID(message.Processing),
+	additionalHeaders := jws.NewHeaders()
+	additionalHeaders.Set("kid", authKeyUri)
+
+	signature, err := jws.Sign(jsonPayload, jwa.EdDSA, privateKey, jws.WithHeaders(additionalHeaders))
+	if err != nil {
+		panic(err)
 	}
-	jsonPayload, _ := json.Marshal(&payload)
-	jwsPayload := base64.URLEncoding.EncodeToString(jsonPayload)
 
-	var jwsPayloadBytes []byte = make([]byte, base64.URLEncoding.EncodedLen(len(jsonPayload)))
-	base64.URLEncoding.Encode(jwsPayloadBytes, jsonPayload)
-
-	sig, _ := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
-
-	authorization.Payload = jwsPayload
-	authorization.Signatures = []DWNJWSSig{
-		{
-			Protected: jwsProtectedHeader,
-			Signature: sig,
-		},
+	jwsMsg, err := jws.Parse(signature)
+	if err != nil {
+		panic(err)
 	}
+
+	authorization.Payload = base64.RawURLEncoding.EncodeToString(jwsMsg.Payload())
+	authorization.Signatures = []DWNJWSSig{}
+	protectedHeaders, _ := jwsMsg.Signatures()[0].ProtectedHeaders().MarshalJSON()
+
+	authorization.Signatures = append(authorization.Signatures, DWNJWSSig{
+		Signature: base64.RawURLEncoding.EncodeToString(jwsMsg.Signatures()[0].Signature()),
+		Protected: base64.RawURLEncoding.EncodeToString(protectedHeaders),
+	})
 
 	return authorization
 

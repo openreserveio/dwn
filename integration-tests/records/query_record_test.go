@@ -17,6 +17,7 @@ var _ = Describe("Query For A Record", func() {
 	DWN_PORT := os.Getenv("DWN_API_PORT")
 
 	authorKeypair := client.NewKeypair()
+	authorIdentity := client.FromKeypair(authorKeypair)
 
 	recipientKeypair := client.NewKeypair()
 	recipientIdentity := client.FromKeypair(recipientKeypair)
@@ -27,7 +28,10 @@ var _ = Describe("Query For A Record", func() {
 		dwnClient := client.CreateDWNClient(fmt.Sprintf("http://%s:%s/", DWN_HOST, DWN_PORT))
 		message := model.CreateQueryRecordsMessage(TEST_SCHEMA, "DOES NOT EXIST", &model.ProtocolDefinition{}, recipientDID)
 
-		authorization := model.CreateAuthorization(message, authorKeypair.PublicKey, authorKeypair.PrivateKey)
+		authorDidDocument, _ := model.ResolveDID(authorIdentity.DID)
+		authorVerifyMethodId := fmt.Sprintf("%s%s", authorDidDocument.VerificationMethod[0].Controller, authorDidDocument.VerificationMethod[0].ID)
+
+		authorization := model.CreateAuthorization(message, authorVerifyMethodId, authorKeypair.PublicKey, authorKeypair.PrivateKey)
 		attestation := model.CreateAttestation(message, authorKeypair.PublicKey, authorKeypair.PrivateKey)
 		message.Attestation = attestation
 		message.Authorization = authorization
