@@ -195,7 +195,7 @@ var _ = Describe("Feature Router", func() {
 				},
 			}
 			prikey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-			message.Attestation = model.CreateAttestation(&message, nil, *prikey)
+			message.Attestation = model.CreateAttestation(&message, "", nil, *prikey)
 
 			ro := model.RequestObject{
 				Messages: []model.Message{

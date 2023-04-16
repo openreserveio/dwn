@@ -32,7 +32,7 @@ var _ = Describe("Query For A Record", func() {
 		authorVerifyMethodId := fmt.Sprintf("%s%s", authorDidDocument.VerificationMethod[0].Controller, authorDidDocument.VerificationMethod[0].ID)
 
 		authorization := model.CreateAuthorization(message, authorVerifyMethodId, authorKeypair.PublicKey, authorKeypair.PrivateKey)
-		attestation := model.CreateAttestation(message, authorKeypair.PublicKey, authorKeypair.PrivateKey)
+		attestation := model.CreateAttestation(message, authorVerifyMethodId, authorKeypair.PublicKey, authorKeypair.PrivateKey)
 		message.Attestation = attestation
 		message.Authorization = authorization
 

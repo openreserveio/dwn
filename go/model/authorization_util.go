@@ -63,11 +63,6 @@ func CreateAuthorization(message *Message, authKeyUri string, publicKey crypto.P
 
 	authorization := DWNJWS{}
 
-	// PEM encode public key -> multibase(base64url)
-	// publicKeyBytes, _ := x509.MarshalPKIXPublicKey(publicKey)
-	// pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
-	// publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
-
 	// Using github.com/lestrrat-go/jwx package here because *amazing*
 	/*
 		From Spec:
