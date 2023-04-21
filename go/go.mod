@@ -7,13 +7,11 @@ require (
 	github.com/getkin/kin-openapi v0.114.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/ipfs/go-cid v0.4.0
 	github.com/ipld/go-ipld-prime v0.20.0
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/multiformats/go-multibase v0.2.0
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/nats-io/nats.go v1.20.0
 	github.com/onsi/ginkgo/v2 v2.5.0
@@ -85,6 +83,7 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.2.0 // indirect
+	github.com/multiformats/go-multibase v0.2.0 // indirect
 	github.com/multiformats/go-multicodec v0.8.1 // indirect
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/nats-io/nats-server/v2 v2.9.9 // indirect
