@@ -34,14 +34,14 @@ GoLang-based implementation of [DIF's DWN Specification](https://identity.founda
 - [Hooks](https://github.com/openreserveio/dwn/issues/28) and [Webhooks](https://github.com/openreserveio/dwn/issues/29), [Events](https://github.com/openreserveio/dwn/issues/12)
 - Docker-based deployment focus
 
-### Planned For v0.2.0 release (2023 Q2)
+### Planned For v0.2.0 release (2023 Q3)
 
-- [ ] [Permissions](https://github.com/openreserveio/dwn/issues/30)
+- [X] [Permissions](https://github.com/openreserveio/dwn/issues/30)
 - [ ] [HooksDelete](https://github.com/openreserveio/dwn/issues/78)
 - [ ] [ProtocolsConfigure](https://github.com/openreserveio/dwn/issues/79)
 - [ ] [ProtocolsQuery](https://github.com/openreserveio/dwn/issues/80)
 - [ ] Sync
-- [ ] Commit Strategy changes to message processing
+- [X] Commit Strategy changes to message processing
 - [ ] DID service for openreserve DID method
 - [ ] Support [DIDComm](https://identity.foundation/didcomm-messaging/spec/)
 
