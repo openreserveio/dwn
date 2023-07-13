@@ -47,7 +47,12 @@ func (client *DWNClient) SaveHookForSchemaAndProtocol(schemaUri string, protocol
 		Descriptor: descriptor,
 	}
 
-	attestation := model.CreateAttestation(&message, *requestor.Keypair.PrivateKey)
+	resolverDIDDocument, err := model.ResolveDID(requestor.DID)
+	if err != nil {
+		return "", errors.New("Unable to resolve requestor identity DID")
+	}
+	resolverDIDVerifyId := resolverDIDDocument.VerificationMethod[0].ID
+	attestation := model.CreateAttestation(&message, resolverDIDVerifyId, requestor.Keypair.PublicKey, requestor.Keypair.PrivateKey)
 	message.Attestation = attestation
 
 	ro := model.RequestObject{}
@@ -119,7 +124,13 @@ func (client *DWNClient) SaveHookForRecord(schemaUri string, dataRecordId string
 		Descriptor: descriptor,
 	}
 
-	attestation := model.CreateAttestation(&message, *requestor.Keypair.PrivateKey)
+	resolverDIDDocument, err := model.ResolveDID(requestor.DID)
+	if err != nil {
+		return "", errors.New("Unable to resolve requestor identity DID")
+	}
+	requestorDIDVerifyId := resolverDIDDocument.VerificationMethod[0].ID
+
+	attestation := model.CreateAttestation(&message, requestorDIDVerifyId, requestor.Keypair.PublicKey, requestor.Keypair.PrivateKey)
 	message.Attestation = attestation
 
 	ro := model.RequestObject{}

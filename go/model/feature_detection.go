@@ -10,6 +10,7 @@ type FeatureInterface struct {
 	Hooks       HooksFeatures       `json:"hooks,omitempty"`
 	Permissions PermissionsFeatures `json:"permissions,omitempty"`
 	Messaging   MessagingFeatures   `json:"messaging,omitempty"`
+	Protocols   ProtocolsFeatures   `json:"protocols,omitempty"`
 }
 
 type RecordsFeatures struct {
@@ -35,6 +36,11 @@ type MessagingFeatures struct {
 	Batching bool `json:"batching"`
 }
 
+type ProtocolsFeatures struct {
+	ProtocolsQuery     bool `json:"ProtocolsQuery"`
+	ProtocolsConfigure bool `json:"ProtocolsConfigure"`
+}
+
 var CurrentFeatureDetection FeatureDetection = FeatureDetection{
 	Type: "FeatureDetection",
 	Interfaces: FeatureInterface{
@@ -56,6 +62,10 @@ var CurrentFeatureDetection FeatureDetection = FeatureDetection{
 		},
 		Messaging: MessagingFeatures{
 			Batching: true,
+		},
+		Protocols: ProtocolsFeatures{
+			ProtocolsQuery:     true,
+			ProtocolsConfigure: true,
 		},
 	},
 }

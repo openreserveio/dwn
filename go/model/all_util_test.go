@@ -2,11 +2,12 @@ package model_test
 
 import (
 	"bytes"
-	"crypto/ecdsa"
-	"crypto/elliptic"
+	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/TBD54566975/ssi-sdk/crypto"
+	"github.com/TBD54566975/ssi-sdk/did"
 	"github.com/ipfs/go-cid"
 	"github.com/ipld/go-ipld-prime/codec/dagcbor"
 	"github.com/ipld/go-ipld-prime/datamodel"
@@ -15,7 +16,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/openreserveio/dwn/go/client"
-	"github.com/openreserveio/dwn/go/did"
 	"github.com/openreserveio/dwn/go/model"
 )
 
@@ -86,21 +86,24 @@ var _ = Describe("Util", func() {
 
 	})
 
-	Describe("Messages with attestations", func() {
+	Describe("Messages with authorizations", func() {
 
 		Context("With correct signature, should verify", func() {
 
 			It("Should verify", func() {
 
-				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-				authorDID, _ := did.CreateKeyDID(&privateKey.PublicKey)
+				publicKey, privateKey, _ := ed25519.GenerateKey(rand.Reader)
+				authorDID, _ := did.CreateDIDKey(crypto.Ed25519, publicKey)
+				authorDIDDocument, _ := model.ResolveDID(authorDID.String())
+				authorVerifyMethodId := fmt.Sprintf("%s%s", authorDIDDocument.VerificationMethod[0].Controller, authorDIDDocument.VerificationMethod[0].ID)
+
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage(authorDID, "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
+				message := model.CreateMessage(authorDID.String(), "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 
-				attestation := model.CreateAttestation(message, *privateKey)
-				message.Attestation = attestation
+				authz := model.CreateAuthorization(message, authorVerifyMethodId, publicKey, privateKey)
+				message.Authorization = authz
 
-				result := model.VerifyAttestation(message)
+				result := model.VerifyAuthorization(message)
 				Expect(result).To(BeTrue())
 
 			})
@@ -111,15 +114,19 @@ var _ = Describe("Util", func() {
 
 			It("Should not verify", func() {
 
+				publicKey, privateKey, _ := ed25519.GenerateKey(rand.Reader)
+				authorDID, _ := did.CreateDIDKey(crypto.Ed25519, publicKey)
+				authorDIDDocument, _ := model.ResolveDID(authorDID.String())
+				authorVerifyMethodId := fmt.Sprintf("%s%s", authorDIDDocument.VerificationMethod[0].Controller, authorDIDDocument.VerificationMethod[0].ID)
+
 				data := "{\"name\":\"test user\"}"
-				message := model.CreateMessage("did:tmp:1", "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
-				privateKey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+				message := model.CreateMessage(authorDID.String(), "did:tmp:2", "", []byte(data), "CollectionsWrite", "", "", "https://openreserve.io/schemas/test.json")
 
-				attestation := model.CreateAttestation(message, *privateKey)
-				attestation.Signatures[0].Signature = "12345"
-				message.Attestation = attestation
+				authz := model.CreateAuthorization(message, authorVerifyMethodId, publicKey, privateKey)
+				authz.Signatures[0].Signature = "12345"
+				message.Attestation = authz
 
-				result := model.VerifyAttestation(message)
+				result := model.VerifyAuthorization(message)
 				Expect(result).To(BeFalse())
 
 			})

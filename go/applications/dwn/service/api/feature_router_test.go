@@ -15,7 +15,6 @@ import (
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
@@ -32,7 +31,7 @@ var _ = Describe("Feature Router", func() {
 
 		var err error
 		var router *api.FeatureRouter
-		mockCollSvcClient := mocks.NewMockCollectionServiceClient(mockController)
+		mockCollSvcClient := mocks.NewMockRecordServiceClient(mockController)
 		mockHookSvcClient := mocks.NewMockHookServiceClient(mockController)
 
 		It("Should create a feature router instance", func() {
@@ -135,7 +134,7 @@ var _ = Describe("Feature Router", func() {
 
 		var err error
 		var router *api.FeatureRouter
-		mockCollSvcClient := mocks.NewMockCollectionServiceClient(mockController)
+		mockCollSvcClient := mocks.NewMockRecordServiceClient(mockController)
 		mockHookSvcClient := mocks.NewMockHookServiceClient(mockController)
 
 		It("Should create a feature router instance", func() {
@@ -196,7 +195,7 @@ var _ = Describe("Feature Router", func() {
 				},
 			}
 			prikey, _ := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-			message.Attestation = model.CreateAttestation(&message, *prikey)
+			message.Attestation = model.CreateAttestation(&message, "", nil, *prikey)
 
 			ro := model.RequestObject{
 				Messages: []model.Message{
@@ -204,18 +203,17 @@ var _ = Describe("Feature Router", func() {
 				},
 			}
 
-			mockValResp := services.ValidateCollectionResponse{
+			mockValResp := services.ValidateRecordResponse{
 				Status: &services.CommonStatus{
 					Status: services.Status_OK,
 				},
 			}
 
-			mockStoreResp := services.StoreCollectionResponse{
-				Status:   &services.CommonStatus{Status: services.Status_OK},
-				RecordId: primitive.NewObjectID().Hex(),
+			mockStoreResp := services.CommitRecordResponse{
+				Status: &services.CommonStatus{Status: services.Status_OK},
 			}
-			mockCollSvcClient.EXPECT().ValidateCollection(gomock.Any(), gomock.Any()).Return(&mockValResp, nil)
-			mockCollSvcClient.EXPECT().StoreCollection(gomock.Any(), gomock.Any()).Return(&mockStoreResp, nil)
+			mockCollSvcClient.EXPECT().ValidateRecord(gomock.Any(), gomock.Any()).Return(&mockValResp, nil)
+			mockCollSvcClient.EXPECT().Commit(gomock.Any(), gomock.Any()).Return(&mockStoreResp, nil)
 
 			resp, err := router.Route(context.Background(), &ro)
 			Expect(err).To(BeNil())

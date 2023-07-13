@@ -1,108 +1,99 @@
 package model
 
 import (
-	"crypto/ecdsa"
-	"crypto/x509"
+	"crypto"
 	"encoding/base64"
-	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/multiformats/go-multibase"
-	"github.com/openreserveio/dwn/go/did"
+	didsdk "github.com/TBD54566975/ssi-sdk/did"
+	"github.com/lestrrat-go/jwx/jwa"
+	"github.com/lestrrat-go/jwx/jws"
+	"strings"
 )
 
 func VerifyAttestation(message *Message) bool {
 
-	if message.Attestation.Payload == "" || len(message.Attestation.Signatures) == 0 {
+	// Do some basic checking
+	if message == nil || message.Authorization.Payload == "" || message.Authorization.Signatures == nil || len(message.Authorization.Signatures) == 0 {
 		return false
 	}
 
-	encodedProtectedHeader := message.Attestation.Signatures[0].Protected
-	encodedSignature := message.Attestation.Signatures[0].Signature
-	encodedPayload := message.Attestation.Payload
-
-	// Make sure the payloads match as expected
-	//expectedPayload := map[string]string{
-	//	"descriptorCid": CreateDescriptorCID(message.Descriptor),
-	//	"processingCid": CreateProcessingCID(message.Processing),
-	//}
-	//expectedJsonPayload, _ := json.Marshal(&expectedPayload)
-	//expectedJwsPayload := base64.URLEncoding.EncodeToString(expectedJsonPayload)
-	//
-	//if expectedJwsPayload != encodedPayload {
-	//	// These should match
-	//	return false
-	//}
-
-	// Get the ecdsa.PublicKey
-	jsonProtectedHeader, err := base64.URLEncoding.DecodeString(encodedProtectedHeader)
+	jwsToVerify := fmt.Sprintf("%s.%s.%s", message.Authorization.Signatures[0].Protected, message.Authorization.Payload, message.Authorization.Signatures[0].Signature)
+	jwsMessage, err := jws.ParseString(jwsToVerify)
 	if err != nil {
 		return false
 	}
 
-	var protectedHeaderMap map[string]string
-	err = json.Unmarshal(jsonProtectedHeader, &protectedHeaderMap)
-	if err != nil {
-		return false
-	}
+	for _, sigs := range jwsMessage.Signatures() {
 
-	attestorDid := protectedHeaderMap["kid"]
-	if attestorDid == "" {
-		return false
-	}
+		signingKeyId := sigs.ProtectedHeaders().KeyID()
+		signingAlg := sigs.ProtectedHeaders().Algorithm()
 
-	res := did.ResolvePublicKey(attestorDid)
-	if res == nil {
-		return false
-	}
+		// Resolve the signing key
+		signingKeyDidDocument, err := ResolveDID(signingKeyId)
+		if err != nil || signingKeyDidDocument == nil {
+			return false
+		}
 
-	var publicKey *ecdsa.PublicKey = res.(*ecdsa.PublicKey)
-	err = jwt.SigningMethodES512.Verify(fmt.Sprintf("%s.%s", encodedProtectedHeader, encodedPayload), encodedSignature, publicKey)
-	if err != nil {
-		return false
+		// Get the public key from the DID Document verification method
+		// put all VerificationMethods into a map
+		// Get everything after the # in the signingKeyId
+		ref := signingKeyId[strings.Index(signingKeyId, "#"):]
+		authPublicKey, err := didsdk.GetKeyFromVerificationMethod(*signingKeyDidDocument, ref)
+		if err != nil {
+			return false
+		}
+
+		_, err = jws.Verify([]byte(jwsToVerify), signingAlg, authPublicKey)
+		if err != nil {
+			return false
+		}
+
 	}
 
 	return true
 }
 
-func CreateAttestation(message *Message, privateKey ecdsa.PrivateKey) DWNJWS {
+func CreateAttestation(message *Message, authKeyUri string, publicKey crypto.PublicKey, privateKey crypto.PrivateKey) DWNJWS {
 
 	attestation := DWNJWS{}
 
-	// PEM encode public key -> multibase(base64url)
-	publicKey := privateKey.PublicKey
-	publicKeyBytes, _ := x509.MarshalPKIXPublicKey(&publicKey)
-	pemEncodedPublicKey := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC EC KEY", Bytes: publicKeyBytes})
-	publicKeyMultibase, _ := multibase.Encode(multibase.Base64url, pemEncodedPublicKey)
+	// Using github.com/lestrrat-go/jwx package here because *amazing*
+	/*
+			From Spec:
+			The Message object MUST contain an attestation property, and its value MUST be a General object representation of a [RFC7515] JSON Web Signature composed as follows:
+		The object MUST include a payload property, and its value MUST be the stringified Version 1 CID of the DAG CBOR encoded descriptor object, whose composition is defined in the Message Descriptor section of this specification.
+		The object MUST include a protected property, and its value MUST be an object composed of the following values:
+		The object MUST include an alg property, and its value MUST be the string representing the algorithm used to verify the signature (as defined by the [RFC7515] JSON Web Signature specification).
+		The object MUST include a kid property, and its value MUST be a DID URL string identifying the key to be used in verifying the signature.
+		The object MUST include a signature property, and its value MUST be a signature string produced by signing the protected and payload values, in accordance with the [RFC7515] JSON Web Signature specification.
 
-	protectedHeader := map[string]string{
-		"typ": "JWS",
-		"alg": jwt.SigningMethodES512.Alg(),
-		"kid": fmt.Sprintf("did:key:%s", publicKeyMultibase),
+	*/
+	descriptorCid := CreateDescriptorCID(message.Descriptor)
+	// TODO:  Include permissionsGrants and attestation logic per spec
+	// attestationCid := CreateAttestationCID(message.Attestation)
+	// permissionsGrantCid := CreatePermissionsGrantCID(message.PermissionsGrant)
+
+	additionalHeaders := jws.NewHeaders()
+	additionalHeaders.Set("kid", authKeyUri)
+
+	signature, err := jws.Sign([]byte(descriptorCid), jwa.EdDSA, privateKey, jws.WithHeaders(additionalHeaders))
+	if err != nil {
+		panic(err)
 	}
-	jsonProtectedHeader, _ := json.Marshal(&protectedHeader)
-	jwsProtectedHeader := base64.URLEncoding.EncodeToString(jsonProtectedHeader)
 
-	payload := map[string]string{
-		"descriptorCid": CreateDescriptorCID(message.Descriptor),
-		"processingCid": CreateProcessingCID(message.Processing),
+	jwsMsg, err := jws.Parse(signature)
+	if err != nil {
+		panic(err)
 	}
-	jsonPayload, _ := json.Marshal(&payload)
-	jwsPayload := base64.URLEncoding.EncodeToString(jsonPayload)
 
-	var jwsPayloadBytes []byte = make([]byte, base64.URLEncoding.EncodedLen(len(jsonPayload)))
-	base64.URLEncoding.Encode(jwsPayloadBytes, jsonPayload)
+	attestation.Payload = descriptorCid
+	attestation.Signatures = []DWNJWSSig{}
+	protectedHeaders, _ := jwsMsg.Signatures()[0].ProtectedHeaders().MarshalJSON()
 
-	sig, _ := jwt.SigningMethodES512.Sign(fmt.Sprintf("%s.%s", jwsProtectedHeader, jwsPayload), &privateKey)
-
-	attestation.Payload = jwsPayload
-	attestation.Signatures = []DWNJWSSig{
-		{
-			Protected: jwsProtectedHeader,
-			Signature: sig,
-		},
-	}
+	attestation.Signatures = append(attestation.Signatures, DWNJWSSig{
+		Signature: base64.RawURLEncoding.EncodeToString(jwsMsg.Signatures()[0].Signature()),
+		Protected: base64.RawURLEncoding.EncodeToString(protectedHeaders),
+	})
 
 	return attestation
 
