@@ -22,14 +22,14 @@ type Configuration interface {
 	GetRecordServiceListenPort() int
 	GetRecordServiceExternalAddress() string
 	GetRecordServiceExternalPort() int
-	GetRecordServiceDocumentDBURI() string
+	GetRecordServicePostgresURI() string
 
 	// Hook Service
 	GetHookServiceListenAddress() string
 	GetHookServiceListenPort() int
 	GetHookServiceExternalAddress() string
 	GetHookServiceExternalPort() int
-	GetHookServiceDocumentDBURI() string
+	GetHookServicePostgresURI() string
 
 	// Queue Service
 	GetQueueServiceConnectionURI() string

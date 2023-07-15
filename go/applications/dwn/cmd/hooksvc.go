@@ -4,7 +4,6 @@ import (
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/hooksvc"
 	"github.com/openreserveio/dwn/go/log"
-	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -15,11 +14,6 @@ var hooksvcCmd = &cobra.Command{
 	Short: "OpenReserve DWN Backend HookService",
 	Long:  `Backend gRPC Service for managing Hook definitions`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		log.Info("Observability")
-		ctx := cmd.Context()
-		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "Hook Service")
-		defer sd(ctx)
 
 		log.Info("Starting DWN Backend HookService")
 		config, err := configuration.Config()

@@ -2,9 +2,9 @@ package observability
 
 import (
 	"context"
+	"fmt"
 	"github.com/openreserveio/dwn/go/log"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -14,8 +14,7 @@ import (
 	"os"
 )
 
-var TP *tracesdk.TracerProvider
-var Tracer trace.Tracer
+var SERVICENAME string
 
 // Helper function to define sampling.
 // When in development mode, AlwaysSample is defined,
@@ -48,43 +47,28 @@ func newResource(ctx context.Context, serviceName string) *resource.Resource {
 	return res
 }
 
-// Creates Jaeger exporter
-func exporterToJaeger() (*jaeger.Exporter, error) {
-	collUrl := os.Getenv("OPEN_TELEMETRY_COLLECTOR_URL")
-	log.Info("Open Telemetry Collector URL:  %s", collUrl)
-	return jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(collUrl)))
-}
-
-// Maybe this will work?
-func exporterToCollector(ctx context.Context) (tracesdk.SpanExporter, error) {
-	collUrl := os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT")
-	log.Info("Open Telemetry Collector URL:  %s", collUrl)
-
-	client := otlptracehttp.NewClient()
-	return otlptrace.New(ctx, client)
-}
-
 // Initiates OpenTelemetry provider sending data to OpenTelemetry Collector.
-func InitProviderWithJaegerExporter(ctx context.Context, serviceName string) (func(context.Context) error, error) {
-
-	if TP != nil {
-		return TP.Shutdown, nil
-	}
+func InitProviderWithOTELExporter(ctx context.Context, serviceName string) (func(context.Context) error, error) {
 
 	log.Info("Creating a new Tracing Provider, should only happen once")
 
-	exp, err := exporterToCollector(ctx)
+	client := otlptracehttp.NewClient()
+	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
-		log.Fatal("error: %s", err.Error())
-		os.Exit(1)
+		return nil, fmt.Errorf("creating OTLP trace exporter: %w", err)
 	}
+
 	tp := tracesdk.NewTracerProvider(
 		tracesdk.WithSampler(getSampler()),
-		tracesdk.WithBatcher(exp),
+		tracesdk.WithBatcher(exporter),
 		tracesdk.WithResource(newResource(ctx, serviceName)),
 	)
 	otel.SetTracerProvider(tp)
-	TP = tp
-	Tracer = tp.Tracer(serviceName)
+	SERVICENAME = serviceName
+
 	return tp.Shutdown, nil
+}
+
+func Tracer() trace.Tracer {
+	return otel.Tracer(SERVICENAME)
 }

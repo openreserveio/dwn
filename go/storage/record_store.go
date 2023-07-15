@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"github.com/openreserveio/dwn/go/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"context"
+	"github.com/uptrace/bun"
+	"time"
 )
 
 // Base interface for stores for collections
@@ -11,31 +12,40 @@ import (
 type RecordStore interface {
 
 	// Refactored methods here
-	CreateRecord(record *Record, initialEntry *MessageEntry) error
-	SaveRecord(record *Record) error
+	CreateRecord(ctx context.Context, record *Record, initialEntry *MessageEntry) error
+	SaveRecord(ctx context.Context, record *Record) error
 
-	AddMessageEntry(entry *MessageEntry) error
-	GetMessageEntryByID(messageEntryID string) *MessageEntry
-	GetRecord(recordId string) *Record
-	GetRecordForCommit(recordId string) (*Record, *MessageEntry)
-	DeleteMessageEntry(entry *MessageEntry) error
-	DeleteMessageEntryByID(messageEntryId string) error
+	AddMessageEntry(ctx context.Context, entry *MessageEntry) error
+	GetMessageEntryByID(ctx context.Context, messageEntryID string) *MessageEntry
+	GetRecord(ctx context.Context, recordId string) *Record
+	GetRecordForCommit(ctx context.Context, recordId string) (*Record, *MessageEntry)
+	DeleteMessageEntry(ctx context.Context, entry *MessageEntry) error
+	DeleteMessageEntryByID(ctx context.Context, messageEntryId string) error
+
+	BeginTx(ctx context.Context) error
+	CommitTx(ctx context.Context) error
+	RollbackTx(ctx context.Context) error
 }
 
 type Record struct {
-	ID                      primitive.ObjectID `bson:"_id"`
-	RecordID                string             `bson:"record_id"`
-	CreatorDID              string             `bson:"creator_did"`
-	OwnerDID                string             `bson:"owner_did"`
-	WriterDIDs              []string           `bson:"writer_dids"`
-	ReaderDIDs              []string           `bson:"reader_dids"`
-	InitialEntryID          string             `bson:"initial_entry_id"`
-	LatestEntryID           string             `bson:"latest_entry_id"`
-	LatestCheckpointEntryID string             `bson:"latest_checkpoint_entry_id"`
+	bun.BaseModel           `bun:"table:record"`
+	ID                      string    `bun:"id,pk" json:"id"`
+	RecordID                string    `bun:"record_id" json:"record_id"`
+	CreatorDID              string    `bun:"creator_did" json:"creator_did"`
+	OwnerDID                string    `bun:"owner_did" json:"owner_did"`
+	WriterDIDs              []string  `bun:"writer_dids" json:"writer_dids"`
+	ReaderDIDs              []string  `bun:"reader_dids" json:"reader_dids"`
+	InitialEntryID          string    `bun:"initial_entry_id" json:"initial_entry_id"`
+	LatestEntryID           string    `bun:"latest_entry_id" json:"latest_entry_id"`
+	LatestCheckpointEntryID string    `bun:"latest_checkpoint_entry_id" json:"latest_checkpoint_entry_id"`
+	CreateDate              time.Time `bun:"create_date" json:"create_date"`
 }
 
 type MessageEntry struct {
-	model.Message
-	ID             primitive.ObjectID `bson:"_id"`
-	MessageEntryID string             `bson:"message_entry_id"`
+	bun.BaseModel          `bun:"table:message_entry"`
+	ID                     string    `bun:"id,pk" json:"id"`
+	MessageEntryID         string    `bun:"message_entry_id" json:"message_entry_id"`
+	PreviousMessageEntryID string    `bun:"previous_message_entry_id" json:"previous_message_entry_id"`
+	Message                []byte    `bun:"message" json:"message"`
+	CreateDate             time.Time `bun:"create_date" json:"create_date"`
 }
