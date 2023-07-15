@@ -2,8 +2,8 @@ package storage
 
 import (
 	"context"
-	"github.com/openreserveio/dwn/go/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/uptrace/bun"
+	"time"
 )
 
 // Base interface for storing Hook configuration from the user
@@ -19,22 +19,26 @@ type HookStore interface {
 }
 
 type HookRecord struct {
-	ID                              primitive.ObjectID `bson:"_id"`
-	HookRecordID                    string             `bson:"hook_record_id"`
-	CreatorDID                      string             `bson:"creator_did"`
-	InitialHookConfigurationEntryID string             `bson:"initial_hook_config_entry_id"`
-	LatestHookConfigurationEntryID  string             `bson:"latest_hook_config_entry_id"`
+	bun.BaseModel                   `bun:"table:hook_record"`
+	ID                              string    `bun:"id,pk" json:"id"`
+	HookRecordID                    string    `bun:"hook_record_id" json:"hook_record_id"`
+	CreatorDID                      string    `bun:"creator_did" json:"creator_did"`
+	InitialHookConfigurationEntryID string    `bun:"initial_hook_config_entry_id" json:"initial_hook_config_entry_id"`
+	LatestHookConfigurationEntryID  string    `bun:"latest_hook_config_entry_id" json:"latest_hook_config_entry_id"`
+	CreateDate                      time.Time `bun:"create_date" json:"create_date"`
 
 	// For Indexing
-	FilterDataRecordID    string `bson:"filter_data_record_id"`
-	FilterSchema          string `bson:"filter_schema"`
-	FilterProtocol        string `bson:"filter_protocol"`
-	FilterProtocolVersion string `bson:"filter_protocol_version"`
+	FilterDataRecordID    string `bun:"filter_data_record_id" json:"filter_data_record_id"`
+	FilterSchema          string `bun:"filter_schema" json:"filter_schema"`
+	FilterProtocol        string `bun:"filter_protocol" json:"filter_protocol"`
+	FilterProtocolVersion string `bun:"filter_protocol_version" json:"filter_protocol_version"`
 }
 
 type HookConfigurationEntry struct {
-	model.Message
-	ID                   primitive.ObjectID `bson:"_id"`
-	ConfigurationEntryID string             `bson:"configuration_entry_id"`
-	HookRecordID         string             `bson:"hook_record_id"`
+	bun.BaseModel        `bun:"table:hook_configuration_entry"`
+	ID                   string    `bun:"id,pk" json:"id"`
+	ConfigurationEntryID string    `bun:"configuration_entry_id" json:"configuration_entry_id"`
+	HookRecordID         string    `bun:"hook_record_id" json:"hook_record_id"`
+	Message              []byte    `bun:"message" json:"message"`
+	CreateDate           time.Time `bun:"create_date" json:"create_date"`
 }
