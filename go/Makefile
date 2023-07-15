@@ -1,4 +1,4 @@
-SEMVER := 0.1.1-alpha
+SEMVER := 0.1.2-alpha
 PLATFORMS := linux/amd64,linux/arm64
 
 generate-oapi:
