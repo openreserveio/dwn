@@ -63,11 +63,14 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		}
 
 		sp.AddEvent("Creating record")
+		recordStore.BeginTx(ctx)
 		err = recordStore.CreateRecord(ctx, &record, &entry)
 		if err != nil {
+			recordStore.RollbackTx(ctx)
 			sp.RecordError(err)
 			return "", err
 		}
+		recordStore.CommitTx(ctx)
 
 		// This was an initial entry!
 		sp.AddEvent("CREATED AN INITIAL ENTRY")

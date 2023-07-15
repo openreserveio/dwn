@@ -33,8 +33,8 @@ type Record struct {
 	RecordID                string    `bun:"record_id" json:"record_id"`
 	CreatorDID              string    `bun:"creator_did" json:"creator_did"`
 	OwnerDID                string    `bun:"owner_did" json:"owner_did"`
-	WriterDIDs              []string  `bun:"writer_dids" json:"writer_dids"`
-	ReaderDIDs              []string  `bun:"reader_dids" json:"reader_dids"`
+	WriterDIDs              []string  `bun:"writer_dids,array" json:"writer_dids"`
+	ReaderDIDs              []string  `bun:"reader_dids,array" json:"reader_dids"`
 	InitialEntryID          string    `bun:"initial_entry_id" json:"initial_entry_id"`
 	LatestEntryID           string    `bun:"latest_entry_id" json:"latest_entry_id"`
 	LatestCheckpointEntryID string    `bun:"latest_checkpoint_entry_id" json:"latest_checkpoint_entry_id"`

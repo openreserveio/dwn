@@ -23,7 +23,7 @@ func init() {
 func ResolveDID(ctx context.Context, didString string) (*didsdk.Document, error) {
 
 	// Instrumentation
-	ctx, sp := observability.Tracer.Start(ctx, "framework.ResolveDID")
+	ctx, sp := observability.Tracer().Start(ctx, "framework.ResolveDID")
 	defer sp.End()
 
 	sp.AddEvent(fmt.Sprintf("Resolving DID: %s", didString))

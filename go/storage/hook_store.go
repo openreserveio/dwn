@@ -16,6 +16,10 @@ type HookStore interface {
 
 	FindHookRecordsForDataRecord(ctx context.Context, dataRecordId string) (map[*HookRecord]*HookConfigurationEntry, error)
 	FindHookRecordsForSchemaAndProtocol(ctx context.Context, schemaUri string, protocol string, protocolVersion string) (map[*HookRecord]*HookConfigurationEntry, error)
+
+	BeginTx(ctx context.Context) error
+	CommitTx(ctx context.Context) error
+	RollbackTx(ctx context.Context) error
 }
 
 type HookRecord struct {

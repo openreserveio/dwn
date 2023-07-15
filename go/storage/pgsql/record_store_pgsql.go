@@ -76,12 +76,15 @@ func (recordStore *RecordStorePostgres) CreateRecord(ctx context.Context, record
 	record.CreateDate = time.Now().UTC()
 	initialEntry.RecordID = record.RecordID
 
+	err = nil
 	if recordStore.ActiveTx != nil {
-		_, err = recordStore.ActiveTx.NewInsert().Model(&record).Exec(ctx)
-		_, err = recordStore.ActiveTx.NewInsert().Model(&initialEntry).Exec(ctx)
+		sp.AddEvent("Creating Record and Initial Entry in transaction")
+		_, err = recordStore.ActiveTx.NewInsert().Model(record).Exec(ctx)
+		_, err = recordStore.ActiveTx.NewInsert().Model(initialEntry).Exec(ctx)
 	} else {
-		_, err = recordStore.DB.NewInsert().Model(&record).Exec(ctx)
-		_, err = recordStore.DB.NewInsert().Model(&initialEntry).Exec(ctx)
+		sp.AddEvent("Creating Record and Initial Entry without a transaction")
+		_, err = recordStore.DB.NewInsert().Model(record).Exec(ctx)
+		_, err = recordStore.DB.NewInsert().Model(initialEntry).Exec(ctx)
 	}
 
 	if err != nil {
