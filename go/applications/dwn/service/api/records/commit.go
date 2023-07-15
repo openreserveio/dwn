@@ -13,7 +13,7 @@ import (
 func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, sp := observability.Tracer.Start(ctx, "api.records.RecordsCommit")
+	ctx, sp := observability.Tracer().Start(ctx, "api.records.RecordsCommit")
 	defer sp.End()
 
 	var messageResultObj model.MessageResultObject

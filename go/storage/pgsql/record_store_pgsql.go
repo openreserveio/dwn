@@ -141,6 +141,9 @@ func (recordStore *RecordStorePostgres) AddMessageEntry(ctx context.Context, ent
 
 	var err error
 	entry.ID = uuid.New().String()
+
+	// This is generated upstream
+	// entry.MessageEntryID = entry.ID
 	entry.CreateDate = time.Now().UTC()
 	if recordStore.ActiveTx != nil {
 		_, err = recordStore.ActiveTx.NewInsert().Model(entry).Exec(ctx)

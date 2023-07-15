@@ -13,7 +13,7 @@ import (
 func RecordsWrite(ctx context.Context, recordSvcClient services.RecordServiceClient, hookServiceClient services.HookServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, sp := observability.Tracer.Start(ctx, "api.records.RecordsWrite")
+	ctx, sp := observability.Tracer().Start(ctx, "api.records.RecordsWrite")
 	defer sp.End()
 
 	var messageResultObj model.MessageResultObject

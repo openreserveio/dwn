@@ -13,7 +13,7 @@ import (
 func RecordsQuery(ctx context.Context, recordServiceClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, sp := observability.Tracer.Start(ctx, "api.records.RecordsQuery")
+	ctx, sp := observability.Tracer().Start(ctx, "api.records.RecordsQuery")
 	defer sp.End()
 
 	var messageResultObj model.MessageResultObject

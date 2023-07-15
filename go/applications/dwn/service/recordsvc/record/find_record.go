@@ -19,10 +19,10 @@ type FindRecordResult struct {
 func FindRecordBySchemaAndRecordID(ctx context.Context, recordStore storage.RecordStore, schemaUri string, recordId string) (*FindRecordResult, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.record.FindRecordBySchemaAndRecordID")
+	ctx, sp := observability.Tracer().Start(ctx, "recordsvc.record.FindRecordBySchemaAndRecordID")
 	defer sp.End()
 
-	collRecord := recordStore.GetRecord(recordId)
+	collRecord := recordStore.GetRecord(ctx, recordId)
 	if collRecord == nil {
 		return &FindRecordResult{Status: "NOT_FOUND"}, nil
 	}
@@ -31,9 +31,9 @@ func FindRecordBySchemaAndRecordID(ctx context.Context, recordStore storage.Reco
 		Status:                "OK",
 		Error:                 nil,
 		Record:                collRecord,
-		InitialEntry:          recordStore.GetMessageEntryByID(collRecord.InitialEntryID),
-		LatestEntry:           recordStore.GetMessageEntryByID(collRecord.LatestEntryID),
-		LatestCheckpointEntry: recordStore.GetMessageEntryByID(collRecord.LatestCheckpointEntryID),
+		InitialEntry:          recordStore.GetMessageEntryByID(ctx, collRecord.InitialEntryID),
+		LatestEntry:           recordStore.GetMessageEntryByID(ctx, collRecord.LatestEntryID),
+		LatestCheckpointEntry: recordStore.GetMessageEntryByID(ctx, collRecord.LatestCheckpointEntryID),
 	}, nil
 
 }
@@ -41,13 +41,13 @@ func FindRecordBySchemaAndRecordID(ctx context.Context, recordStore storage.Reco
 func FindRecordForCommit(ctx context.Context, recordStore storage.RecordStore, schemaUri string, parentRecordId string) (*FindRecordResult, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.record.FindRecordForCommit")
+	ctx, sp := observability.Tracer().Start(ctx, "recordsvc.record.FindRecordForCommit")
 	defer sp.End()
 
 	result := FindRecordResult{}
 
 	sp.AddEvent("Calling Record Store to get record for commit")
-	record, messageEntry := recordStore.GetRecordForCommit(parentRecordId)
+	record, messageEntry := recordStore.GetRecordForCommit(ctx, parentRecordId)
 	if record == nil || messageEntry == nil {
 		sp.AddEvent("Unable to find records for Commit")
 		result.Status = "NOT_FOUND"

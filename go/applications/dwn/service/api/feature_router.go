@@ -33,7 +33,7 @@ func CreateFeatureRouter(recordSvcClient services.RecordServiceClient, hooksvcCl
 func (fr *FeatureRouter) Route(ctx context.Context, requestObject *model.RequestObject) (interface{}, error) {
 
 	// Instrumentation
-	ctx, childSpan := observability.Tracer.Start(ctx, "Route Operation")
+	ctx, childSpan := observability.Tracer().Start(ctx, "FeatureRouter.Route")
 	defer childSpan.End()
 
 	// Setup Response Object
@@ -44,6 +44,7 @@ func (fr *FeatureRouter) Route(ctx context.Context, requestObject *model.Request
 	for idx, message := range requestObject.Messages {
 
 		log.Info("Processing message %d", idx)
+		childSpan.AddEvent(fmt.Sprintf("Processing message %d", idx))
 		res, err := fr.processMessage(ctx, idx, &message)
 		if err != nil {
 			return nil, err
@@ -67,7 +68,7 @@ type MessageProcResult struct {
 func (fr *FeatureRouter) processMessage(ctx context.Context, idx int, message *model.Message) (*MessageProcResult, error) {
 
 	// Instrumentation
-	ctx, sp := observability.Tracer.Start(ctx, "api.FeatureRouter.processMessage")
+	ctx, sp := observability.Tracer().Start(ctx, "FeatureRouter.processMessage")
 	defer sp.End()
 
 	// Support Simple Test Messages
