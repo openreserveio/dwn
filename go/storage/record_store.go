@@ -46,6 +46,7 @@ type MessageEntry struct {
 	ID                     string    `bun:"id,pk" json:"id"`
 	MessageEntryID         string    `bun:"message_entry_id" json:"message_entry_id"`
 	PreviousMessageEntryID string    `bun:"previous_message_entry_id" json:"previous_message_entry_id"`
+	RecordID               string    `bun:"record_id" json:"record_id"`
 	Message                []byte    `bun:"message" json:"message"`
 	CreateDate             time.Time `bun:"create_date" json:"create_date"`
 }
