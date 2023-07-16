@@ -299,9 +299,22 @@ func (recordStore *RecordStorePostgres) BeginTx(ctx context.Context) error {
 }
 
 func (recordStore *RecordStorePostgres) CommitTx(ctx context.Context) error {
-	return recordStore.ActiveTx.Commit()
+
+	err := recordStore.ActiveTx.Commit()
+	if err != nil {
+		return err
+	}
+
+	recordStore.ActiveTx = nil
+	return nil
 }
 
 func (recordStore *RecordStorePostgres) RollbackTx(ctx context.Context) error {
-	return recordStore.ActiveTx.Rollback()
+	err := recordStore.ActiveTx.Rollback()
+	if err != nil {
+		return err
+	}
+
+	recordStore.ActiveTx = nil
+	return nil
 }

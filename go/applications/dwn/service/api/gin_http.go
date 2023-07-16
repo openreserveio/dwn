@@ -56,7 +56,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	// Configure Tracing
 	ginEngine := gin.Default()
-	ginEngine.Use(otelgin.Middleware("dwn-api-gin"))
+	ginEngine.Use(otelgin.Middleware(observability.SERVICENAME))
 
 	apiService := APIService{
 		ListenAddress:   apiServiceOptions.Address,
