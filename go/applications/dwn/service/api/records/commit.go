@@ -31,6 +31,7 @@ func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServi
 	// Check for existing record by the parent ID for commit
 	sp.AddEvent(fmt.Sprintf("Looking for existing record for commit:  %s", message.RecordID))
 	findRecordResponse, err := recordServiceClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
+	sp.AddEvent(fmt.Sprintf("FindRecordResponse:  %v", findRecordResponse))
 	if err != nil {
 		sp.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
