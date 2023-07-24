@@ -30,7 +30,7 @@ type RecordStore interface {
 type Record struct {
 	bun.BaseModel           `bun:"table:record"`
 	ID                      string    `bun:"id,pk" json:"id"`
-	RecordID                string    `bun:"record_id" json:"record_id"`
+	DWNRecordID             string    `bun:"dwn_record_id" json:"dwn_record_id"`
 	CreatorDID              string    `bun:"creator_did" json:"creator_did"`
 	OwnerDID                string    `bun:"owner_did" json:"owner_did"`
 	WriterDIDs              []string  `bun:"writer_dids,array" json:"writer_dids"`
@@ -44,9 +44,8 @@ type Record struct {
 type MessageEntry struct {
 	bun.BaseModel          `bun:"table:message_entry"`
 	ID                     string    `bun:"id,pk" json:"id"`
-	MessageEntryID         string    `bun:"message_entry_id" json:"message_entry_id"`
 	PreviousMessageEntryID string    `bun:"previous_message_entry_id" json:"previous_message_entry_id"`
-	RecordID               string    `bun:"record_id" json:"record_id"`
+	DWNRecordID            string    `bun:"dwn_record_id" json:"record_id"`
 	Message                []byte    `bun:"message" json:"message"`
 	CreateDate             time.Time `bun:"create_date" json:"create_date"`
 }
