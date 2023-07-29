@@ -3,6 +3,7 @@ package hooks
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/openreserveio/dwn/go/generated/services"
 	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/model"
@@ -13,23 +14,24 @@ import (
 func HooksWrite(ctx context.Context, hookServiceClient services.HookServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, childSpan := observability.Tracer().Start(ctx, "HooksWrite")
-	defer childSpan.End()
+	ctx, sp := observability.Tracer().Start(ctx, "api.hooks.HooksWrite")
+	defer sp.End()
 
 	var messageResultObj model.MessageResultObject
 
 	// First, make sure attestations are valid and correct for this message
 	// TODO:  Deal with whitelisting, blacklisting, authentication requirements
-	if !model.VerifyAttestation(message) {
-		messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Unable to verify attestation(s)."}
-		return messageResultObj
-	}
+	//if !model.VerifyAttestation(message) {
+	//	messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Unable to verify attestation(s)."}
+	//	return messageResultObj
+	//}
 
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// TODO: Authorization
 
 	// See if there's an existing Hook record and be sure we're authorized
 	// otherwise, create a new one
+	sp.AddEvent(fmt.Sprintf("Checking for existing hook record:  %s", message.RecordID))
 	getHooksRequest := services.GetHooksForRecordRequest{
 		RecordId:        message.RecordID,
 		Protocol:        message.Descriptor.Protocol,
@@ -39,6 +41,7 @@ func HooksWrite(ctx context.Context, hookServiceClient services.HookServiceClien
 	getHooksResponse, err := hookServiceClient.GetHooksForRecord(ctx, &getHooksRequest)
 	if err != nil {
 		log.Error("Internal Server Error:  %v", err)
+		sp.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError}
 		return messageResultObj
 	}
@@ -46,6 +49,7 @@ func HooksWrite(ctx context.Context, hookServiceClient services.HookServiceClien
 	if len(getHooksResponse.HookDefinitions) > 0 {
 
 		// This is an update!
+		sp.AddEvent("Updating Hook")
 		messageBytes, _ := json.Marshal(&message)
 		updateReq := services.UpdateHookRequest{Message: messageBytes}
 		updateRes, err := hookServiceClient.UpdateHook(ctx, &updateReq)

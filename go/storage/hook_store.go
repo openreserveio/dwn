@@ -27,6 +27,7 @@ type HookRecord struct {
 	ID                              string    `bun:"id,pk" json:"id"`
 	HookRecordID                    string    `bun:"hook_record_id" json:"hook_record_id"`
 	CreatorDID                      string    `bun:"creator_did" json:"creator_did"`
+	OwnerDID                        string    `bun:"owner_did" json:"owner_did"`
 	InitialHookConfigurationEntryID string    `bun:"initial_hook_config_entry_id" json:"initial_hook_config_entry_id"`
 	LatestHookConfigurationEntryID  string    `bun:"latest_hook_config_entry_id" json:"latest_hook_config_entry_id"`
 	CreateDate                      time.Time `bun:"create_date" json:"create_date"`

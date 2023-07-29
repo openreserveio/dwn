@@ -45,7 +45,7 @@ var _ = Describe("WriteHook", func() {
 
 			It("Should save the hook for the record", func() {
 				println(fmt.Sprintf("Record ID for HOOK:  %s", recordId))
-				hookId, err := dwnClient.SaveHookForRecord(TEST_SCHEMA, recordId, "http://localhost:8080", &authorIdentity)
+				hookId, err := dwnClient.SaveHookForRecord(TEST_SCHEMA, recordId, "http://localhost:8080", &recipientIdentity)
 				Expect(err).To(BeNil())
 				Expect(hookId).ToNot(BeEmpty())
 				println(fmt.Sprintf("Hook ID:  %s", hookId))
@@ -53,7 +53,7 @@ var _ = Describe("WriteHook", func() {
 
 			It("Should create a callback if we update the record", func() {
 
-				_, err := dwnClient.UpdateData(TEST_SCHEMA, recordId, recordId, []byte("YAAAAAAAAS"), client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &authorIdentity)
+				err := dwnClient.UpdateData(TEST_SCHEMA, recordId, []byte("YAAAAAAAAS"), client.HEADER_CONTENT_TYPE_APPLICATION_JSON, &recipientIdentity)
 				Expect(err).To(BeNil())
 
 			})

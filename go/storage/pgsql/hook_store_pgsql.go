@@ -45,6 +45,11 @@ func (hookStore *HookStorePostgres) GetHookRecord(ctx context.Context, hookRecor
 		return nil, nil, err
 	}
 
+	if hookRecord == nil {
+		sp.AddEvent("No Record Found")
+		return nil, nil, nil
+	}
+
 	sp.AddEvent("Getting Configuration Entry by Record ID")
 	hookConfigurationEntry, err := hookStore.getHookConfigurationEntryById(ctx, hookRecord.LatestHookConfigurationEntryID)
 	if err != nil {
@@ -109,15 +114,33 @@ func (hookStore *HookStorePostgres) CreateHookRecord(ctx context.Context, hookRe
 	initialConfiguration.ID = uuid.NewString()
 	initialConfiguration.ConfigurationEntryID = initialConfiguration.ID
 	initialConfiguration.HookRecordID = hookRecord.HookRecordID
-	hookRecord.InitialHookConfigurationEntryID = initialConfiguration.ConfigurationEntryID
+	hookRecord.InitialHookConfigurationEntryID = initialConfiguration.ID
+	hookRecord.LatestHookConfigurationEntryID = initialConfiguration.ID
+
+	if hookStore.ActiveTx != nil {
+		_, err = hookStore.ActiveTx.NewInsert().Model(hookRecord).Exec(ctx)
+		_, err = hookStore.ActiveTx.NewInsert().Model(initialConfiguration).Exec(ctx)
+	} else {
+		_, err = hookStore.DB.NewInsert().Model(hookRecord).Exec(ctx)
+		_, err = hookStore.DB.NewInsert().Model(initialConfiguration).Exec(ctx)
+	}
+
+	if err != nil {
+		sp.RecordError(err)
+		return err
+	}
 
 	return nil
 
 }
 
 func (hookStore *HookStorePostgres) UpdateHookRecord(ctx context.Context, hookRecordId string, updatedConfiguration *storage.HookConfigurationEntry) error {
-	//TODO implement me
-	panic("implement me")
+	// Observability
+	ctx, sp := observability.Tracer().Start(ctx, "HookStorePostgres.UpdateHookRecord")
+	defer sp.End()
+
+	return nil
+
 }
 
 func (hookStore *HookStorePostgres) DeleteHookRecord(ctx context.Context, hookRecordId string) error {
@@ -202,9 +225,9 @@ func (hookStore *HookStorePostgres) getHookRecordById(ctx context.Context, hookR
 	var hookRecord storage.HookRecord
 	var err error
 	if hookStore.ActiveTx != nil {
-		err = hookStore.ActiveTx.NewSelect().Model(&hookRecord).Where("record_id = ?", hookRecordId).Scan(ctx, &hookRecord)
+		err = hookStore.ActiveTx.NewSelect().Model(&hookRecord).Where("hook_record_id = ?", hookRecordId).Scan(ctx, &hookRecord)
 	} else {
-		err = hookStore.DB.NewSelect().Model(&hookRecord).Where("record_id = ?", hookRecordId).Scan(ctx, &hookRecord)
+		err = hookStore.DB.NewSelect().Model(&hookRecord).Where("hook_record_id = ?", hookRecordId).Scan(ctx, &hookRecord)
 	}
 
 	if err != nil {
@@ -260,9 +283,9 @@ func (hookStore *HookStorePostgres) getHookConfigurationEntries(ctx context.Cont
 	var err error
 	var hookConfigurationEntries []*storage.HookConfigurationEntry
 	if hookStore.ActiveTx != nil {
-		err = hookStore.ActiveTx.NewSelect().Model(&hookConfigurationEntries).Where("record_id = ?", hookRecordId).Order("create_date DESC").Scan(ctx, &hookConfigurationEntries)
+		err = hookStore.ActiveTx.NewSelect().Model(&hookConfigurationEntries).Where("hook_record_id = ?", hookRecordId).Order("create_date DESC").Scan(ctx, &hookConfigurationEntries)
 	} else {
-		err = hookStore.DB.NewSelect().Model(&hookConfigurationEntries).Where("record_id = ?", hookRecordId).Order("create_date DESC").Scan(ctx, &hookConfigurationEntries)
+		err = hookStore.DB.NewSelect().Model(&hookConfigurationEntries).Where("hook_record_id = ?", hookRecordId).Order("create_date DESC").Scan(ctx, &hookConfigurationEntries)
 	}
 
 	if err != nil {

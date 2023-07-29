@@ -84,8 +84,13 @@ func (hookService HookService) RegisterHook(ctx context.Context, request *servic
 	createdHookRecord := storage.HookRecord{
 		HookRecordID:                    message.RecordID,
 		CreatorDID:                      message.Processing.AuthorDID,
+		OwnerDID:                        message.Processing.RecipientDID,
 		InitialHookConfigurationEntryID: configEntry.ConfigurationEntryID,
 		LatestHookConfigurationEntryID:  configEntry.ConfigurationEntryID,
+		FilterProtocol:                  message.Descriptor.Filter.Protocol,
+		FilterProtocolVersion:           message.Descriptor.Filter.ProtocolVersion,
+		FilterSchema:                    message.Descriptor.Filter.Schema,
+		FilterDataRecordID:              message.Descriptor.Filter.RecordID,
 	}
 
 	// Store!
