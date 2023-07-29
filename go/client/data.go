@@ -110,7 +110,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, logicalRecordId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
+func (client *DWNClient) UpdateData(schemaUrl string, logicalRecordId string, data []byte, dataFormat string, dataUpdater *Identity) error {
 
 	// Create a Write pointing back to the previous latest entry,
 	// then do a commit on it
@@ -123,10 +123,10 @@ func (client *DWNClient) UpdateData(schemaUrl string, logicalRecordId string, da
 	// Query for the latest
 	latestDataMessage, _, _, err := client.GetData(schemaUrl, logicalRecordId, dataUpdater)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if latestDataMessage == nil {
-		return "", errors.New("No latest data message found")
+		return errors.New("No latest data message found")
 	}
 
 	// Resolve the data updater did
@@ -148,25 +148,21 @@ func (client *DWNClient) UpdateData(schemaUrl string, logicalRecordId string, da
 
 	responseObject, err := client.CallDWNHTTP(writeMessage, commitMessage)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	if responseObject.Status.Code != http.StatusOK {
-		return "", errors.New(responseObject.Status.Detail)
+		return errors.New(responseObject.Status.Detail)
 	}
 
 	if len(responseObject.Replies) < 2 {
-		return "", errors.New("Wrong number of message replies.")
+		return errors.New("Wrong number of message replies.")
 	}
 
 	if responseObject.Replies[1].Status.Code != http.StatusOK {
-		return "", errors.New(responseObject.Replies[1].Status.Detail)
+		return errors.New(responseObject.Replies[1].Status.Detail)
 	}
 
-	if len(responseObject.Replies[0].Entries) < 1 {
-		return "", errors.New("An updated record ID was not returned")
-	}
-
-	return string(responseObject.Replies[0].Entries[0].Result), nil
+	return nil
 
 }

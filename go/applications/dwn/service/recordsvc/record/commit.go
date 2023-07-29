@@ -98,7 +98,9 @@ func RecordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 	}
 
 	commitMessageEntry := storage.MessageEntry{
-		Message: messageBytes,
+		PreviousMessageEntryID: latestCheckpointEntry.ID,
+		DWNRecordID:            recordCommitMessage.RecordID,
+		Message:                messageBytes,
 	}
 	err = recordStore.AddMessageEntry(ctx, &commitMessageEntry)
 	if err != nil {

@@ -83,7 +83,6 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
-		sp.AddEvent("Get the parent  record for write referenced in the parentID")
 
 		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 		// inbound message. If any have been mutated, discard the message and cease processing.
@@ -144,6 +143,7 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 			}
 
 			existingRecord.LatestEntryID = latestEntry.ID
+			existingRecord.LatestCheckpointEntryID = latestEntry.ID
 			err = recordStore.SaveRecord(ctx, existingRecord)
 			if err != nil {
 				return "", err
@@ -189,6 +189,7 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 				//}
 
 				existingRecord.LatestCheckpointEntryID = latestEntry.ID
+				existingRecord.LatestEntryID = latestEntry.ID
 				err = recordStore.SaveRecord(ctx, existingRecord)
 				if err != nil {
 					return "", err

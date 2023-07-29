@@ -3,8 +3,10 @@ package pgsql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/erroring"
+	"github.com/openreserveio/dwn/go/log"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
 	"github.com/uptrace/bun"
@@ -68,6 +70,7 @@ func (recordStore *RecordStorePostgres) CreateRecord(ctx context.Context, record
 	sp.AddEvent("Creating Record and Initial Entry")
 	initialEntry.ID = uuid.New().String()
 	initialEntry.CreateDate = time.Now().UTC()
+	initialEntry.PreviousMessageEntryID = initialEntry.ID
 	record.ID = uuid.New().String()
 	record.InitialEntryID = initialEntry.ID
 	record.LatestEntryID = initialEntry.ID
@@ -103,12 +106,15 @@ func (recordStore *RecordStorePostgres) SaveRecord(ctx context.Context, record *
 
 	var err error
 	if recordStore.ActiveTx != nil {
-		_, err = recordStore.ActiveTx.NewUpdate().Model(record).Exec(ctx)
+		sp.AddEvent(fmt.Sprintf("Updating record in TX: %v", record))
+		_, err = recordStore.ActiveTx.NewUpdate().Model(record).WherePK().Exec(ctx)
 	} else {
-		_, err = recordStore.DB.NewUpdate().Model(record).Exec(ctx)
+		sp.AddEvent(fmt.Sprintf("Updating record OUTSIDE TX: %v", record))
+		_, err = recordStore.DB.NewUpdate().Model(record).WherePK().Exec(ctx)
 	}
 
 	if err != nil {
+		log.Error("Error saving record:  %v", err)
 		sp.RecordError(err)
 		return err
 	}
