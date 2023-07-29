@@ -65,8 +65,8 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 
 			response.Status = &services.CommonStatus{Status: services.Status_OK}
 			response.SchemaURI = request.SchemaURI
-			response.Writers = []string{latestEntryMessage.Processing.AuthorDID}
-			response.Readers = []string{latestEntryMessage.Processing.AuthorDID, latestEntryMessage.Processing.RecipientDID}
+			response.Writers = result.Record.WriterDIDs
+			response.Readers = result.Record.ReaderDIDs
 			response.IsPublished = latestEntryMessage.Descriptor.Published
 
 			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)
@@ -102,8 +102,8 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 
 			response.Status = &services.CommonStatus{Status: services.Status_OK}
 			response.SchemaURI = request.SchemaURI
-			response.Writers = []string{latestEntryMessage.Processing.AuthorDID}
-			response.Readers = []string{latestEntryMessage.Processing.AuthorDID, latestEntryMessage.Processing.RecipientDID}
+			response.Writers = result.Record.WriterDIDs
+			response.Readers = result.Record.ReaderDIDs
 			response.IsPublished = latestEntryMessage.Descriptor.Published
 
 			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)

@@ -64,14 +64,15 @@ func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServi
 		authorized := false
 		for _, v := range findRecordResponse.Writers {
 			if v == message.Processing.AuthorDID {
-				sp.AddEvent("Author is authorized to COMMIT to this record.")
+				sp.AddEvent(fmt.Sprintf("Author (%s) is authorized to COMMIT to this record (%s).", message.Processing.AuthorDID, message.RecordID))
 				authorized = true
 			}
 		}
 
 		if !authorized {
-			sp.AddEvent("Author is not authorized to COMMIT to this record.")
-			messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Author is not authorized to COMMIT to this record."}
+			eventText := fmt.Sprintf("Author (%s) is *NOT* authorized to COMMIT to this record (%s).", message.Processing.AuthorDID, message.RecordID)
+			sp.AddEvent(eventText)
+			messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: eventText}
 			return messageResultObj
 		}
 

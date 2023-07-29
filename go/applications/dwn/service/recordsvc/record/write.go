@@ -54,7 +54,7 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 			CreatorDID:  recordMessage.Processing.AuthorDID,
 			OwnerDID:    recordMessage.Processing.RecipientDID,
 			WriterDIDs:  []string{recordMessage.Processing.RecipientDID},
-			ReaderDIDs:  []string{recordMessage.Processing.AuthorDID, recordMessage.Processing.RecipientDID},
+			ReaderDIDs:  []string{recordMessage.Processing.RecipientDID},
 		}
 
 		recordMessageBytes, err := json.Marshal(recordMessage)
