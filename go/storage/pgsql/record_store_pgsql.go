@@ -3,7 +3,6 @@ package pgsql
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/erroring"
 	"github.com/openreserveio/dwn/go/observability"
@@ -50,7 +49,7 @@ func (recordStore *RecordStorePostgres) CreateRecord(ctx context.Context, record
 
 	// There cannot be one with the same RecordID for a create
 	var recordCheck storage.Record
-	err := recordStore.DB.NewSelect().Model(&recordCheck).Where("record_id = ?", record.RecordID).Scan(ctx, &recordCheck)
+	err := recordStore.DB.NewSelect().Model(&recordCheck).Where("dwn_record_id = ?", record.DWNRecordID).Scan(ctx, &recordCheck)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// This is fine
@@ -60,7 +59,7 @@ func (recordStore *RecordStorePostgres) CreateRecord(ctx context.Context, record
 		}
 	}
 	if recordCheck.ID != "" {
-		err := &erroring.RecordError{Msg: "record already exists"}
+		err := &erroring.RecordError{Msg: "A brand new record cannot have a given ID"}
 		sp.RecordError(err)
 		return err
 	}
@@ -74,7 +73,7 @@ func (recordStore *RecordStorePostgres) CreateRecord(ctx context.Context, record
 	record.LatestEntryID = initialEntry.ID
 	record.LatestCheckpointEntryID = initialEntry.ID
 	record.CreateDate = time.Now().UTC()
-	initialEntry.RecordID = record.RecordID
+	initialEntry.DWNRecordID = record.DWNRecordID
 
 	err = nil
 	if recordStore.ActiveTx != nil {
@@ -135,7 +134,7 @@ func (recordStore *RecordStorePostgres) AddMessageEntry(ctx context.Context, ent
 
 	// Get the associated Record
 	sp.AddEvent("Getting associated record")
-	rec := recordStore.GetRecord(ctx, entry.RecordID)
+	rec := recordStore.GetRecord(ctx, entry.DWNRecordID)
 	if rec == nil {
 		err := &erroring.RecordError{Msg: "Associated Record not found"}
 		sp.RecordError(err)
@@ -144,9 +143,6 @@ func (recordStore *RecordStorePostgres) AddMessageEntry(ctx context.Context, ent
 
 	var err error
 	entry.ID = uuid.New().String()
-
-	// This is generated upstream
-	// entry.MessageEntryID = entry.ID
 	entry.CreateDate = time.Now().UTC()
 	if recordStore.ActiveTx != nil {
 		_, err = recordStore.ActiveTx.NewInsert().Model(entry).Exec(ctx)
@@ -191,7 +187,7 @@ func (recordStore *RecordStorePostgres) GetMessageEntryByID(ctx context.Context,
 
 }
 
-func (recordStore *RecordStorePostgres) GetRecord(ctx context.Context, recordId string) *storage.Record {
+func (recordStore *RecordStorePostgres) GetRecord(ctx context.Context, dwnRecordId string) *storage.Record {
 
 	// Observability
 	ctx, sp := observability.Tracer().Start(ctx, "RecordStorePostgres.GetRecord")
@@ -200,9 +196,9 @@ func (recordStore *RecordStorePostgres) GetRecord(ctx context.Context, recordId 
 	var err error
 	var record storage.Record
 	if recordStore.ActiveTx != nil {
-		err = recordStore.ActiveTx.NewSelect().Model(&record).Where("record_id = ?", recordId).Scan(ctx, &record)
+		err = recordStore.ActiveTx.NewSelect().Model(&record).Where("dwn_record_id = ?", dwnRecordId).Scan(ctx, &record)
 	} else {
-		err = recordStore.DB.NewSelect().Model(&record).Where("record_id = ?", recordId).Scan(ctx, &record)
+		err = recordStore.DB.NewSelect().Model(&record).Where("dwn_record_id = ?", dwnRecordId).Scan(ctx, &record)
 	}
 
 	if err != nil {
@@ -216,40 +212,6 @@ func (recordStore *RecordStorePostgres) GetRecord(ctx context.Context, recordId 
 	}
 
 	return &record
-
-}
-
-func (recordStore *RecordStorePostgres) GetRecordForCommit(ctx context.Context, parentRecordId string) (*storage.Record, *storage.MessageEntry) {
-
-	// Observability
-	ctx, sp := observability.Tracer().Start(ctx, "RecordStorePostgres.GetRecordForCommit")
-	defer sp.End()
-
-	// For this, the parent record ID is the record ID of the MESSAGE ENTRY, and then its associated Record
-	// Generally this is for COMMIT a Write that is not the initial entry
-	sp.AddEvent(fmt.Sprintf("Getting message entry by its record ID:  %s", parentRecordId))
-	var err error
-	var messageEntry storage.MessageEntry
-	var record storage.Record
-	if recordStore.ActiveTx != nil {
-		err = recordStore.ActiveTx.NewSelect().Model(&messageEntry).Where("record_id = ?", parentRecordId).Scan(ctx, &messageEntry)
-		err = recordStore.ActiveTx.NewSelect().Model(&record).Where("record_id = ?", parentRecordId).Scan(ctx, &record)
-	} else {
-		err = recordStore.DB.NewSelect().Model(&messageEntry).Where("record_id = ?", parentRecordId).Scan(ctx, &messageEntry)
-		err = recordStore.DB.NewSelect().Model(&record).Where("record_id = ?", parentRecordId).Scan(ctx, &record)
-	}
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// This is fine
-			return nil, nil
-		} else {
-			sp.RecordError(err)
-			return nil, nil
-		}
-	}
-
-	return &record, &messageEntry
 
 }
 

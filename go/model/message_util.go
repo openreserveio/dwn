@@ -54,7 +54,7 @@ func CreateQueryRecordsMessage(schemaUri string, recordId string, protocolDef *P
 
 }
 
-func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, previousRecordId string, protocolDef *ProtocolDefinition, schemaUri string, dataFormat string, data []byte) *Message {
+func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, logicalRecordId string, protocolDef *ProtocolDefinition, schemaUri string, dataFormat string, data []byte) *Message {
 
 	// TODO:  How to deal with Context IDs?
 
@@ -67,7 +67,6 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 		Method:          METHOD_RECORDS_WRITE,
 		DataCID:         dataCID,
 		DataFormat:      dataFormat,
-		ParentID:        previousRecordId,
 		Protocol:        protocolDef.Protocol,
 		ProtocolVersion: protocolDef.ProtocolVersion,
 		Schema:          schemaUri,
@@ -86,9 +85,10 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 	descCID := CreateDescriptorCID(descriptor)
 	mpCID := CreateProcessingCID(processing)
 	recordCID := CreateRecordCID(descCID, mpCID)
+	descriptor.ParentID = recordCID
 
 	message := Message{
-		RecordID:   recordCID,
+		RecordID:   logicalRecordId,
 		ContextID:  protocolDef.ContextID,
 		Data:       dataEncoded,
 		Processing: processing,
@@ -99,14 +99,13 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, prev
 
 }
 
-func CreateRecordsCommitMessage(commitWriteMessageRecordId string, schemaUrl string, committerDID string) *Message {
+func CreateRecordsCommitMessage(logicalRecordId string, schemaUrl string, committerDID string) *Message {
 
 	// TODO:  How to deal with Context IDs?
 
 	descriptor := Descriptor{
 		Interface:      INTERFACE_RECORDS,
 		Method:         METHOD_RECORDS_COMMIT,
-		ParentID:       commitWriteMessageRecordId,
 		Schema:         schemaUrl,
 		CommitStrategy: "",
 		DateCreated:    time.Now().Format(time.RFC3339),
@@ -121,9 +120,10 @@ func CreateRecordsCommitMessage(commitWriteMessageRecordId string, schemaUrl str
 	descCID := CreateDescriptorCID(descriptor)
 	mpCID := CreateProcessingCID(processing)
 	recordCID := CreateRecordCID(descCID, mpCID)
+	descriptor.ParentID = recordCID
 
 	message := Message{
-		RecordID:   recordCID,
+		RecordID:   logicalRecordId,
 		Processing: processing,
 		Descriptor: descriptor,
 	}

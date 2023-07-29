@@ -30,7 +30,7 @@ func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServi
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record by the parent ID for commit
 	sp.AddEvent(fmt.Sprintf("Looking for existing record for commit:  %s", message.RecordID))
-	findRecordResponse, err := recordServiceClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
+	findRecordResponse, err := recordServiceClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
 	sp.AddEvent(fmt.Sprintf("FindRecordResponse:  %v", findRecordResponse))
 	if err != nil {
 		sp.RecordError(err)

@@ -28,18 +28,19 @@ func RecordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 	ctx, sp := observability.Tracer().Start(ctx, "recordsvc.record.RecordCommit")
 	defer sp.End()
 
-	// Retrieve the currently active CollectionsWrite entry for the recordId specified in the inbound CollectionsCommit
-	// message. If there is no currently active CollectionsWrite entry, discard the inbound message and cease processing.
-	// The parentID in the case of a COMMIT is the specific record ID in the chain of messages.
-	// We need to retrieve THAT entry, ensure its the latest checkpoint entry and then "commit"
-	sp.AddEvent("Get record for commit from parent ID")
-	existingRecord, parentWrite := recordStore.GetRecordForCommit(ctx, recordCommitMessage.Descriptor.ParentID)
-	if existingRecord == nil || parentWrite == nil {
-		return errors.New(ERR_COMMIT_TO_RECORD_NOT_FOUND)
+	// Retrieve the currently active RecordsWrite entry for the recordId specified in the inbound RecordsCommit message.
+	// If there is no currently active RecordsWrite entry, discard the inbound message and cease processing.
+
+	sp.AddEvent("Get record for commit")
+	logicalRecord := recordStore.GetRecord(ctx, recordCommitMessage.RecordID)
+	if logicalRecord == nil {
+		err := errors.New(ERR_COMMIT_TO_RECORD_NOT_FOUND)
+		sp.RecordError(err)
+		return err
 	}
 
 	sp.AddEvent("Get Message Entry from existing record")
-	latestCheckpointEntry := recordStore.GetMessageEntryByID(ctx, existingRecord.LatestCheckpointEntryID)
+	latestCheckpointEntry := recordStore.GetMessageEntryByID(ctx, logicalRecord.LatestCheckpointEntryID)
 	if latestCheckpointEntry == nil {
 		return errors.New(ERR_COMMIT_TO_RECORD_CHECKPOINT_ENTRY_NOT_FOUND)
 	}
@@ -49,7 +50,7 @@ func RecordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 	// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 	// inbound message. If any have been mutated, discard the message and cease processing.
 	sp.AddEvent("Get the initial entry from the existing record")
-	initialMessageEntry := recordStore.GetMessageEntryByID(ctx, existingRecord.InitialEntryID)
+	initialMessageEntry := recordStore.GetMessageEntryByID(ctx, logicalRecord.InitialEntryID)
 	if initialMessageEntry == nil {
 		return errors.New("Unable to find an initial entry")
 	}
@@ -108,9 +109,8 @@ func RecordCommit(ctx context.Context, recordStore storage.RecordStore, recordCo
 	// If all of the above steps are successful, store the message in relation to the record.
 	// I think this means we set the latest checkpoint to the latest entry
 	sp.AddEvent("Updating existing record")
-	existingRecord.LatestEntryID = existingRecord.LatestCheckpointEntryID
-	existingRecord.LatestCheckpointEntryID = commitMessageEntry.MessageEntryID
-	recordStore.SaveRecord(ctx, existingRecord)
+	logicalRecord.LatestEntryID = logicalRecord.LatestCheckpointEntryID
+	recordStore.SaveRecord(ctx, logicalRecord)
 
 	return nil
 

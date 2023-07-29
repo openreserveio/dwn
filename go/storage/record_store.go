@@ -18,7 +18,6 @@ type RecordStore interface {
 	AddMessageEntry(ctx context.Context, entry *MessageEntry) error
 	GetMessageEntryByID(ctx context.Context, messageEntryID string) *MessageEntry
 	GetRecord(ctx context.Context, recordId string) *Record
-	GetRecordForCommit(ctx context.Context, recordId string) (*Record, *MessageEntry)
 	DeleteMessageEntry(ctx context.Context, entry *MessageEntry) error
 	DeleteMessageEntryByID(ctx context.Context, messageEntryId string) error
 
