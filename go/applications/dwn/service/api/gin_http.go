@@ -68,6 +68,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	apiService.Gin.GET("/", apiService.HandleFeatureRequest)
 	apiService.Gin.POST("/", apiService.HandleDWNRequest)
+	apiService.Gin.GET("/version", apiService.HandleVersionRequest)
 
 	return &apiService, nil
 
@@ -75,6 +76,18 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 func (apiService APIService) Run() error {
 	return apiService.Gin.Run(fmt.Sprintf("%s:%d", apiService.ListenAddress, apiService.ListenPort))
+}
+
+func (apiService APIService) HandleVersionRequest(ctx *gin.Context) {
+
+	// Instrumentation
+	_, childSpan := observability.Tracer.Start(ctx, "HandleVersionRequest")
+	defer childSpan.End()
+
+	childSpan.AddEvent("Version Requested")
+	ctx.JSON(http.StatusOK, map[string]interface{}{"version": "0.1.1-alpha"})
+
+	return
 }
 
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
