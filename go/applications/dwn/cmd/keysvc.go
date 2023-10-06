@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/keysvc"
 	"github.com/openreserveio/dwn/go/log"
-	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -16,9 +14,6 @@ var keysvcCmd = &cobra.Command{
 	Short: "OpenReserve DWN Backend Key Service",
 	Long:  `Backend gRPC Service for managing keys, authenticating messages, and signing messages`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		log.Info("Observability")
-		observability.InitProviderWithJaegerExporter(context.Background(), "Key Service")
 
 		log.Info("Starting DWN Backend Key Service")
 		config, err := configuration.Config()

@@ -10,7 +10,7 @@ import (
 func HooksQuery(ctx context.Context, hookServiceClient services.HookServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, childSpan := observability.Tracer.Start(ctx, "HooksQuery")
+	ctx, childSpan := observability.Tracer().Start(ctx, "HooksQuery")
 	defer childSpan.End()
 
 	messageResultObj := model.MessageResultObject{}

@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/log"
@@ -159,8 +160,8 @@ func (client *DWNClient) SaveHookForRecord(schemaUri string, dataRecordId string
 		return "", errors.New("No response replies")
 	}
 
-	if len(responseObject.Replies[0].Entries) == 0 {
-		return "", errors.New("No response entries")
+	if responseObject.Replies[0].Status.Code != http.StatusOK {
+		return "", errors.New(fmt.Sprintf("Received Non OK Status: %d %s", responseObject.Replies[0].Status.Code, responseObject.Replies[0].Status.Detail))
 	}
 
 	return string(responseObject.Replies[0].Entries[0].Result), nil

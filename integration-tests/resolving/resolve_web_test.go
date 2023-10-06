@@ -11,7 +11,7 @@ import (
 var _ = Describe("ResolveWeb", func() {
 
 	ctx := context.Background()
-	sd, _ := observability.InitProviderWithJaegerExporter(ctx, "ResolveWeb Integration Test")
+	sd, _ := observability.InitProviderWithOTELExporter(ctx, "ResolveWeb Integration Test")
 	defer sd(ctx)
 
 	It("Resolves a valid web DID", func() {

@@ -56,7 +56,7 @@ func CreateAPIService(apiServiceOptions *framework.ServiceOptions, collSvcOption
 
 	// Configure Tracing
 	ginEngine := gin.Default()
-	ginEngine.Use(otelgin.Middleware("dwn-api"))
+	ginEngine.Use(otelgin.Middleware(observability.SERVICENAME))
 
 	apiService := APIService{
 		ListenAddress:   apiServiceOptions.Address,
@@ -93,7 +93,7 @@ func (apiService APIService) HandleVersionRequest(ctx *gin.Context) {
 func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	nctx, childSpan := observability.Tracer.Start(ctx, "HandleDWNRequest")
+	nctx, childSpan := observability.Tracer().Start(ctx, "APIService.HandleDWNRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Parsing Request Object")
@@ -120,7 +120,7 @@ func (apiService APIService) HandleDWNRequest(ctx *gin.Context) {
 func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestObject, error) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "GetRequestObject")
+	_, childSpan := observability.Tracer().Start(ctx, "APIService.GetRequestObject")
 	defer childSpan.End()
 
 	var request model.RequestObject
@@ -136,7 +136,7 @@ func (apiService APIService) GetRequestObject(ctx *gin.Context) (*model.RequestO
 func (apiService APIService) HandleFeatureRequest(ctx *gin.Context) {
 
 	// Instrumentation
-	_, childSpan := observability.Tracer.Start(ctx, "HandleFeatureRequest")
+	_, childSpan := observability.Tracer().Start(ctx, "APIService.HandleFeatureRequest")
 	defer childSpan.End()
 
 	childSpan.AddEvent("Current Feature Detection!")

@@ -20,7 +20,7 @@ func Start(ctx context.Context, config configuration.Configuration) error {
 		os.Exit(1)
 	}
 
-	recordService, err := CreateRecordService(config.GetRecordServiceDocumentDBURI())
+	recordService, err := CreateRecordService(config.GetRecordServicePostgresURI())
 	if err != nil {
 		log.Fatal("Unable to start Collection Service:  %v", err)
 		os.Exit(1)

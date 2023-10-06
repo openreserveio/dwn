@@ -110,7 +110,7 @@ func (client *DWNClient) SaveData(schemaUrl string, data []byte, dataFormat stri
 
 }
 
-func (client *DWNClient) UpdateData(schemaUrl string, umbrellaRecordId string, latestRecordWriteId string, data []byte, dataFormat string, dataUpdater *Identity) (string, error) {
+func (client *DWNClient) UpdateData(schemaUrl string, logicalRecordId string, data []byte, dataFormat string, dataUpdater *Identity) error {
 
 	// Create a Write pointing back to the previous latest entry,
 	// then do a commit on it
@@ -121,26 +121,26 @@ func (client *DWNClient) UpdateData(schemaUrl string, umbrellaRecordId string, l
 	}
 
 	// Query for the latest
-	latestDataMessage, _, _, err := client.GetData(schemaUrl, umbrellaRecordId, dataUpdater)
+	latestDataMessage, _, _, err := client.GetData(schemaUrl, logicalRecordId, dataUpdater)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if latestDataMessage == nil {
-		return "", errors.New("No latest data message found")
+		return errors.New("No latest data message found")
 	}
 
 	// Resolve the data updater did
 	dataUpdaterDIDDocument, err := model.ResolveDID(dataUpdater.DID)
 	dataUpdaterVerificationId := fmt.Sprintf("%s%s", dataUpdaterDIDDocument.VerificationMethod[0].Controller, dataUpdaterDIDDocument.VerificationMethod[0].ID)
 
-	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, latestRecordWriteId, &protocolDef, schemaUrl, dataFormat, data)
+	writeMessage := model.CreateUpdateRecordsWriteMessage(dataUpdater.DID, dataUpdater.DID, logicalRecordId, &protocolDef, schemaUrl, dataFormat, data)
 	writeAttestation := model.CreateAttestation(writeMessage, dataUpdaterVerificationId, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	writeMessage.Attestation = writeAttestation
 	writeAuthorization := model.CreateAuthorization(writeMessage, dataUpdaterVerificationId, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	writeMessage.Authorization = writeAuthorization
 
 	// Create the corresponding COMMIT
-	commitMessage := model.CreateRecordsCommitMessage(writeMessage.RecordID, writeMessage.Descriptor.Schema, dataUpdater.DID)
+	commitMessage := model.CreateRecordsCommitMessage(logicalRecordId, writeMessage.Descriptor.Schema, dataUpdater.DID)
 	commitAttestation := model.CreateAttestation(commitMessage, dataUpdaterVerificationId, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
 	commitMessage.Attestation = commitAttestation
 	commitAuthorization := model.CreateAuthorization(commitMessage, dataUpdaterVerificationId, dataUpdater.Keypair.PublicKey, dataUpdater.Keypair.PrivateKey)
@@ -148,25 +148,21 @@ func (client *DWNClient) UpdateData(schemaUrl string, umbrellaRecordId string, l
 
 	responseObject, err := client.CallDWNHTTP(writeMessage, commitMessage)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	if responseObject.Status.Code != http.StatusOK {
-		return "", errors.New(responseObject.Status.Detail)
+		return errors.New(responseObject.Status.Detail)
 	}
 
 	if len(responseObject.Replies) < 2 {
-		return "", errors.New("Wrong number of message replies.")
+		return errors.New("Wrong number of message replies.")
 	}
 
 	if responseObject.Replies[1].Status.Code != http.StatusOK {
-		return "", errors.New(responseObject.Replies[1].Status.Detail)
+		return errors.New(responseObject.Replies[1].Status.Detail)
 	}
 
-	if len(responseObject.Replies[0].Entries) < 1 {
-		return "", errors.New("An updated record ID was not returned")
-	}
-
-	return string(responseObject.Replies[0].Entries[0].Result), nil
+	return nil
 
 }

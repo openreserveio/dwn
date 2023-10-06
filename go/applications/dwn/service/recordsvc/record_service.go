@@ -10,7 +10,7 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
-	"github.com/openreserveio/dwn/go/storage/docdbstore"
+	"github.com/openreserveio/dwn/go/storage/pgsql"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -23,7 +23,7 @@ type RecordService struct {
 func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error) {
 
 	// Setup Collection Store
-	colLStore, err := docdbstore.CreateRecordDocumentDBStore(recordStoreConnectionURI)
+	colLStore, err := pgsql.NewRecordStorePostgres(recordStoreConnectionURI)
 	if err != nil {
 		log.Fatal("Unable to connect to collections store:  %v", err)
 		return nil, err
@@ -39,8 +39,8 @@ func CreateRecordService(recordStoreConnectionURI string) (*RecordService, error
 
 func (c RecordService) FindRecord(ctx context.Context, request *services.FindRecordRequest) (*services.FindRecordResponse, error) {
 
-	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.FindRecord")
+	// Observability
+	ctx, sp := observability.Tracer().Start(ctx, "RecordService.FindRecord")
 	defer sp.End()
 
 	response := services.FindRecordResponse{}
@@ -60,11 +60,14 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 
 		case "OK":
 			sp.AddEvent("Found record")
+			var latestEntryMessage model.Message
+			json.Unmarshal(result.LatestEntry.Message, &latestEntryMessage)
+
 			response.Status = &services.CommonStatus{Status: services.Status_OK}
 			response.SchemaURI = request.SchemaURI
-			response.Writers = []string{result.LatestEntry.Processing.AuthorDID}
-			response.Readers = []string{result.LatestEntry.Processing.AuthorDID, result.LatestEntry.Processing.RecipientDID}
-			response.IsPublished = result.LatestEntry.Descriptor.Published
+			response.Writers = result.Record.WriterDIDs
+			response.Readers = result.Record.ReaderDIDs
+			response.IsPublished = latestEntryMessage.Descriptor.Published
 
 			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)
 			response.RecordItem = latestEntryJsonBytes
@@ -94,11 +97,14 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 		switch result.Status {
 
 		case "OK":
+			var latestEntryMessage model.Message
+			json.Unmarshal(result.LatestEntry.Message, &latestEntryMessage)
+
 			response.Status = &services.CommonStatus{Status: services.Status_OK}
 			response.SchemaURI = request.SchemaURI
-			response.Writers = []string{result.LatestEntry.Processing.AuthorDID}
-			response.Readers = []string{result.LatestEntry.Processing.AuthorDID, result.LatestEntry.Processing.RecipientDID}
-			response.IsPublished = result.LatestEntry.Descriptor.Published
+			response.Writers = result.Record.WriterDIDs
+			response.Readers = result.Record.ReaderDIDs
+			response.IsPublished = latestEntryMessage.Descriptor.Published
 
 			latestEntryJsonBytes, _ := json.Marshal(result.LatestEntry)
 			response.RecordItem = latestEntryJsonBytes
@@ -124,7 +130,7 @@ func (c RecordService) FindRecord(ctx context.Context, request *services.FindRec
 func (rs RecordService) Query(ctx context.Context, request *services.QueryRecordRequest) (*services.QueryRecordResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.Query")
+	ctx, sp := observability.Tracer().Start(ctx, "RecordService.Query")
 	defer sp.End()
 
 	response := services.QueryRecordResponse{}
@@ -164,7 +170,7 @@ func (rs RecordService) Query(ctx context.Context, request *services.QueryRecord
 func (rs RecordService) Write(ctx context.Context, request *services.WriteRecordRequest) (*services.WriteRecordResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.Write")
+	ctx, sp := observability.Tracer().Start(ctx, "RecordService.Write")
 	defer sp.End()
 
 	response := services.WriteRecordResponse{}
@@ -193,7 +199,7 @@ func (rs RecordService) Write(ctx context.Context, request *services.WriteRecord
 func (rs RecordService) Commit(ctx context.Context, request *services.CommitRecordRequest) (*services.CommitRecordResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.Commit")
+	ctx, sp := observability.Tracer().Start(ctx, "RecordService.Commit")
 	defer sp.End()
 
 	response := services.CommitRecordResponse{}
@@ -237,7 +243,7 @@ func (c RecordService) CreateSchema(ctx context.Context, request *services.Creat
 func (c RecordService) ValidateRecord(ctx context.Context, request *services.ValidateRecordRequest) (*services.ValidateRecordResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.ValidateRecord")
+	ctx, sp := observability.Tracer().Start(ctx, "RecordService.ValidateRecord")
 	defer sp.End()
 
 	return &services.ValidateRecordResponse{

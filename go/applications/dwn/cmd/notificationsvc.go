@@ -4,7 +4,6 @@ import (
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/notificationsvc"
 	"github.com/openreserveio/dwn/go/log"
-	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -16,18 +15,13 @@ var notificationsvcCmd = &cobra.Command{
 	Long:  `Backend Service for issuing and executing notifications`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		log.Info("Observability")
-		ctx := cmd.Context()
-		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "Notification Service")
-		defer sd(ctx)
-
 		log.Info("Starting DWN Backend Notification Service")
 		config, err := configuration.Config()
 		if err != nil {
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
 		}
-		log.Error("Stopping Notification Service:  %v", notificationsvc.Start(ctx, config))
+		log.Error("Stopping Notification Service:  %v", notificationsvc.Start(cmd.Context(), config))
 
 	},
 }

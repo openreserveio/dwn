@@ -4,7 +4,6 @@ import (
 	"github.com/openreserveio/dwn/go/applications/dwn/configuration"
 	"github.com/openreserveio/dwn/go/applications/dwn/service/recordsvc"
 	"github.com/openreserveio/dwn/go/log"
-	"github.com/openreserveio/dwn/go/observability"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -16,18 +15,13 @@ var recordsvcCmd = &cobra.Command{
 	Long:  `Backend gRPC Service for managing records, schemas, and schema definitions`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		log.Info("Observability")
-		ctx := cmd.Context()
-		sd, _ := observability.InitProviderWithJaegerExporter(ctx, "Record Service")
-		defer sd(ctx)
-
 		log.Info("Starting DWN Backend RecordService")
 		config, err := configuration.Config()
 		if err != nil {
 			log.Fatal("Configuration Fatal Error:  %v", err)
 			os.Exit(1)
 		}
-		log.Error("Stopping Record Service:  %v", recordsvc.Start(ctx, config))
+		log.Error("Stopping Record Service:  %v", recordsvc.Start(cmd.Context(), config))
 
 	},
 }

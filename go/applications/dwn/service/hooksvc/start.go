@@ -19,7 +19,7 @@ func Start(config configuration.Configuration) error {
 		os.Exit(1)
 	}
 
-	hookService, err := CreateHookService(config.GetHookServiceDocumentDBURI(), config.GetQueueServiceConnectionURI())
+	hookService, err := CreateHookService(config.GetHookServicePostgresURI(), config.GetQueueServiceConnectionURI())
 	if err != nil {
 		log.Fatal("Unable to start Hook Service:  %v", err)
 		os.Exit(1)

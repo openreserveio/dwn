@@ -2,20 +2,20 @@ package record
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMessage *model.Message) (string, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.record.RecordWrite")
+	ctx, sp := observability.Tracer().Start(ctx, "recordsvc.record.RecordWrite")
 	defer sp.End()
 
 	/*
@@ -28,6 +28,7 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 	descriptorId := model.CreateDescriptorCID(recordMessage.Descriptor)
 	processingId := model.CreateProcessingCID(recordMessage.Processing)
 	entryId := model.CreateRecordCID(descriptorId, processingId)
+	sp.AddEvent(fmt.Sprintf("Generated Message Entry ID, but kinda useless:  %s", entryId))
 
 	//log.Info(" Entry ID: %s", entryId)
 	//log.Info("Record ID: %s", recordMessage.RecordID)
@@ -36,74 +37,68 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 	// if entryId == recordMessage.RecordID {
 	// For now:  If there is no parent ID, ASSUME first entry
 	sp.AddEvent("Is this the first entry?")
-	if recordMessage.Descriptor.ParentID == "" {
+	var initialEntry bool = false
+	existingRecord := recordStore.GetRecord(ctx, recordMessage.RecordID)
+	if existingRecord == nil {
+		initialEntry = true
+	}
+
+	if initialEntry {
 
 		sp.AddEvent("THIS IS THE FIRST ENTRY")
 		// This is the first entry of the record.  Create it and return
 		// If there is an existing record id, there's a problem and return an error
 		// Let caller know this is an intial entry via boolean
-		existingRecord := recordStore.GetRecord(entryId)
-		if existingRecord != nil {
-			sp.RecordError(errors.New(ERR_DUPLICATE_INITIAL_ENTRY))
-			return "", errors.New(ERR_DUPLICATE_INITIAL_ENTRY)
-		}
-
 		record := storage.Record{
-			ID:         primitive.NewObjectID(),
-			RecordID:   recordMessage.RecordID,
-			CreatorDID: recordMessage.Processing.AuthorDID,
-			OwnerDID:   recordMessage.Processing.RecipientDID,
-			WriterDIDs: []string{recordMessage.Processing.RecipientDID},
-			ReaderDIDs: []string{recordMessage.Processing.AuthorDID, recordMessage.Processing.RecipientDID},
+			DWNRecordID: recordMessage.RecordID,
+			CreatorDID:  recordMessage.Processing.AuthorDID,
+			OwnerDID:    recordMessage.Processing.RecipientDID,
+			WriterDIDs:  []string{recordMessage.Processing.RecipientDID},
+			ReaderDIDs:  []string{recordMessage.Processing.RecipientDID},
 		}
 
+		recordMessageBytes, err := json.Marshal(recordMessage)
 		entry := storage.MessageEntry{
-			ID:             primitive.NewObjectID(),
-			MessageEntryID: entryId,
-			Message:        *recordMessage,
+			DWNRecordID: recordMessage.RecordID,
+			Message:     recordMessageBytes,
 		}
 
 		sp.AddEvent("Creating record")
-		err := recordStore.CreateRecord(&record, &entry)
+		recordStore.BeginTx(ctx)
+		err = recordStore.CreateRecord(ctx, &record, &entry)
 		if err != nil {
+			recordStore.RollbackTx(ctx)
 			sp.RecordError(err)
 			return "", err
 		}
+		recordStore.CommitTx(ctx)
 
 		// This was an initial entry!
 		sp.AddEvent("CREATED AN INITIAL ENTRY")
-		return record.RecordID, nil
+		return record.DWNRecordID, nil
 
 	} else {
 
-		sp.AddEvent("NOT an initial entry")
+		sp.AddEvent("Adding a WRITE to existing record")
 		// the message may be an overwriting entry for the record; continue processing.
 		// This is an attempt to overwrite a previous version.
 		// So, let's get the parent version
-		sp.AddEvent("Get the parent  record for write referenced in the parentID")
-		parentRecord := recordStore.GetRecord(recordMessage.Descriptor.ParentID)
-
-		if parentRecord == nil {
-			// If a message is not the Initial Entry, its descriptor MUST contain a parentId to
-			// determine the entry’s position in the record’s lineage. If a parentId is present
-			// proceed with processing, else discard the record and cease processing.
-			// We dont have the parent.  Reject with err
-			sp.RecordError(errors.New("Unable to find Parent Records for overwrite using parent ID"))
-			return "", fmt.Errorf("Unable to find Parent Record for Overwrite using Parent ID:  %s", recordMessage.Descriptor.ParentID)
-		}
 
 		// Ensure all immutable values from the Initial Entry remained unchanged if present in the
 		// inbound message. If any have been mutated, discard the message and cease processing.
 		sp.AddEvent("Get the parent's Initial Entry ID")
-		initialMessageEntry := recordStore.GetMessageEntryByID(parentRecord.InitialEntryID)
+		initialMessageEntry := recordStore.GetMessageEntryByID(ctx, existingRecord.InitialEntryID)
 		if initialMessageEntry == nil {
 			return "", errors.New("Unable to find an initial entry")
 		}
 
 		sp.AddEvent("Ensuring immutable values stay immutable")
-		if initialMessageEntry.Descriptor.Protocol != recordMessage.Descriptor.Protocol ||
-			initialMessageEntry.Descriptor.ProtocolVersion != recordMessage.Descriptor.ProtocolVersion ||
-			initialMessageEntry.Descriptor.Schema != recordMessage.Descriptor.Schema {
+		var initialMessage model.Message
+		err := json.Unmarshal(initialMessageEntry.Message, &initialMessage)
+
+		if initialMessage.Descriptor.Protocol != recordMessage.Descriptor.Protocol ||
+			initialMessage.Descriptor.ProtocolVersion != recordMessage.Descriptor.ProtocolVersion ||
+			initialMessage.Descriptor.Schema != recordMessage.Descriptor.Schema {
 			return "", errors.New(ERR_MUTATE_UMMUTABLE_VALUE)
 		}
 
@@ -112,41 +107,44 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		// Latest Checkpoint Entry derived from running the Record ID Generation Process on it.
 		// If the values match, proceed with processing, if the values do not match discard the message and cease processing.
 		sp.AddEvent("Getting the latest checkpoint entry")
-		latestCheckpointEntry := recordStore.GetMessageEntryByID(parentRecord.LatestCheckpointEntryID)
+		latestCheckpointEntry := recordStore.GetMessageEntryByID(ctx, existingRecord.LatestCheckpointEntryID)
 		if latestCheckpointEntry == nil {
 			return "", errors.New("Unable to find the latest checkpoint entry")
-		}
-
-		if recordMessage.Descriptor.ParentID != latestCheckpointEntry.RecordID {
-			return "", errors.New("The parent ID of the inbound message must match the latest checkpoint record ID.")
 		}
 
 		// If an existing CollectionsWrite entry linked to the Latest Checkpoint Entry IS NOT present and
 		// the dateCreated value of the inbound message is greater than the Latest Checkpoint Entry,
 		// store the message as the Latest Entry and cease processing, else discard the inbound message
 		// and cease processing.
+		var latestCheckpointMessage model.Message
+		err = json.Unmarshal(latestCheckpointEntry.Message, &latestCheckpointMessage)
+
 		recordMessageDateCreated, err := time.Parse(time.RFC3339, recordMessage.Descriptor.DateCreated)
-		latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointEntry.Descriptor.DateCreated)
+		latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointMessage.Descriptor.DateCreated)
 		if err != nil {
 			return "", errors.New(ERR_INVALID_DATE_FORMAT)
 		}
-		if latestCheckpointEntry.Descriptor.Method != model.METHOD_RECORDS_WRITE &&
+
+		if latestCheckpointMessage.Descriptor.Method != model.METHOD_RECORDS_WRITE &&
 			recordMessageDateCreated.After(latestCheckpointEntryDateCreated) {
 
 			sp.AddEvent("Storing latest entry, adjusting latest entry ID to this WRITE")
+			recordMessageBytes, err := json.Marshal(recordMessage)
 			latestEntry := storage.MessageEntry{
-				ID:             primitive.NewObjectID(),
-				MessageEntryID: uuid.NewString(),
-				Message:        *recordMessage,
+				ID:                     uuid.NewString(),
+				PreviousMessageEntryID: latestCheckpointEntry.ID,
+				DWNRecordID:            initialMessage.RecordID,
+				Message:                recordMessageBytes,
 			}
 
-			err := recordStore.AddMessageEntry(&latestEntry)
+			err = recordStore.AddMessageEntry(ctx, &latestEntry)
 			if err != nil {
 				return "", err
 			}
 
-			parentRecord.LatestEntryID = latestEntry.MessageEntryID
-			err = recordStore.SaveRecord(parentRecord)
+			existingRecord.LatestEntryID = latestEntry.ID
+			existingRecord.LatestCheckpointEntryID = latestEntry.ID
+			err = recordStore.SaveRecord(ctx, existingRecord)
 			if err != nil {
 				return "", err
 			}
@@ -160,10 +158,10 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 		//     than the existing entry when the Entry IDs of the two are compared lexicographically.
 		// If all of the following conditions for Step 6 are true, store the inbound message as the Latest Entry
 		// and discard the existing CollectionsWrite entry that was attached to the Latest Checkpoint Entry.
-		if latestCheckpointEntry.Descriptor.Method == model.METHOD_RECORDS_WRITE {
+		if latestCheckpointMessage.Descriptor.Method == model.METHOD_RECORDS_WRITE {
 
 			recordMessageDateCreated, err := time.Parse(time.RFC3339, recordMessage.Descriptor.DateCreated)
-			latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointEntry.Descriptor.DateCreated)
+			latestCheckpointEntryDateCreated, err := time.Parse(time.RFC3339, latestCheckpointMessage.Descriptor.DateCreated)
 			if err != nil {
 				return "", errors.New(ERR_INVALID_DATE_FORMAT)
 			}
@@ -172,13 +170,14 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 
 				// TODO:  How to compare lexicographically?  Will come back to this
 				sp.AddEvent("Storing latest entry OVERRIDE previous WRITE, adjusting latest entry ID to this WRITE")
+				recordMessageBytes, err := json.Marshal(recordMessage)
 				latestEntry := storage.MessageEntry{
-					ID:             primitive.NewObjectID(),
-					MessageEntryID: uuid.NewString(),
-					Message:        *recordMessage,
+					ID:          uuid.NewString(),
+					DWNRecordID: existingRecord.DWNRecordID,
+					Message:     recordMessageBytes,
 				}
 
-				err := recordStore.AddMessageEntry(&latestEntry)
+				err = recordStore.AddMessageEntry(ctx, &latestEntry)
 				if err != nil {
 					return "", err
 				}
@@ -189,8 +188,9 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 				//	return err
 				//}
 
-				parentRecord.LatestCheckpointEntryID = latestEntry.MessageEntryID
-				err = recordStore.SaveRecord(parentRecord)
+				existingRecord.LatestCheckpointEntryID = latestEntry.ID
+				existingRecord.LatestEntryID = latestEntry.ID
+				err = recordStore.SaveRecord(ctx, existingRecord)
 				if err != nil {
 					return "", err
 				}

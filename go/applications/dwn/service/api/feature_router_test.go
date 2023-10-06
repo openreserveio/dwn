@@ -23,7 +23,7 @@ var _ = Describe("Feature Router", func() {
 	var mockController *gomock.Controller
 
 	BeforeEach(func() {
-		observability.InitProviderWithJaegerExporter(context.Background(), "UnitTest")
+		observability.InitProviderWithOTELExporter(context.Background(), "UnitTest")
 		mockController = gomock.NewController(GinkgoT())
 	})
 

@@ -2,6 +2,7 @@ package record
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
@@ -11,7 +12,7 @@ import (
 func RecordQuery(ctx context.Context, recordStore storage.RecordStore, queryMessage *model.Message) (*model.Message, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "recordsvc.record.RecordQuery")
+	ctx, sp := observability.Tracer().Start(ctx, "recordsvc.record.RecordQuery")
 	defer sp.End()
 
 	var responseMessage model.Message
@@ -20,20 +21,20 @@ func RecordQuery(ctx context.Context, recordStore storage.RecordStore, queryMess
 	if queryMessage.Descriptor.Filter.RecordID != "" && queryMessage.Descriptor.Filter.Schema != "" {
 
 		sp.AddEvent(fmt.Sprintf("Querying for record by ID %s and Schema %s", queryMessage.Descriptor.Filter.RecordID, queryMessage.Descriptor.Filter.Schema))
-		latestRecord := recordStore.GetRecord(queryMessage.Descriptor.Filter.RecordID)
+		latestRecord := recordStore.GetRecord(ctx, queryMessage.Descriptor.Filter.RecordID)
 		if latestRecord == nil {
 			sp.AddEvent("Unable to find record by ID and Schema")
 			return nil, nil
 		}
 
 		sp.AddEvent(fmt.Sprintf("Querying for latest message entry by ID %s", latestRecord.LatestEntryID))
-		latestMessageEntry := recordStore.GetMessageEntryByID(latestRecord.LatestEntryID)
+		latestMessageEntry := recordStore.GetMessageEntryByID(ctx, latestRecord.LatestEntryID)
 		if latestMessageEntry == nil {
 			sp.AddEvent("Unable to find latest message entry by ID")
 			return nil, nil
 		}
 
-		responseMessage = latestMessageEntry.Message
+		json.Unmarshal(latestMessageEntry.Message, &responseMessage)
 
 	}
 

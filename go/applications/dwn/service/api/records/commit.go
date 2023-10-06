@@ -13,7 +13,7 @@ import (
 func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServiceClient, message *model.Message) model.MessageResultObject {
 
 	// Instrumentation
-	ctx, sp := observability.Tracer.Start(ctx, "api.records.RecordsCommit")
+	ctx, sp := observability.Tracer().Start(ctx, "api.records.RecordsCommit")
 	defer sp.End()
 
 	var messageResultObj model.MessageResultObject
@@ -30,7 +30,8 @@ func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServi
 	// Make sure authorizations are valid for messages that are writes to existing records
 	// Check for existing record by the parent ID for commit
 	sp.AddEvent(fmt.Sprintf("Looking for existing record for commit:  %s", message.RecordID))
-	findRecordResponse, err := recordServiceClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT, SchemaURI: message.Descriptor.Schema, RecordId: message.Descriptor.ParentID})
+	findRecordResponse, err := recordServiceClient.FindRecord(ctx, &services.FindRecordRequest{QueryType: services.QueryType_SINGLE_RECORD_BY_ID_FOR_COMMIT, SchemaURI: message.Descriptor.Schema, RecordId: message.RecordID})
+	sp.AddEvent(fmt.Sprintf("FindRecordResponse:  %v", findRecordResponse))
 	if err != nil {
 		sp.RecordError(err)
 		messageResultObj.Status = model.ResponseStatus{Code: http.StatusInternalServerError, Detail: err.Error()}
@@ -63,14 +64,15 @@ func RecordsCommit(ctx context.Context, recordServiceClient services.RecordServi
 		authorized := false
 		for _, v := range findRecordResponse.Writers {
 			if v == message.Processing.AuthorDID {
-				sp.AddEvent("Author is authorized to COMMIT to this record.")
+				sp.AddEvent(fmt.Sprintf("Author (%s) is authorized to COMMIT to this record (%s).", message.Processing.AuthorDID, message.RecordID))
 				authorized = true
 			}
 		}
 
 		if !authorized {
-			sp.AddEvent("Author is not authorized to COMMIT to this record.")
-			messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: "Author is not authorized to COMMIT to this record."}
+			eventText := fmt.Sprintf("Author (%s) is *NOT* authorized to COMMIT to this record (%s).", message.Processing.AuthorDID, message.RecordID)
+			sp.AddEvent(eventText)
+			messageResultObj.Status = model.ResponseStatus{Code: http.StatusUnauthorized, Detail: eventText}
 			return messageResultObj
 		}
 

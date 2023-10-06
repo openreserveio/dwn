@@ -13,7 +13,7 @@ import (
 var _ = Describe("ResolveKey", func() {
 
 	ctx := context.Background()
-	sd, _ := observability.InitProviderWithJaegerExporter(ctx, "ResolveWeb Integration Test")
+	sd, _ := observability.InitProviderWithOTELExporter(ctx, "ResolveWeb Integration Test")
 	defer sd(ctx)
 
 	kp := client.NewKeypair()

@@ -11,8 +11,7 @@ import (
 	"github.com/openreserveio/dwn/go/model"
 	"github.com/openreserveio/dwn/go/observability"
 	"github.com/openreserveio/dwn/go/storage"
-	"github.com/openreserveio/dwn/go/storage/docdbstore"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/openreserveio/dwn/go/storage/pgsql"
 	"strings"
 )
 
@@ -25,7 +24,7 @@ type HookService struct {
 func CreateHookService(hookStoreConnectionURI string, queueConnUrl string) (*HookService, error) {
 
 	// Setup Hook Store
-	hookStore, err := docdbstore.CreateHookDocumentDBStore(hookStoreConnectionURI)
+	hookStore, err := pgsql.NewHookStorePostgres(hookStoreConnectionURI)
 	if err != nil {
 		log.Fatal("Unable to connect to hook store:  %v", err)
 		return nil, err
@@ -49,7 +48,7 @@ func CreateHookService(hookStoreConnectionURI string, queueConnUrl string) (*Hoo
 func (hookService HookService) RegisterHook(ctx context.Context, request *services.RegisterHookRequest) (*services.RegisterHookResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "RegisterHook")
+	ctx, sp := observability.Tracer().Start(ctx, "HookService.RegisterHook")
 	defer sp.End()
 
 	response := services.RegisterHookResponse{}
@@ -74,20 +73,24 @@ func (hookService HookService) RegisterHook(ctx context.Context, request *servic
 	}
 
 	// Create Initial Config Entry
+	messageBytes, err := json.Marshal(&message)
 	configEntry := storage.HookConfigurationEntry{
-		Message:              message,
-		ID:                   primitive.NewObjectID(),
+		Message:              messageBytes,
 		ConfigurationEntryID: uuid.NewString(),
 		HookRecordID:         message.RecordID,
 	}
 
 	// Create Hook Record!
 	createdHookRecord := storage.HookRecord{
-		ID:                              primitive.NewObjectID(),
 		HookRecordID:                    message.RecordID,
 		CreatorDID:                      message.Processing.AuthorDID,
+		OwnerDID:                        message.Processing.RecipientDID,
 		InitialHookConfigurationEntryID: configEntry.ConfigurationEntryID,
 		LatestHookConfigurationEntryID:  configEntry.ConfigurationEntryID,
+		FilterProtocol:                  message.Descriptor.Filter.Protocol,
+		FilterProtocolVersion:           message.Descriptor.Filter.ProtocolVersion,
+		FilterSchema:                    message.Descriptor.Filter.Schema,
+		FilterDataRecordID:              message.Descriptor.Filter.RecordID,
 	}
 
 	// Store!
@@ -105,7 +108,7 @@ func (hookService HookService) RegisterHook(ctx context.Context, request *servic
 func (hookService HookService) UpdateHook(ctx context.Context, request *services.UpdateHookRequest) (*services.UpdateHookResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "UpdateHook")
+	ctx, sp := observability.Tracer().Start(ctx, "HookService.UpdateHook")
 	defer sp.End()
 
 	response := services.UpdateHookResponse{}
@@ -130,9 +133,10 @@ func (hookService HookService) UpdateHook(ctx context.Context, request *services
 	}
 
 	// Create Config Entry
+	messageBytes, _ := json.Marshal(&message)
+
 	configEntry := storage.HookConfigurationEntry{
-		Message:              message,
-		ID:                   primitive.NewObjectID(),
+		Message:              messageBytes,
 		ConfigurationEntryID: uuid.NewString(),
 		HookRecordID:         message.RecordID,
 	}
@@ -151,7 +155,7 @@ func (hookService HookService) UpdateHook(ctx context.Context, request *services
 func (hookService HookService) GetHookByRecordId(ctx context.Context, request *services.GetHookByRecordIdRequest) (*services.GetHookByRecordIdResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
+	ctx, sp := observability.Tracer().Start(ctx, "HookService.GetHookByRecordId")
 	defer sp.End()
 
 	response := services.GetHookByRecordIdResponse{}
@@ -173,9 +177,12 @@ func (hookService HookService) GetHookByRecordId(ctx context.Context, request *s
 		return &response, nil
 	}
 
+	var latestEntryMessage model.Message
+	err = json.Unmarshal(latestEntry.Message, &latestEntryMessage)
+
 	hookDef := services.HookDefinition{
 		HookId: hookRecord.HookRecordID,
-		Uri:    latestEntry.Message.Descriptor.URI,
+		Uri:    latestEntryMessage.Descriptor.URI,
 	}
 	if strings.Contains(hookDef.Uri, "http") {
 		hookDef.HookChannel = services.HookDefinition_HTTP_CALLBACK
@@ -192,7 +199,7 @@ func (hookService HookService) GetHookByRecordId(ctx context.Context, request *s
 
 func (hookService HookService) GetHooksForRecord(ctx context.Context, request *services.GetHooksForRecordRequest) (*services.GetHooksForRecordResponse, error) {
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "GetHooksForRecord")
+	ctx, sp := observability.Tracer().Start(ctx, "HookService.GetHooksForRecord")
 	defer sp.End()
 
 	response := services.GetHooksForRecordResponse{}
@@ -214,9 +221,12 @@ func (hookService HookService) GetHooksForRecord(ctx context.Context, request *s
 		return &response, nil
 	}
 
+	var latestEntryMessage model.Message
+	err = json.Unmarshal(latestEntry.Message, &latestEntryMessage)
+
 	hookDef := services.HookDefinition{
 		HookId: hookRecord.HookRecordID,
-		Uri:    latestEntry.Message.Descriptor.URI,
+		Uri:    latestEntryMessage.Descriptor.URI,
 	}
 	if strings.Contains(hookDef.Uri, "http") {
 		hookDef.HookChannel = services.HookDefinition_HTTP_CALLBACK
@@ -233,7 +243,7 @@ func (hookService HookService) GetHooksForRecord(ctx context.Context, request *s
 func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, request *services.NotifyHooksOfRecordEventRequest) (*services.NotifyHooksOfRecordEventResponse, error) {
 
 	// tracing
-	ctx, sp := observability.Tracer.Start(ctx, "NotifyHooksOfRecordEvent")
+	ctx, sp := observability.Tracer().Start(ctx, "HookService.NotifyHooksOfRecordEvent")
 	defer sp.End()
 
 	response := services.NotifyHooksOfRecordEventResponse{}
@@ -256,8 +266,12 @@ func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, req
 	} else {
 
 		for _, latestEntry := range hookRecords {
-			sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntry.Descriptor.URI))
-			hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+
+			var latestEntryMessage model.Message
+			err = json.Unmarshal(latestEntry.Message, &latestEntryMessage)
+
+			sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntryMessage.Descriptor.URI))
+			hookService.EventHub.RaiseNotifyCallbackEvent(latestEntryMessage.Descriptor.Schema, request.RecordId, latestEntryMessage.Descriptor.Protocol, latestEntryMessage.Descriptor.ProtocolVersion, latestEntryMessage.Descriptor.URI)
 		}
 
 	}
@@ -275,8 +289,11 @@ func (hookService HookService) NotifyHooksOfRecordEvent(ctx context.Context, req
 	} else {
 
 		for _, latestEntry := range spHookRecords {
-			sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntry.Descriptor.URI))
-			hookService.EventHub.RaiseNotifyCallbackEvent(latestEntry.Descriptor.Schema, request.RecordId, latestEntry.Descriptor.Protocol, latestEntry.Descriptor.ProtocolVersion, latestEntry.Descriptor.URI)
+			var latestEntryMessage model.Message
+			err = json.Unmarshal(latestEntry.Message, &latestEntryMessage)
+
+			sp.AddEvent(fmt.Sprintf("--->  HOOK RECORD URL:  %s", latestEntryMessage.Descriptor.URI))
+			hookService.EventHub.RaiseNotifyCallbackEvent(latestEntryMessage.Descriptor.Schema, request.RecordId, latestEntryMessage.Descriptor.Protocol, latestEntryMessage.Descriptor.ProtocolVersion, latestEntryMessage.Descriptor.URI)
 		}
 
 	}
