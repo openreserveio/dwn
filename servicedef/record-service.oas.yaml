@@ -1,0 +1,30 @@
+openapi: '3.0.2'
+info:
+  title: DWN Record Service API
+  version: '1.0'
+servers:
+  - url: https://dwn.openreserve.io/
+tags:
+  - name: "Records"
+    description: Related to DWN Records Management
+paths:
+  /record:
+    post:
+      description: Write a new record (RecordWrite)
+      tags:
+        - "Records"
+      responses:
+        '200':
+          description: OK
+
+components:
+  schemas:
+    write_record_request:
+      type: object
+      description: Request elements to write a new record
+      required:
+        - messages
+      properties:
+        messages:
+          type: object
+

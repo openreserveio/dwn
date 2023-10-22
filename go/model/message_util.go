@@ -83,8 +83,7 @@ func CreateUpdateRecordsWriteMessage(authorDID string, recipientDID string, logi
 	}
 
 	descCID := CreateDescriptorCID(descriptor)
-	mpCID := CreateProcessingCID(processing)
-	recordCID := CreateRecordCID(descCID, mpCID)
+	recordCID := CreateRecordCID(descCID)
 	descriptor.ParentID = recordCID
 
 	message := Message{
@@ -118,8 +117,7 @@ func CreateRecordsCommitMessage(logicalRecordId string, schemaUrl string, commit
 	}
 
 	descCID := CreateDescriptorCID(descriptor)
-	mpCID := CreateProcessingCID(processing)
-	recordCID := CreateRecordCID(descCID, mpCID)
+	recordCID := CreateRecordCID(descCID)
 	descriptor.ParentID = recordCID
 
 	message := Message{
@@ -160,8 +158,7 @@ func CreateInitialRecordsWriteMessage(authorDID string, recipientDID string, pro
 	}
 
 	descCID := CreateDescriptorCID(descriptor)
-	mpCID := CreateProcessingCID(processing)
-	recordCID := CreateRecordCID(descCID, mpCID)
+	recordCID := CreateRecordCID(descCID)
 
 	message := Message{
 		RecordID:   recordCID,

@@ -74,11 +74,10 @@ func CreateCIDFromNode(node datamodel.Node) cid.Cid {
 
 }
 
-func CreateRecordCID(descriptorCID string, processingCID string) string {
+func CreateRecordCID(descriptorCID string) string {
 
 	d, err := qp.BuildMap(basicnode.Prototype.Any, 1, func(ma datamodel.MapAssembler) {
 		qp.MapEntry(ma, "descriptorCid", qp.String(descriptorCID))
-		qp.MapEntry(ma, "processingCid", qp.String(processingCID))
 	})
 	if err != nil {
 		return ""
