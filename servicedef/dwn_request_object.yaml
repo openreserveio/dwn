@@ -1,0 +1,53 @@
+openapi: '3.0.2'
+info:
+  title: DWN Request object
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /:
+    post:
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    request_object:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+          items: 
+            $ref: '#/components/schemas/message'
+    message:
+      type: object
+      required:
+        - recordId
+      properties:
+        recordId:
+          type: string
+          description: Message objects MUST contain a recordId property, and its value MUST be the stringified Version 1 CID of the initial entry for the logical record in question
+        descriptor:
+          type: object
+          description: Message objects MUST contain a descriptor property
+    message_descriptor:
+      type: object
+      properties:
+        interface:
+          type: string
+          example: Record
+        method:
+          type: string
+          example: Write
+        dataCid:
+          type: string
+          example: bafybeihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku
+        dataFormat:
+          type: string
+          example: "application/json"
+
+
+
+

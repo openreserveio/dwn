@@ -26,8 +26,7 @@ func RecordWrite(ctx context.Context, recordStore storage.RecordStore, recordMes
 			- ELSE the message may be an overwriting entry for the record; continue processing.
 	*/
 	descriptorId := model.CreateDescriptorCID(recordMessage.Descriptor)
-	processingId := model.CreateProcessingCID(recordMessage.Processing)
-	entryId := model.CreateRecordCID(descriptorId, processingId)
+	entryId := model.CreateRecordCID(descriptorId)
 	sp.AddEvent(fmt.Sprintf("Generated Message Entry ID, but kinda useless:  %s", entryId))
 
 	//log.Info(" Entry ID: %s", entryId)
